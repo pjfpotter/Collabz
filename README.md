@@ -1,5 +1,7 @@
 # Collabz
 
+**Tinder for Business.**
+
 Team coursework project (Wave 7 bootcamp) demonstrating a professional, human-directed agentic software development lifecycle — from feature idea through to a reviewed, deployed change.
 
 This README covers what the project is and how to get it running locally. For the full team process — OpenSpec, GitHub Issues, branching, commit format, approvals — see [`WORKFLOW.md`](./WORKFLOW.md).
@@ -59,4 +61,4 @@ README.md         # this file
 
 ## How we work
 
-Every feature follows the same ten-stage chain (pick → interview & spec → approve → build → verify → commit → PR → review → merge → archive). Full details, commit message format, and the ticket template are in [`WORKFLOW.md`](./WORKFLOW.md).
+Every feature follows the same ten-stage chain (pick → branch → spec → approve → build → verify → commit → PR → review, merge & deploy → archive), and keeps one ticket number across its branch, OpenSpec folder, PR and commits. Full details, board columns, commit message format, and the ticket template are in [`WORKFLOW.md`](./WORKFLOW.md).

@@ -15,7 +15,7 @@ Two beginners (Patrick and Tom) building this as coursework, learning agentic de
 ## Explain every decision
 
 - Every non-trivial choice (why this structure, why this library, why this approach over an obvious alternative) gets a one-line reason, either as a code comment at the point of the decision or in the commit body. We should never have to ask "why did we do it this way?" without the answer being nearby.
-- Follow the commit format in `WORKFLOW.md` (What / Why / Checked / Reviewed-by) — the "Why" line matters as much as the "What".
+- Follow the commit format in `WORKFLOW.md` (what line, why line, `Checked:`, `Reviewed-by:`) — the "why" line matters as much as the "what". Never add a `Reviewed-by` trailer yourself; only a human reviewer's name goes there.
 
 ## Code style — write for beginners reading it later
 
