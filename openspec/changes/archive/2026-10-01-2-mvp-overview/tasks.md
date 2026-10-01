@@ -4,10 +4,12 @@ This change doesn't build any code. Its tasks set up the slices so each one can 
 
 ## 1. Record the agreed decisions where future work will see them
 
-- [ ] 1.1 Add a `context:` block to `openspec/config.yaml` covering the stack, the "no free text" rule, and design decisions 3–9 (in short). Check: run `openspec instructions proposal --change <any> --json` and confirm the output's `context` field shows it
-- [ ] 1.2 Fill in `ARCHITECTURE.md` sections "What this app does", "The pieces" and "Key decisions and why" from this design (needs the docs PR #1 merged first). Check: a teammate can explain the slice order and the scoring trigger from that file alone
+- [x] 1.1 Add a `context:` block to `openspec/config.yaml` covering the stack, the "no free text" rule, and design decisions 3–9 (in short). Check: run `openspec instructions proposal --change <any> --json` and confirm the output's `context` field shows it
+- [x] 1.2 Fill in `ARCHITECTURE.md` sections "What this app does", "The pieces" and "Key decisions and why" from this design (needs the docs PR #1 merged first). Check: a teammate can explain the slice order and the scoring trigger from that file alone
 
 ## 2. Create one GitHub issue per slice
+
+> **Superseded by #4** (`4-brief-alignment` design D-new-4): the 6-slice list below was replaced by a 10-slice plan before any of these issues were created. Left unticked on purpose: they were not done here. See `4-brief-alignment` tasks 2.1 and 3.2–3.3.
 
 Each issue uses the ticket template in `WORKFLOW.md`. The *Open questions* section copies the ones listed for that slice in `design.md`, and the issue links back to #2.
 
@@ -21,4 +23,4 @@ Each issue uses the ticket template in `WORKFLOW.md`. The *Open questions* secti
 
 ## 3. Close out
 
-- [ ] 3.1 Run `/opsx:archive-change` for `2-mvp-overview` and close #2. Check: the change folder is in `openspec/changes/archive/` and #2 shows as closed
+- [x] 3.1 Run `/opsx:archive-change` for `2-mvp-overview` and close #2. Check: the change folder is in `openspec/changes/archive/` and #2 shows as closed
