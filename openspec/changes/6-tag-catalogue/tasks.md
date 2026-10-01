@@ -10,7 +10,7 @@ Groups follow the layers in `design.md`, so they can be split between us: groups
 
 ## 2. Database connection
 
-- [ ] 2.1 **(human)** Create the Neon project `collabz` in AWS `eu-west-2` with a `dev` branch off `main`, and put the `dev` pooled and direct URLs into a local `.env` (design 7). Verify: the Neon console shows both branches
+- [ ] 2.1 **(human)** Create the Neon project `collabz` in AWS `eu-west-2` with a `dev` branch off `production`, and put the `dev` pooled and direct URLs into a local `.env` (design 7). Verify: the Neon console shows both branches
 - [ ] 2.2 Install Prisma pinned to `7.10.x` plus `@prisma/adapter-neon`, and add `prisma.config.ts` and a `schema.prisma` with the generator output at `src/generated/prisma` (design 6). Verify: `npx prisma --version` shows 7.10 and `npx prisma generate` succeeds
 - [ ] 2.3 Add `src/lib/db.ts` exporting one shared Prisma client that uses the Neon adapter, with a comment explaining why it's shared. Verify: `npx tsc --noEmit` passes
 
@@ -34,7 +34,7 @@ Groups follow the layers in `design.md`, so they can be split between us: groups
 
 ## 6. Deploy
 
-- [ ] 6.1 **(human)** Import the GitHub repo into Vercel. Set Production env vars to Neon `main` and Preview env vars to Neon `dev`, the build command to `prisma migrate deploy && prisma db seed && next build`, and the function region to `lhr1` (design 7, 9). Verify: the PR's preview deploy builds and its `/catalogue` shows the catalogue
+- [ ] 6.1 **(human)** Import the GitHub repo into Vercel. Set Production env vars to Neon `production` and Preview env vars to Neon `dev`, the build command to `prisma migrate deploy && prisma db seed && next build`, and the function region to `lhr1` (design 7, 9). Verify: the PR's preview deploy builds and its `/catalogue` shows the catalogue
 - [ ] 6.2 Run the read-only Playwright test against the preview URL with `BASE_URL=<preview url> npm run test:e2e`. Verify: it passes
 
 ## 7. Docs and wrap-up

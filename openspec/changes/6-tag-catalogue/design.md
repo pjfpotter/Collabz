@@ -63,10 +63,10 @@ Course    id (e.g. "software"), name, order, retiredAt?
 - **One shared client:** `src/lib/db.ts` exports a single Prisma client. *Why:* in development Next.js reloads code often, and a new client per reload would open connections until Neon refuses more.
 - **Generated client is not committed:** it goes to `src/generated/prisma`, which is gitignored and rebuilt by `prisma generate` on install and build.
 
-### 7. Environments: Neon `main` for production, `dev` for everything else
+### 7. Environments: Neon `production` for production, `dev` for everything else
 | Where | Database URL points at |
 |---|---|
-| Vercel Production (deploys from `master`) | Neon `main` branch |
+| Vercel Production (deploys from `master`) | Neon `production` branch |
 | Vercel Preview (one per PR) | Neon `dev` branch |
 | Local `npm run dev` | Neon `dev` branch (`.env`) |
 | Tests | Neon `dev` branch (`TEST_DATABASE_URL`) |
@@ -99,15 +99,15 @@ Import the repo in Vercel's dashboard. `master` deploys to production, and each 
 
 - **[Prisma 7 and Next.js 16 are newer than most tutorials online]** → Comments link the official docs for anything version-specific (adapter setup, `prisma.config.ts`). If an online example doesn't match, trust the official docs.
 - **[Tests empty the `dev` branch's tables]** → Fine: `dev` only holds seed data, and the tests re-seed when they finish. If we later want dev data to survive, we can add a third Neon branch just for tests (a one-line change to `TEST_DATABASE_URL`).
-- **[Preview deploys run migrations against `dev`]** → That's where we want migrations tried first. Two PRs with conflicting migrations could clash on `dev`, but with one slice building at a time this is unlikely. Neon can reset `dev` from `main` if it happens.
+- **[Preview deploys run migrations against `dev`]** → That's where we want migrations tried first. Two PRs with conflicting migrations could clash on `dev`, but with one slice building at a time this is unlikely. Neon can reset `dev` from `production` if it happens.
 - **[Neon free tier suspends after inactivity]** → The first request after a quiet spell takes roughly a second longer. That's acceptable for now. Check before the live test.
 - **[Seed-on-build means a seed bug blocks deploys]** → Vitest seed tests run before any PR is merged.
 
 ## Migration Plan
 
-1. Create the Neon project (London) with a `dev` branch alongside `main`, and copy the pooled and direct URLs.
+1. Create the Neon project (London) with a `dev` branch alongside `production`, and copy the pooled and direct URLs.
 2. Create the first Prisma migration locally against `dev`.
 3. Import the repo into Vercel, set Production and Preview environment variables, and set the build command and region.
-4. Merging the PR deploys production. The build migrates and seeds `main`.
+4. Merging the PR deploys production. The build migrates and seeds `production`.
 
 **Rollback:** use Vercel's "Instant Rollback" to the previous deploy. The migration only *adds* tables, so leaving them in place harms nothing.
