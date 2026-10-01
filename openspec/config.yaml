@@ -1,13 +1,30 @@
 schema: spec-driven
 
-# Project context (optional)
-# This is shown to AI when creating artifacts.
-# Add your tech stack, conventions, style guides, domain knowledge, etc.
-# Example:
-#   context: |
-#     Tech stack: TypeScript, React, Node.js
-#     We use conventional commits
-#     Domain: e-commerce platform
+# Project context: shown to the AI every time it writes a proposal, design,
+# spec or tasks file, so each slice starts from the same settled decisions.
+# Keep it short; the full reasoning lives in the archived 2-mvp-overview and
+# 4-brief-alignment changes.
+context: |
+  Product: Collabz, our version of the "Bootcamp Connect" course brief. It matches
+  software-course and business-course students by chemistry (picked tags), not CVs.
+  Team: two beginners. Optimise for readable, well-commented code.
+
+  Tech stack: Next.js (App Router) with API routes as the backend, TypeScript,
+  Neon Postgres through Prisma, Auth.js email magic links, react-force-graph,
+  deployed on Vercel. Every slice ends deployed and re-checked on the live URL.
+
+  Settled rules:
+  - Decisions in 4-brief-alignment override 2-mvp-overview where they disagree.
+  - No free text in onboarding or profiles: everything is picked from lists.
+    Messages between connected users are the only free text (B1).
+  - Categories, tags and courses are database rows with stable ids, never
+    hard-deleted (renamed or retired), so scores never change by accident (B2).
+  - Reveal on approval: real photos and conversations only open once both people
+    agree to connect. The graph shows a generated alias and silhouette (B1, B3).
+    Signup emails are never shown to other users.
+  - Everyone is scored against everyone; course is recorded but not scored.
+    Scores are stored per pair and recalculated only for the user who changed.
+  - Skills and Interests are shown and filterable but not used in scoring (B5).
 
 # Per-artifact rules (optional)
 # Add custom rules for specific artifacts.

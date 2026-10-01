@@ -8,7 +8,7 @@ Update this as the last step whenever `/opsx:archive-change` lands a change that
 
 Collabz is our version of the course brief "Bootcamp Connect". It matches software-course and business-course students by **chemistry**, not CVs. People build a profile by picking tags from fixed lists, the app scores every pair, and everyone sees the whole cohort as a live graph. Two people who both agree to connect get a private conversation.
 
-> **Status (1 Oct 2026):** planned, nothing built yet. The plan is `openspec/changes/2-mvp-overview/` as amended by `openspec/changes/4-brief-alignment/`. Where the two disagree, #4 wins.
+> **Status (1 Oct 2026):** planned, nothing built yet. The per-capability specs are now in `openspec/specs/`. The reasoning behind them is `openspec/changes/archive/2026-10-01-2-mvp-overview/` as amended by `openspec/changes/archive/2026-10-01-4-brief-alignment/`. Where the two disagree, #4 wins.
 
 ## The pieces
 
@@ -41,7 +41,7 @@ Collabz is our version of the course brief "Bootcamp Connect". It matches softwa
 - **Everyone is scored against everyone; course is recorded but not used in scoring:** a team decision. Course drives filters and stats.
 - **Build in deployed vertical slices, starting with a walking skeleton (slice 0):** proves the stack on real infrastructure first and meets the weekly milestone.
 
-Full reasoning: `openspec/changes/2-mvp-overview/design.md` and `openspec/changes/4-brief-alignment/design.md`.
+Full reasoning: `openspec/changes/archive/2026-10-01-2-mvp-overview/design.md` and `openspec/changes/archive/2026-10-01-4-brief-alignment/design.md`.
 
 ## Open questions / known gaps
 
@@ -49,4 +49,4 @@ Full reasoning: `openspec/changes/2-mvp-overview/design.md` and `openspec/change
 - Email-sending service for magic links: not chosen (slice 1).
 - File storage provider: proposed, confirmed in slice 7.
 - Messages refresh on page load. Real-time chat is a stretch goal.
-- The full list of open questions per slice is in `openspec/changes/4-brief-alignment/design.md` § Open Questions.
+- The full list of open questions per slice is in `openspec/changes/archive/2026-10-01-4-brief-alignment/design.md` § Open Questions.
