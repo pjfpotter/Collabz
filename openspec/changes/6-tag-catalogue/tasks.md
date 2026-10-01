@@ -17,7 +17,7 @@ Groups follow the layers in `design.md`, so they can be split between us: groups
 ## 3. Catalogue tables and seed
 
 - [x] 3.1 Add the `Category`, `Tag` and `Course` models to `schema.prisma` (design 4: string ids, `order`, `retiredAt`, `pickMin`/`pickMax`, Tag → Category relation), and create the first migration against `dev`. Verify: `npx prisma migrate dev` creates the migration and the three tables show in Neon's table view
-- [ ] 3.2 Write `prisma/seed-data.ts` with the 5 categories (with their pick limits), the 60 tags (names and descriptions copied word for word from `collabz-mvp-brief.md`, in order, with readable ids) and the 2 courses. Verify: by eye against the brief, and a type check
+- [x] 3.2 Write `prisma/seed-data.ts` with the 5 categories (with their pick limits), the 60 tags (names and descriptions copied word for word from `collabz-mvp-brief.md`, in order, with readable ids) and the 2 courses. Verify: by eye against the brief, and a type check
 - [ ] 3.3 Write `prisma/seed.ts` exporting `seedCatalogue(prisma)` using `createMany({ skipDuplicates: true })`, and register it as Prisma's seed command (design 5). Verify: `npx prisma db seed` run twice against `dev` leaves 5 categories, 60 tags and 2 courses
 
 ## 4. Unit and integration tests (Vitest)
