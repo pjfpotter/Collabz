@@ -22,7 +22,7 @@ Groups follow the layers in `design.md`, so they can be split between us: groups
 
 ## 4. Unit and integration tests (Vitest)
 
-- [ ] 4.1 Install Vitest, add a config that loads `TEST_DATABASE_URL` (failing with a clear message if it's missing) and runs test files one at a time, add a helper that empties the three tables, and add an `npm test` script (design 8). Verify: `npm test` runs and reports no tests found yet
+- [x] 4.1 Install Vitest, add a config that loads `TEST_DATABASE_URL` (failing with a clear message if it's missing) and runs test files one at a time, add a helper that empties the three tables, and add an `npm test` script (design 8). Verify: `npm test` runs and reports no tests found yet
 - [ ] 4.2 Seed tests: a fresh seed gives 5 categories with 12 tags each in the brief's order with descriptions plus 2 courses; a second run duplicates nothing and changes no ids; a renamed tag keeps its new name after re-seeding. Verify: `npm test` passes and fails if a `skipDuplicates` line is removed
 - [ ] 4.3 Add `src/lib/catalogue.ts` with `getCatalogue()` returning categories that aren't retired, in `order`, each with its tags that aren't retired, in `order` (design 2). Test it: order is correct, and retiring a tag or a category hides it. Verify: `npm test` passes
 
