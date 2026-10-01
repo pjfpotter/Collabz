@@ -7,7 +7,8 @@ schema: spec-driven
 context: |
   Product: Collabz, our version of the "Bootcamp Connect" course brief. It matches
   software-course and business-course students by chemistry (picked tags), not CVs.
-  Team: two beginners. Optimise for readable, well-commented code.
+  Team: five beginners building in parallel tracks (see issue #18). Optimise for
+  readable, well-commented code, and keep each slice inside its own routes.
 
   Tech stack: Next.js (App Router) with API routes as the backend, TypeScript,
   Neon Postgres through Prisma, Auth.js email magic links, react-force-graph,

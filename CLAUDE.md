@@ -4,7 +4,14 @@ Project context for Claude Code (and any other agent working in this repo). Read
 
 ## Who's working on this
 
-Two beginners (Patrick and Tom) building this as coursework, learning agentic development as we go. Optimise for **us understanding the code**, not for cleverness or brevity.
+Five beginners (Patrick, Tom, Marvin, Walied and Koulla) building this as coursework, learning agentic development as we go. Optimise for **us understanding the code**, not for cleverness or brevity.
+
+We build in parallel, each on our own track with our own agent. The tracks, their order and the ground rules are in GitHub issue #18 (slice map). While working on a slice:
+
+- Only change your own slice's routes (the route plan is in the foundation issue, #7).
+- Reach other tracks' features only through the shared helpers from #7 (`getCurrentUser`, `scoreUser`, `openConversation`, `closeConversation`), never by importing their internals.
+- Don't change `schema.prisma` without flagging it first. Other tracks build on the same tables.
+- Build against the pretend cohort (`npm run seed:fake`) rather than waiting for another track to finish.
 
 ## How to work — chunk everything down
 
