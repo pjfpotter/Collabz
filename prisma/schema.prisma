@@ -8,8 +8,13 @@
 // ours is src/generated/prisma, which is gitignored because it's rebuilt by
 // `prisma generate` on every install and build (design decision 6).
 generator client {
-  provider = "prisma-client"
-  output   = "../src/generated/prisma"
+  provider     = "prisma-client"
+  output       = "../src/generated/prisma"
+  // Generate the client in the older CommonJS module style. Playwright loads
+  // test files that way, and the default (modern ES module) client crashes
+  // there with "Cannot use 'import.meta' outside a module". Next.js, Vitest
+  // and tsx all work with either style. (Patrick's decision, 1 Oct 2026.)
+  moduleFormat = "cjs"
 }
 
 // The connection URL isn't here: Prisma 7 reads it from prisma.config.ts.
