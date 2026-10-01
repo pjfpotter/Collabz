@@ -1,0 +1,4 @@
+# Secrets: .env holds the database password, so it must never be committed.
+# .env.example (empty template, added in task 1.3) is safe to share.
+.env*
+!.env.example
