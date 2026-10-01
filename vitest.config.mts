@@ -1,4 +1,6 @@
 // Settings for Vitest, our unit/integration test runner (`npm test`).
+// The .mts ending tells Node this file uses modern `import` syntax, which
+// the next major version of Vite will require for config files.
 // Docs: https://vitest.dev/config/
 //
 // Tests run against a REAL database, never a mock: proving Prisma and Neon
@@ -25,7 +27,8 @@ export default defineConfig({
   resolve: {
     // Teach Vitest the "@/..." import shortcut that tsconfig.json defines,
     // so tests can import app code the same way the app does.
-    alias: { "@": path.resolve(__dirname, "src") },
+    // import.meta.dirname is the folder this file is in (the repo root).
+    alias: { "@": path.resolve(import.meta.dirname, "src") },
   },
   test: {
     // Only our Vitest files. Playwright's browser tests live in tests/e2e
