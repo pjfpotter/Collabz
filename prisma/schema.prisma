@@ -1,0 +1,20 @@
+// The database schema: what tables exist and what columns they have.
+// After changing this file, run `npx prisma migrate dev` to update the database
+// and regenerate the client.
+// Docs: https://www.prisma.io/docs/orm/prisma-schema
+
+// Builds the TypeScript client our code uses to query the database.
+// "prisma-client" is Prisma 7's generator. It needs an explicit output folder;
+// ours is src/generated/prisma, which is gitignored because it's rebuilt by
+// `prisma generate` on every install and build (design decision 6).
+generator client {
+  provider = "prisma-client"
+  output   = "../src/generated/prisma"
+}
+
+// The connection URL isn't here: Prisma 7 reads it from prisma.config.ts.
+datasource db {
+  provider = "postgresql"
+}
+
+// Tables (Category, Tag, Course) are added in task 3.1.
