@@ -12,7 +12,7 @@ Groups follow the layers in `design.md`, so they can be split between us: groups
 
 - [x] 2.1 **(human)** Create the Neon project `collabz` in AWS `eu-west-2` with a `dev` branch off `production`, and put the `dev` pooled and direct URLs into a local `.env` (design 7). Verify: the Neon console shows both branches
 - [x] 2.2 Install Prisma pinned to `7.10.x` plus `@prisma/adapter-neon`, and add `prisma.config.ts` and a `schema.prisma` with the generator output at `src/generated/prisma` (design 6). Verify: `npx prisma --version` shows 7.10 and `npx prisma generate` succeeds
-- [ ] 2.3 Add `src/lib/db.ts` exporting one shared Prisma client that uses the Neon adapter, with a comment explaining why it's shared. Verify: `npx tsc --noEmit` passes
+- [x] 2.3 Add `src/lib/db.ts` exporting one shared Prisma client that uses the Neon adapter, with a comment explaining why it's shared. Verify: `npx tsc --noEmit` passes
 
 ## 3. Catalogue tables and seed
 
