@@ -15,6 +15,9 @@ export default defineConfig({
 
   migrations: {
     path: "prisma/migrations",
+    // What `npx prisma db seed` runs. tsx runs a TypeScript file directly,
+    // without a separate build step.
+    seed: "tsx prisma/seed.ts",
   },
 
   datasource: {
