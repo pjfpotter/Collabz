@@ -4,7 +4,7 @@ Groups follow the layers in `design.md`, so they can be split between us: groups
 
 ## 1. App skeleton
 
-- [ ] 1.1 Generate a Next.js 16 app with `create-next-app` in a temporary folder (TypeScript, ESLint, Tailwind, App Router, `src/`, `@/*` alias), then move its files into the repo root without overwriting `README.md`, `CLAUDE.md` or `openspec/` (design 1). Verify: `npm install` succeeds and `git status` shows our docs unchanged
+- [x] 1.1 Generate a Next.js 16 app with `create-next-app` in a temporary folder (TypeScript, ESLint, Tailwind, App Router, `src/`, `@/*` alias), then move its files into the repo root without overwriting `README.md`, `CLAUDE.md` or `openspec/` (design 1). Verify: `npm install` succeeds and `git status` shows our docs unchanged
 - [ ] 1.2 Replace the starter home page with a short page that links to `/catalogue`, and remove the starter assets. Verify: `npm run dev`, then `/` shows the link and nothing from the template
 - [ ] 1.3 Add `.env.example` listing `DATABASE_URL`, `DIRECT_URL` and `TEST_DATABASE_URL` with no values, and check `.gitignore` covers `.env*` (except `.env.example`) and `src/generated/`. Verify: `git check-ignore .env` prints `.env`
 
