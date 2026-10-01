@@ -46,3 +46,9 @@ next-env.d.ts
 # Prisma's generated client: rebuilt by `prisma generate` on install and build,
 # so committing it would only add noise and merge conflicts (design decision 6).
 /src/generated/
+
+# Playwright's run output: reports and screenshots from the last test run.
+/test-results/
+/playwright-report/
+/blob-report/
+/playwright/.cache/

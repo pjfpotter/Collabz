@@ -29,7 +29,7 @@ Groups follow the layers in `design.md`, so they can be split between us: groups
 ## 5. Catalogue page
 
 - [x] 5.1 Build `src/app/catalogue/page.tsx` as a Server Component with `dynamic = "force-dynamic"`. It calls `getCatalogue()` and renders each category as a heading with its tags (name and description) underneath, styled with Tailwind for a narrow screen first (design 2, 3, 10). Verify: `npm run dev`, then `/catalogue` shows all 5 categories with 12 tags each, readable at phone width in devtools
-- [ ] 5.2 Install Playwright (`npx playwright install chromium`) and add a config that starts `next dev` with `DATABASE_URL` set to `TEST_DATABASE_URL`, or uses `BASE_URL` when it's set, plus an `npm run test:e2e` script. Verify: `npm run test:e2e` starts the server and reports no tests found yet
+- [x] 5.2 Install Playwright (`npx playwright install chromium`) and add a config that starts `next dev` with `DATABASE_URL` set to `TEST_DATABASE_URL`, or uses `BASE_URL` when it's set, plus an `npm run test:e2e` script. Verify: `npm run test:e2e` starts the server and reports no tests found yet
 - [ ] 5.3 Playwright tests: headings and tags appear in order; a tag renamed in the database shows its new name after reload, then is put back; a retired tag disappears after reload, then is restored. The two tests that change data are skipped when `BASE_URL` is set. Verify: `npm run test:e2e` passes
 
 ## 6. Deploy
