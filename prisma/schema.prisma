@@ -17,4 +17,62 @@ datasource db {
   provider = "postgresql"
 }
 
-// Tables (Category, Tag, Course) are added in task 3.1.
+// ---------------------------------------------------------------------------
+// The tag catalogue (slice 0, design decision 4)
+//
+// Shared rules for all three tables:
+// - `id` is a readable string set by the seed (e.g. "energy-sea-captain"),
+//   not a random number, so the same ids exist on dev and production and you
+//   can tell what a row is just by reading its id. An id never changes, even
+//   if the row is renamed.
+// - `order` is the display position (1, 2, 3...), so the order on screen comes
+//   from the database rather than from code.
+// - `retiredAt` is empty for rows in use. Rows are retired (given a date
+//   here) instead of deleted, so anything that points at them, like stored
+//   match scores in later slices, keeps pointing at a real row (rule B2).
+// ---------------------------------------------------------------------------
+
+// A profile category, e.g. "Energy". Each one is an onboarding exercise.
+model Category {
+  id        String    @id // e.g. "energy"
+  name      String // shown to users, e.g. "Energy"
+  // How many tags a person picks in this category during onboarding
+  // (the brief's "pick 1" / "pick up to 4"). Onboarding (slice 2) uses
+  // these; the catalogue page doesn't show them yet.
+  pickMin   Int
+  pickMax   Int
+  order     Int
+  retiredAt DateTime? // the ? means this can be empty (= not retired)
+
+  // The other side of Tag.category: lets us load a category with its tags.
+  // This line doesn't create a column; the link is stored on Tag.
+  tags Tag[]
+}
+
+// One pickable tag, e.g. "Sea Captain" in the Energy category.
+model Tag {
+  id          String    @id // e.g. "energy-sea-captain"
+  name        String
+  description String
+  order       Int // position within its category
+  retiredAt   DateTime?
+
+  // Which category this tag belongs to. `categoryId` is the real column;
+  // `category` lets Prisma load the Category row for us.
+  // No onDelete rule is set, so the database refuses to delete a category
+  // that still has tags, a safety net for the "retire, never delete" rule.
+  categoryId String
+  category   Category @relation(fields: [categoryId], references: [id])
+
+  // Speeds up "get all tags in this category", the catalogue's main query.
+  @@index([categoryId])
+}
+
+// A bootcamp course a user signs up from: "Software" or "Business".
+// Recorded on each user in slice 1, but not used in scoring.
+model Course {
+  id        String    @id // e.g. "software"
+  name      String
+  order     Int
+  retiredAt DateTime?
+}
