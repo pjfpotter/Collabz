@@ -34,8 +34,8 @@ Groups follow the layers in `design.md`, so they can be split between us: groups
 
 ## 6. Deploy
 
-- [ ] 6.1 **(human)** Import the GitHub repo into Vercel. Set Production env vars to Neon `production` and Preview env vars to Neon `dev`, the build command to `prisma migrate deploy && prisma db seed && next build`, and the function region to `lhr1` (design 7, 9). Verify: the PR's preview deploy builds and its `/catalogue` shows the catalogue
-- [ ] 6.2 Run the read-only Playwright test against the preview URL with `BASE_URL=<preview url> npm run test:e2e`. Verify: it passes
+- [x] 6.1 **(human)** Import the GitHub repo into Vercel. Set Production env vars to Neon `production` and Preview env vars to Neon `dev`, the build command to `prisma migrate deploy && prisma db seed && next build`, and the function region to `lhr1` (design 7, 9). Verify: the PR's preview deploy builds and its `/catalogue` shows the catalogue
+- [x] 6.2 Run the read-only Playwright test against the preview URL with `BASE_URL=<preview url> npm run test:e2e`. Verify: it passes
 
 ## 7. Docs and wrap-up
 
