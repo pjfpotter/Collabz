@@ -2,6 +2,27 @@
 
 Start only once #7 (foundation) has merged into `master` and this branch has been rebased onto it. Groups build on each other: the shared "who is visible" data (2), then the graph (3 and 4), the people list (5), the profile page (6). Each group lands its own tests and its own part of the README. Steps marked **(human)** need a team conversation.
 
+## Where we left off (8 Oct 2026, end of session)
+
+**Done and committed on `feature/11-graph-search`: groups 1 to 5 (18 of 25 tasks).** `/graph` and `/people` are built and tested. The branch is NOT pushed yet, and there is no PR for the build.
+
+**Next: group 6, the profile page and Connect** (tasks 6.1 to 6.4), then group 7 (push, PR, preview checks). Nothing in group 6 is started. `/people/[alias]` is still the foundation's placeholder.
+
+Things the next session needs to know that the tasks below don't say:
+
+- **Changes made after Patrick saw the graph** (he asked for movement and interaction): the layout now drifts into place for about two seconds and then stops, and dots can be pulled around. A click or tap without pulling opens the panel. These go a little beyond `design.md` decision 6.
+- **Asked for, not built, and probably another slice:** richer animation (for example lighting up a dot's lines on hover or tap), and "why you match" inside the graph's panel. The second could be a small extra in group 6, since `explainMatch()` already exists. Ask before adding either.
+- **`standIns.ts` holds five of the six stand-ins.** `SilhouetteStandIn` is in its own file, `SilhouetteStandIn.tsx`, because the browser needs it and can't import a file that talks to the database. `design.md` doesn't mention this.
+- **A pair can have more than one `ConnectionRequest`** (see "Names used" below). Task 6.2 must look at the newest pending or approved one, in either direction.
+- **Three foundation tests were changed** in `tests/e2e/navigation.spec.ts`, because `/graph` and `/people` are no longer placeholders. Group 6 will need the same for the "/people/ followed by any alias shows the profile placeholder" test.
+- **`next.config.ts` now sets `turbopack.root`** (commit `c875012`). It is a shared file, so mention it in the PR.
+- **The three screenshots in `screenshots/`** were taken before the movement was added. Retake them for the PR (task 7.1) if they should match exactly.
+- **Not yet tried on a real phone.** The one thing to check there: with pulling switched on, a tap that wobbles slightly might count as a pull and not open the panel.
+- **Task 1.2 is still open:** nobody is assigned to #10 or #12, so the stand-in names (`getTopFive`, `explainMatch`, `sendConnectionRequest`) are our proposal, not agreed.
+- **Running the tests:** `npm run test:e2e` can't start while `npm run dev` is running in the same folder. Stop the dev server first. Both test commands reset the shared dev data and put the pretend cohort back.
+
+Last full run: `npm test` 185 passed, `npm run test:e2e` 55 passed, type-check, lint and `next build` clean.
+
 ## Names used (task 1.1)
 
 Checked on 8 Oct 2026 against the merged `prisma/schema.prisma`, `src/lib/` and the README. **Every table, column and helper name in `design.md` matches what #7 built**, so no task changes. The details below are things the design left open or got slightly different.
