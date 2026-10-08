@@ -23,6 +23,7 @@
 import { prisma } from "@/lib/db";
 
 import { aliasToAddress } from "./aliasAddress";
+import { filterPeople, hasAnyFilter, type PeopleFilters } from "./search";
 import { getTopFive } from "./standIns";
 import { getVisiblePeople, type VisiblePerson } from "./visiblePeople";
 
@@ -317,10 +318,23 @@ export function buildGraph(input: GraphInput): GraphData {
 // `viewerId` is the signed-in user's database id. It is used to work out the
 // flags and is not in the result.
 //
-// The people filters (course, skill, interest) are added by task 5.3. Until
-// then no filter is on, so every node has matchesFilter: true.
-export async function buildGraphData(viewerId: string): Promise<GraphData> {
+// `filters` are the people filters from the page address (course, skill,
+// interest), the same ones /people uses. On the graph a filter never REMOVES
+// anyone: people who don't fit are still drawn, just dimmed, so the shape of
+// the cohort stays the same. Leave it out for no filtering.
+export async function buildGraphData(
+  viewerId: string,
+  filters?: PeopleFilters,
+): Promise<GraphData> {
   const people = await getVisiblePeople();
+
+  // The ids of the people who fit the filters, or null for "no filter on,
+  // everyone fits". filterPeople is the same function /people uses, so the
+  // list and the graph can't disagree about who matches.
+  let matchingUserIds: Set<string> | null = null;
+  if (filters && hasAnyFilter(filters)) {
+    matchingUserIds = new Set(filterPeople(people, filters).map((person) => person.userId));
+  }
 
   // Every stored score and every glitch match in the cohort. Only the columns
   // the graph uses, so nothing else is carried around.
@@ -339,6 +353,6 @@ export async function buildGraphData(viewerId: string): Promise<GraphData> {
     glitchMatches,
     viewerId,
     topFiveUserIds: topFive.map((match) => match.userId),
-    matchingUserIds: null,
+    matchingUserIds,
   });
 }

@@ -19,6 +19,13 @@
 import Link from "next/link";
 
 import { buildGraphData, type GraphNode } from "@/lib/cohort/graphData";
+import {
+  describeFilters,
+  filtersToQuery,
+  getFilterOptions,
+  hasAnyFilter,
+  parseFilters,
+} from "@/lib/cohort/search";
 import { requireFinishedProfile } from "@/lib/cohort/standIns";
 
 import { CohortGraphLoader } from "./CohortGraphLoader";
@@ -30,12 +37,25 @@ export const metadata = {
   title: "Graph · Collabz",
 };
 
-export default async function GraphPage() {
+// PageProps is a helper type Next.js generates for each route. In this
+// version of Next.js `searchParams` (the ?course=... part of the address) is
+// a Promise, so it has to be awaited.
+export default async function GraphPage({ searchParams }: PageProps<"/graph">) {
   // Not signed in -> /signin. No finished profile -> /onboarding. Both stop
   // the page right here, so nothing below runs for them.
   const viewer = await requireFinishedProfile();
 
-  const graph = await buildGraphData(viewer.id);
+  // The same filters as /people, read from the address the same way, so
+  // "Show on the graph" can hand them over unchanged (design 8).
+  const options = await getFilterOptions();
+  const filters = parseFilters(await searchParams, options);
+  const filtersAreOn = hasAnyFilter(filters);
+  const query = filtersToQuery(filters);
+
+  const graph = await buildGraphData(viewer.id, filters);
+  // How many OTHER people fit the filters. The viewer's own dot is left out
+  // of the count so the number agrees with /people, which doesn't list you.
+  const matchingCount = graph.nodes.filter((node) => node.matchesFilter && !node.isViewer).length;
 
   return (
     <main className="mx-auto w-full max-w-3xl px-4 py-8">
@@ -45,6 +65,30 @@ export default async function GraphPage() {
         dot to see who it is, or pull it to move it. Drag the background to
         move around, and pinch to zoom.
       </p>
+
+      {filtersAreOn ? (
+        // Says in words what the dimming means, since a dimmed dot on a
+        // canvas tells a screen reader nothing.
+        <p className="mt-4 text-sm" data-testid="graph-filters">
+          Showing {describeFilters(filters, options).join(" · ")}:{" "}
+          {matchingCount === 1 ? "1 person fits" : `${matchingCount} people fit`}, and everyone
+          else is dimmed.{" "}
+          <Link href={`/people${query}`} className="underline underline-offset-4">
+            Back to the list
+          </Link>
+          {" · "}
+          <Link href="/graph" className="underline underline-offset-4">
+            Clear the filters
+          </Link>
+        </p>
+      ) : (
+        <p className="mt-4 text-sm">
+          <Link href="/people" className="underline underline-offset-4">
+            See everyone as a list
+          </Link>
+          , with filters.
+        </p>
+      )}
 
       <GraphLegend nodes={graph.nodes} />
 
@@ -56,10 +100,17 @@ export default async function GraphPage() {
         data-testid="cohort-graph"
         data-node-count={graph.nodes.length}
         data-edge-count={graph.links.length}
+        // How many other people's dots are NOT dimmed. With no filter on,
+        // that is everyone but you.
+        data-matching-count={matchingCount}
       >
         {/* Only the dots and lines are sent to the browser. Both lists were
             built without any email or database id (see graphData.ts). */}
-        <CohortGraphLoader nodes={graph.nodes} links={graph.links} />
+        {/* The `key` is the filters as text. The graph keeps its own copy of
+            the data once it has started, so when the filters change we want a
+            fresh graph, not the old one. A different key tells React "this is
+            a new component, start it again". */}
+        <CohortGraphLoader key={query} nodes={graph.nodes} links={graph.links} />
       </div>
 
       <section className="mt-8" aria-labelledby="top-five-heading">

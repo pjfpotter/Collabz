@@ -205,14 +205,14 @@ Each file starts with a comment that says the same in more detail, including wha
 
 ## Graph and people search
 
-Track 4 (slice 4, issue #11) builds the cohort graph, the people list and the profile page. **This section is being built**: `/graph` is built, and the two people pages are still placeholders.
+Track 4 (slice 4, issue #11) builds the cohort graph, the people list and the profile page. **This section is being built**: `/graph` and `/people` are built, and the profile page is still a placeholder.
 
 **Routes this track owns:**
 
 | Route | What it will show |
 |---|---|
 | `/graph` | **Built.** The whole cohort as a graph, with a line for every pair's score |
-| `/people` | Everyone as a list, with filters for course, skill and interest |
+| `/people` | **Built.** Everyone as a list, best match first, with filters for course, skill and interest |
 | `/people/[alias]` | One person's profile and why you match |
 | `/api/people/[alias]/connect` | Where the "Connect" button posts to |
 
@@ -227,6 +227,8 @@ Track 4 (slice 4, issue #11) builds the cohort graph, the people list and the pr
 | `src/app/graph/CohortGraph.tsx` | Draws the dots and lines in the browser, and the panel when you tap a dot. No rules in here |
 | `src/app/graph/CohortGraphLoader.tsx` | Makes sure the drawing code only ever loads in the browser |
 | `src/app/graph/graphColours.module.css` | Every colour the graph uses, for light and dark mode |
+
+**Filters.** `/people` can be narrowed by course, one skill and one interest, and a person must fit all the ones chosen. The filters live in the page address (`/people?course=business`), so they survive a refresh and can be shared, and "Show on the graph" hands the same address to `/graph`, which dims everyone who doesn't fit. The rules are in `src/lib/cohort/search.ts`. **The Skill and Interest dropdowns are hidden for now**: they appear by themselves once slice 2 (#9) adds the `skills` and `interests` categories.
 
 **To change how the graph looks**, the numbers are named constants at the top of `graphData.ts` (line thickness and faintness) and `CohortGraph.tsx` (dot sizes, spacing, labels).
 

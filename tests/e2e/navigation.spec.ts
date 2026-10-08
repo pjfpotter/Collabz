@@ -23,7 +23,7 @@ const publicLinks = [
   { label: "Onboarding", path: "/onboarding", heading: "Onboarding" },
   { label: "Matches", path: "/matches", heading: "Matches" },
   { label: "Graph", path: "/graph", heading: "Graph", needsProfile: true },
-  { label: "People", path: "/people", heading: "People" },
+  { label: "People", path: "/people", heading: "People", needsProfile: true },
   { label: "Requests", path: "/requests", heading: "Requests" },
   { label: "Messages", path: "/messages", heading: "Messages" },
   { label: "Account", path: "/account", heading: "Account" },
@@ -87,7 +87,7 @@ for (const link of adminLinks) {
 }
 
 test("the Collabz link goes back to the home page", async ({ page }) => {
-  await page.goto("/people");
+  await page.goto("/requests");
 
   await mainNav(page).getByRole("link", { name: "Collabz" }).click();
 
@@ -125,7 +125,7 @@ test("/catalogue still shows the catalogue, now under the nav bar", async ({ pag
 test("at phone width every link is reachable and nothing scrolls sideways", async ({ page }) => {
   // 375 pixels is a common small phone.
   await page.setViewportSize({ width: 375, height: 700 });
-  await page.goto("/people");
+  await page.goto("/requests");
 
   for (const link of [...publicLinks, ...adminLinks]) {
     await expect(
