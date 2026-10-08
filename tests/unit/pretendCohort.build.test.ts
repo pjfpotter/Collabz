@@ -314,13 +314,15 @@ describe("buildPretendCohort: with the real seed catalogue", () => {
     expect(realCohort.reports).toHaveLength(1);
   });
 
-  it("names each alias after the profile's real Energy tag", () => {
-    const energyNames = seedCategories
+  it("names each alias after the profile's real Energy tag, shortened", () => {
+    // "Giving Sea Captain Energy" is shortened to "Sea Captain" in the alias.
+    const shortEnergyNames = seedCategories
       .find((category) => category.id === "energy")!
-      .tags.map((tag) => tag.name);
+      .tags.map((tag) => tag.name.replace(/^Giving /, "").replace(/ Energy$/, ""));
     for (const profile of realCohort.profiles) {
       const middle = profile.alias.replace(/^The Pretend /, "").replace(/ \d\d$/, "");
-      expect(energyNames).toContain(middle);
+      expect(shortEnergyNames).toContain(middle);
+      expect(profile.alias).not.toMatch(/Giving| Energy/);
     }
   });
 });

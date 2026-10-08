@@ -229,8 +229,15 @@ export function pickTagsFor(userId: string, category: CohortCategory): string[] 
 // flavour, and the number keeps every alias unique (the database insists on
 // that). The real alias words arrive with slice 2.
 function buildAlias(number: number, energyTagName: string | undefined): string {
+  // The Energy tags are named like "Giving Sea Captain Energy". Dropping the
+  // "Giving " at the front and the " Energy" at the end leaves "Sea Captain",
+  // which reads better in a name. A tag not named that way is used whole.
   // "Student" is only used if the catalogue has no Energy category at all.
-  return `The Pretend ${energyTagName ?? "Student"} ${twoDigits(number)}`;
+  const shortName = (energyTagName ?? "Student")
+    .replace(/^Giving /, "")
+    .replace(/ Energy$/, "");
+
+  return `The Pretend ${shortName} ${twoDigits(number)}`;
 }
 
 // ---------------------------------------------------------------------------

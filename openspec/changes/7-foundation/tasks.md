@@ -43,9 +43,9 @@ Checked on 8 Oct 2026 against the PostgreSQL schema on https://authjs.dev/gettin
 
 ## 4. The "sign in as…" switcher
 
-- [ ] 4.1 Add `src/app/api/dev/sign-in-as/route.ts`: answer 404 when the switch is off; accept only ids starting `pretend-` that exist; accept only a return address starting with a single `/`; set or clear the `httpOnly` cookie; redirect back (design 7). Verify: `npx tsc --noEmit` passes, and with the app running locally a form post with a made-up id leaves the visitor signed out
-- [ ] 4.2 Add `src/components/DevUserSwitcher.tsx`: a Server Component that renders nothing when the switch is off, and otherwise a form with a `<select>` of pretend users (alias or "no profile yet", course, and admin or suspended labels), a "Signed out" option, the current user selected, and a button (design 7). Verify: with a temporary line on the home page, picking a user shows them as selected after the page reloads. Remove the temporary line afterwards
-- [ ] 4.3 Add `PRETEND_COHORT: "on"` to the Playwright test server's environment in `playwright.config.ts`, with a comment. Verify: `npm run test:e2e` still passes
+- [x] 4.1 Add `src/app/api/dev/sign-in-as/route.ts`: answer 404 when the switch is off; accept only ids starting `pretend-` that exist; redirect back using only the path and query of the `Referer` header, so the visitor can only land on our own site (see design 7 for why this replaced a return-address field); set or clear the `httpOnly` cookie; redirect back (design 7). Verify: `npx tsc --noEmit` passes, and with the app running locally a form post with a made-up id leaves the visitor signed out
+- [x] 4.2 Add `src/components/DevUserSwitcher.tsx`: a Server Component that renders nothing when the switch is off, and otherwise a form with a `<select>` of pretend users (alias or "no profile yet", course, and admin or suspended labels), a "Signed out" option, the current user selected, and a button (design 7). Verify: with a temporary line on the home page, picking a user shows them as selected after the page reloads. Remove the temporary line afterwards
+- [x] 4.3 Add `PRETEND_COHORT: "on"` to the Playwright test server's environment in `playwright.config.ts`, with a comment. Verify: `npm run test:e2e` still passes
 
 ## 5. Route plan, placeholder pages and nav bar
 

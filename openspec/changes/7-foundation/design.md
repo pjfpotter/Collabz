@@ -109,11 +109,11 @@ Other choices:
 - **It needs the catalogue first.** If there are no categories, it stops and says to run `npx prisma db seed`.
 
 ### 7. The switcher: a cookie, a form and one route
-- **`src/app/api/dev/sign-in-as/route.ts`** (a Route Handler) accepts a posted form with a user id and the page to return to. If `isPretendCohortEnabled()` is false it answers 404. Otherwise it checks the id starts with `pretend-` and exists, sets a cookie holding that id (or clears it for "Signed out"), and redirects back.
+- **`src/app/api/dev/sign-in-as/route.ts`** (a Route Handler) accepts a posted form with a user id. If `isPretendCohortEnabled()` is false it answers 404. Otherwise it checks the id starts with `pretend-` and exists, sets a cookie holding that id (or clears it for "Signed out" or an id it doesn't accept), and redirects back to the page the form was sent from.
 - **`src/components/DevUserSwitcher.tsx`** is a Server Component in the nav bar: a `<form>` with a `<select>` of pretend users and a button. It renders nothing when the switch is off.
 - *Why a plain form and a Route Handler:* it works with no browser JavaScript, so there is nothing to hydrate, and Next.js only allows cookies to be set in a Route Handler or Server Function. The project uses API routes as its backend, and #9 made the same choice.
 - *Why only ids starting `pretend-`:* once slice 1 lands, real users may exist on `dev`. The switcher must never be a way to become a real person.
-- *Why the return address is checked to start with `/`:* otherwise the form could be used to bounce someone to another website.
+- *Where "back" comes from (changed during the build, 8 Oct 2026):* the route reads the browser's `Referer` header and keeps only its path and query, attached to our own site's address. *Why not a return-address field in the form, as first planned:* a Server Component in the layout doesn't know which page it is on, so filling that field would need browser JavaScript. Taking only the path also means the form can never be used to bounce someone to another website, even with a faked header.
 - The cookie is `httpOnly` (page scripts can't read it) and lasts for the browser session.
 
 ### 8. The shared helpers: one file each, one owner each
