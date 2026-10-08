@@ -31,6 +31,9 @@ export async function DevUserSwitcher() {
     orderBy: { id: "asc" },
     include: { profile: true, course: true },
   });
+  // Reading who is signed in reads a cookie. That also tells Next.js this
+  // page is different for each visitor, so it draws it fresh on every request
+  // instead of once when the site is built.
   const currentUser = await getCurrentUser();
 
   // The switch is on but nobody has loaded the cohort into this database yet.

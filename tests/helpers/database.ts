@@ -99,3 +99,28 @@ export async function countRowsInEveryTable(
   }
   return counts;
 }
+
+// Loads the pretend cohort into the test database, for tests that need
+// people to exist (anything that signs in through the dev switcher).
+// The catalogue must already be seeded.
+//
+// The seed refuses to run unless the pretend cohort is switched on. A test
+// run only ever touches the test database, so here we switch it on for the
+// length of this one call and then put the setting back exactly as it was.
+export async function loadPretendCohortForTests(prisma: PrismaClient): Promise<void> {
+  // Imported here rather than at the top so that test files which only need
+  // emptyDatabase() don't load the whole cohort builder.
+  const { seedPretendCohort } = await import("../../prisma/seed-fake");
+
+  const settingBefore = process.env.PRETEND_COHORT;
+  process.env.PRETEND_COHORT = "on";
+  try {
+    await seedPretendCohort(prisma);
+  } finally {
+    if (settingBefore === undefined) {
+      delete process.env.PRETEND_COHORT;
+    } else {
+      process.env.PRETEND_COHORT = settingBefore;
+    }
+  }
+}

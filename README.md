@@ -110,6 +110,46 @@ Vercel builds every commit pushed to GitHub. A commit on `master` becomes the li
 
 Each build runs `prisma migrate deploy && prisma db seed && next build`, so a deploy brings its own database up to date before the app is built. The seed only adds rows that are missing, so running it every time is safe.
 
+## Routes
+
+Every page the app will have already exists, so that two tracks can't invent the same address. Until a page's feature is built it shows a **placeholder** naming the slice that owns it. The nav bar at the top of every page links to all of them.
+
+| Route | Slice | Issue | Track |
+|---|---|---|---|
+| `/`, `/catalogue` | 0 | #6 | built |
+| `/signup`, `/signin` | 1 | #8 | 1 |
+| `/onboarding` | 2 | #9 | 2 |
+| `/matches` | 3 | #10 | 3 |
+| `/graph`, `/people`, `/people/[alias]` | 4 | #11 | 4 |
+| `/requests` | 5 | #12 | 5 |
+| `/messages` | 6 | #13 | 5 |
+| `/account` | 7 | #14 | 1 |
+| `/admin` (and anything under it except reports) | 8 | #15 | 2 |
+| `/admin/reports` | 9 | #16 | 3 |
+| `/api/dev/*`, the nav bar, the shared helpers | foundation | #7 | all |
+
+**What you own.** Your slice owns its routes in the table, anything nested under them (for example `/onboarding/done`), and the API routes of the same name (for example `/api/onboarding/*`). Only change files inside your own routes.
+
+**When you build your page:** replace the placeholder `page.tsx` with the real one. Don't build beside it. If you add a page the nav bar should link to, add it to `navLinks` in `src/components/NavBar.tsx`.
+
+**Admin pages** start with `await requireAdmin();`. Keep that as the first line when you replace the placeholder.
+
+## Dev sign-in
+
+There is no real sign-in until slice 1. Instead, the nav bar has a **"Dev sign-in as"** list of the pretend students. Pick one and press **Switch**, and the whole app treats you as that person until you pick someone else or "Signed out". `getCurrentUser()` returns whoever you picked.
+
+It only appears where `PRETEND_COHORT="on"` is set (see below), and never on the live site.
+
+In Playwright tests, sign in with the helper:
+
+```ts
+import { signInAs } from "../helpers/devSignIn";
+
+await signInAs(page, "pretend-user-02");
+```
+
+The test database needs the cohort first: call `loadPretendCohortForTests(prisma)` from `tests/helpers/database.ts` in your `beforeAll` (see `tests/e2e/switcher.spec.ts` for a full example).
+
 ## Pretend cohort
 
 Real students can't sign up yet, so the dev database is filled with **32 pretend students** to build and test against. They only exist on the dev database, never on the live site.
@@ -168,8 +208,15 @@ Each file starts with a comment that says the same in more detail, including wha
 ```
 src/
   app/                 # the screens (Next.js App Router): one folder per URL
+    layout.tsx         #   wraps every page: puts the nav bar on top
     page.tsx           #   /            home page
     catalogue/page.tsx #   /catalogue   the tag catalogue
+    <route>/page.tsx   #   one placeholder per planned route (see Routes)
+    api/dev/           #   the dev sign-in switcher's API route
+  components/
+    NavBar.tsx         # the nav bar and the list of routes it links to
+    DevUserSwitcher.tsx  # the "Dev sign-in as" list (dev only)
+    PlaceholderPage.tsx  # what an unbuilt page shows
   lib/
     db.ts              # the one shared database client
     catalogue.ts       # getCatalogue(): reads categories and tags in order
