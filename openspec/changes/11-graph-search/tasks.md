@@ -2,11 +2,25 @@
 
 Start only once #7 (foundation) has merged into `master` and this branch has been rebased onto it. Groups build on each other: the shared "who is visible" data (2), then the graph (3 and 4), the people list (5), the profile page (6). Each group lands its own tests and its own part of the README. Steps marked **(human)** need a team conversation.
 
+## Names used (task 1.1)
+
+Checked on 8 Oct 2026 against the merged `prisma/schema.prisma`, `src/lib/` and the README. **Every table, column and helper name in `design.md` matches what #7 built**, so no task changes. The details below are things the design left open or got slightly different.
+
+- **Tables and columns, as built:** `User` (`courseId`, `suspendedAt`), `Profile` (`userId`, `alias` unique, `silhouette`, `completedAt`, `tags`), `ProfileTag` (`userId`, `tagId`), `Edge` (`userAId`, `userBId`, `score`, `complement`, `overlap`, `tension`), `GlitchMatch` (`userId`, `matchedUserId`), `ConnectionRequest` (`fromUserId`, `toUserId`, `status` of `PENDING`, `APPROVED` or `DECLINED`).
+- **`ConnectionRequest` allows more than one request per pair.** The profile page (task 6.2) must look at the newest pending or approved one, in either direction.
+- **Helpers, as built:** `getCurrentUser()` in `src/lib/currentUser.ts` (returns the user or `null`, and does *not* hide suspended users), `orderUserPair(a, b)` in `src/lib/userPair.ts` (returns `{ userAId, userBId }`), `getCatalogue()` in `src/lib/catalogue.ts`.
+- **The pretend cohort has 32 users, not 30:** 30 finished profiles (`pretend-user-01` to `-30`), plus `-31` and `-32` with no profile. `-01` is the admin, `-02` is the "main character" the tests sign in as, `-30` is suspended. So there are 29 visible people and 406 edges between them, as the design says. The 435 stored edges include the 29 to the suspended user, which must be left out.
+- **Category ids:** `hero-story`, `energy`, `vibe-diagnosis`, `qualities`, `seeking`. **`skills` and `interests` don't exist yet** (they arrive with #9), so the skill and interest dropdowns stay hidden for now, as design 8 expects.
+- **Course ids:** `software` and `business`.
+- **Silhouettes** are stored as ids like `silhouette-07`. No picture files exist yet (#9), which is what `SilhouetteStandIn` is for.
+- **Pretend aliases** look like "The Pretend Mad Inventor 07", so their addresses are like `the-pretend-mad-inventor-07`.
+- **Task 2.2's "every combination of #9's alias words" test** can't use real alias words yet: `Tag.aliasWord` exists but is empty until #9 fills it. The test will use the alias word lists written in #9's `design.md`.
+
 ## 1. Check the starting point and agree names
 
-- [ ] 1.1 Read the merged `prisma/schema.prisma`, `src/lib/` and #7's README sections, and note any name that differs from `design.md` (`Edge` columns, `GlitchMatch`, `getCurrentUser`, `orderUserPair`, the pretend cohort's counts) in a short "Names used" note at the top of this file. Verify: the note exists, and `npm test` passes on the untouched branch
+- [x] 1.1 Read the merged `prisma/schema.prisma`, `src/lib/` and #7's README sections, and note any name that differs from `design.md` (`Edge` columns, `GlitchMatch`, `getCurrentUser`, `orderUserPair`, the pretend cohort's counts) in a short "Names used" note at the top of this file. Verify: the note exists, and `npm test` passes on the untouched branch
 - [ ] 1.2 **(human)** Agree the helper names with track 3 (`getTopFive`, `explainMatch`, and whether the top 5 leaves out suspended people) and track 5 (`sendConnectionRequest` and what it returns when it refuses) (design 9, Open Questions). Verify: the agreed names are recorded as comments on #10 and #12, and this file's note is updated if any changed
-- [ ] 1.3 Install `react-force-graph-2d` and prove it works in our app: a temporary Client Component loaded with `dynamic(..., { ssr: false })` that draws three dots and two lines on the `/graph` page (design 3). Verify: `npm run dev` shows the dots with no error in the browser console, and `npm run build` succeeds. If it fails, stop and raise it before going on
+- [x] 1.3 Install `react-force-graph-2d` and prove it works in our app: a temporary Client Component loaded with `dynamic(..., { ssr: false })` that draws three dots and two lines on the `/graph` page (design 3). Verify: `npm run dev` shows the dots with no error in the browser console, and `npm run build` succeeds. If it fails, stop and raise it before going on
 
 ## 2. Who is visible, and the stand-ins
 
