@@ -203,6 +203,40 @@ Five of us build different parts at the same time. To stop one track depending o
 
 Each file starts with a comment that says the same in more detail, including what the helper will do once its owner has built it.
 
+## Graph and people search
+
+Track 4 (slice 4, issue #11) builds the cohort graph, the people list and the profile page. **This section is being built**: the helpers below exist, and the three pages are still placeholders.
+
+**Routes this track owns:**
+
+| Route | What it will show |
+|---|---|
+| `/graph` | The whole cohort as a graph, with a line for every pair's score |
+| `/people` | Everyone as a list, with filters for course, skill and interest |
+| `/people/[alias]` | One person's profile and why you match |
+| `/api/people/[alias]/connect` | Where the "Connect" button posts to |
+
+**Helpers other tracks may use** (all in `src/lib/cohort/`):
+
+| Helper | File | What it does |
+|---|---|---|
+| `getVisiblePeople()` | `visiblePeople.ts` | Everyone who has finished their profile and isn't suspended, with alias, silhouette, course and tags. Never an email. If your page lists people, start from this, so a suspended person can't slip through |
+| `aliasToAddress(alias)` | `aliasAddress.ts` | Turns an alias into the last part of a profile address: "The Feral Sea Captain II" becomes `the-feral-sea-captain-ii`. Link to a profile with `/people/` followed by this |
+| `findPersonByAddress(people, address)` | `aliasAddress.ts` | The other way round: finds the person a profile address belongs to |
+
+**Stand-ins.** This track needs six things that other tracks own and haven't built yet. Rather than wait, it uses simple temporary versions, all in one file: `src/lib/cohort/standIns.tsx`. Join-up (#17) replaces each one with a call to the real thing.
+
+| Stand-in | What it does for now | Real owner | What replaces it |
+|---|---|---|---|
+| `getTopFive(userId)` | Reads the stored scores and returns the five best visible matches. Ties go to whoever finished their profile first | Track 3 (#10) | Track 3's top 5 query |
+| `explainMatch(userAId, userBId)` | A few short sentences from the three stored parts of a score, plus the skills and interests both people picked | Track 3 (#10) | Track 3's real breakdown |
+| `sendConnectionRequest(fromUserId, toUserId)` | Stores nothing and answers "Connection requests aren't switched on yet." | Track 5 (#12) | Track 5's request helper |
+| `profileBio(tagsByCategory)` | One sentence from the Hero Story and Energy tag names | Track 2 (#9) | `generateBio()` |
+| `SilhouetteStandIn` | The same head-and-shoulders shape for everyone | Track 2 (#9) | `silhouetteUrl()` and the 12 pictures |
+| `requireFinishedProfile()` | Sends a signed-out visitor to `/signin` and someone with no finished profile to `/onboarding` | Track 2 (#9) | `redirectIfOnboardingIncomplete()` |
+
+The names for tracks 3 and 5 are track 4's proposal and aren't agreed yet. **If you are on track 2, 3 or 5:** you don't need to do anything with this file. Build your real version under whatever name you settle on, and join-up does the swap.
+
 ## Project structure
 
 ```
@@ -225,6 +259,7 @@ src/
     conversations.ts   # openConversation(), closeConversation() (shared helpers)
     userPair.ts        # orderUserPair(): one agreed order for a pair of users
     pretendCohort.ts   # the on/off switch for pretend students and the dev switcher
+    cohort/            # slice 4: who is visible, alias addresses, and the stand-ins
   generated/prisma/    # Prisma's generated client (not committed)
 prisma/
   schema.prisma        # the database tables. Flag changes first (see CLAUDE.md)
