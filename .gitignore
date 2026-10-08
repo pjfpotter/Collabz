@@ -52,3 +52,7 @@ next-env.d.ts
 /playwright-report/
 /blob-report/
 /playwright/.cache/
+
+# Output from the archify diagram tool: generated architecture diagrams that
+# can be rebuilt at any time, so they stay on each person's own machine.
+/.archify/
