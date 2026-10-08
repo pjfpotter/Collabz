@@ -10,7 +10,6 @@ import { afterAll, afterEach, beforeEach, describe, expect, it, vi } from "vites
 import { findPretendUser } from "@/lib/currentUser";
 import { prisma } from "@/lib/db";
 
-import { seedCatalogue } from "../../prisma/seed";
 import { emptyDatabase } from "../helpers/database";
 
 describe("findPretendUser", () => {
@@ -36,8 +35,8 @@ describe("findPretendUser", () => {
   });
 
   afterAll(async () => {
-    await emptyDatabase(prisma);
-    await seedCatalogue(prisma);
+    // No restoring here: tests/helpers/restoreDevData.ts puts the database
+    // back once, after the whole test run.
     await prisma.$disconnect();
   });
 

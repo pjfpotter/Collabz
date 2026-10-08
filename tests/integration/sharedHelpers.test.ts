@@ -11,7 +11,6 @@ import { closeConversation, openConversation } from "@/lib/conversations";
 import { prisma } from "@/lib/db";
 import { scoreUser } from "@/lib/scoring";
 
-import { seedCatalogue } from "../../prisma/seed";
 import { countRowsInEveryTable, emptyDatabase } from "../helpers/database";
 
 // Two users are enough for every test here.
@@ -30,8 +29,8 @@ describe("shared helpers", () => {
   });
 
   afterAll(async () => {
-    await emptyDatabase(prisma);
-    await seedCatalogue(prisma);
+    // No restoring here: tests/helpers/restoreDevData.ts puts the database
+    // back once, after the whole test run.
     await prisma.$disconnect();
   });
 

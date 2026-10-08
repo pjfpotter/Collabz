@@ -20,8 +20,8 @@ describe("getCatalogue", () => {
 
   // Leave the test database freshly seeded, with nothing retired.
   afterAll(async () => {
-    await emptyDatabase(prisma);
-    await seedCatalogue(prisma);
+    // No restoring here: tests/helpers/restoreDevData.ts puts the database
+    // back once, after the whole test run.
     await prisma.$disconnect();
   });
 

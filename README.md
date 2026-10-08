@@ -59,7 +59,7 @@ Then fill in the three values in `.env`:
 
 The Neon project is on Patrick's account with no collaborators, so **ask Patrick for the `dev` branch URLs**. Pass them privately: never paste them into the repo, an issue, a PR or a group chat.
 
-Only ever use the `dev` branch here, never `production`. The tests empty the catalogue tables, which is why they have their own variable and refuse to run without it.
+Only ever use the `dev` branch here, never `production`. The tests empty every table, which is why they have their own variable and refuse to run without it.
 
 You don't need to create any tables: the shared `dev` database already has them, with the catalogue seeded.
 
@@ -87,7 +87,7 @@ npx playwright install chromium
 Things to know:
 
 - **Both sets of tests use the real `dev` database, not a fake one.** Proving that Prisma and Neon work together was the point of slice 0.
-- **We all share that one database.** The tests empty the catalogue tables and put the seed data back when they finish. If two of us run them at the same moment they can trip each other up, and `/catalogue` can look empty for a few seconds. If a run is interrupted and the catalogue stays empty, `npx prisma db seed` refills it.
+- **We all share that one database.** The tests empty every table and put the catalogue and the pretend cohort back when they finish (see [Pretend cohort](#pretend-cohort)). If two of us run them at the same moment they can trip each other up, and `/catalogue` can look empty for a few seconds. If a run is interrupted and the catalogue stays empty, `npx prisma db seed` refills it.
 - **`npm run test:e2e` starts its own copy of the app** on port 3100, so it doesn't clash with an `npm run dev` you already have open.
 - **To check a deployed site instead**, such as a Vercel preview, give it the URL. Only the read-only test runs; the tests that change data skip themselves:
   ```bash
@@ -109,6 +109,42 @@ The type check runs `next typegen` first because Next.js generates some types it
 Vercel builds every commit pushed to GitHub. A commit on `master` becomes the live **Production** site, using the Neon `production` branch. A commit on any other branch gets its own **Preview** URL, using the Neon `dev` branch; Vercel posts that URL on the PR.
 
 Each build runs `prisma migrate deploy && prisma db seed && next build`, so a deploy brings its own database up to date before the app is built. The seed only adds rows that are missing, so running it every time is safe.
+
+## Pretend cohort
+
+Real students can't sign up yet, so the dev database is filled with **32 pretend students** to build and test against. They only exist on the dev database, never on the live site.
+
+**Switch it on (once per laptop).** Add this line to your `.env`, on its own line:
+
+```
+PRETEND_COHORT="on"
+```
+
+It must be exactly `on`. This one switch allows both the pretend students and the "sign in as…" switcher. It is never set in Vercel's Production settings, and the code refuses on the live site even if it is.
+
+**Load it:**
+
+```bash
+npm run seed:fake
+```
+
+It is safe to run again: it only adds what's missing and never overwrites, so something you changed by hand (say, a request you approved) survives. It needs the tag catalogue first (`npx prisma db seed`).
+
+**Who is in it:**
+
+| Who | Id | Notes |
+|---|---|---|
+| The admin | `pretend-user-01` | Can open `/admin`. Also has a finished profile |
+| The "main character" | `pretend-user-02` | **Start here.** Has an incoming request, an outgoing request and an open conversation with messages, so every feature has something to show |
+| Finished profiles | `pretend-user-01` to `30` | 15 Software, 15 Business, with tags, an alias like "The Pretend Sea Captain 07" and a silhouette |
+| Suspended | `pretend-user-30` | Should not appear on the graph or in search |
+| Not onboarded yet | `pretend-user-31`, `32` | Signed up, no profile: use these to test onboarding |
+
+Between the 30 finished profiles there is a score for every pair (435), a glitch match each, 14 connection requests (8 pending, 4 approved, 2 declined), 4 conversations (3 open with messages, 1 closed), 1 block and 1 open report.
+
+Everyone gets exactly the same cohort, so "sign in as pretend-user-07" means the same person on every laptop and on preview links. The scores are made up until slice 3 builds real scoring.
+
+> **Running the tests resets the shared dev database.** `npm test` and `npm run test:e2e` empty every table and then load a fresh pretend cohort. Anything you changed by hand on dev is lost, and for the minute or two a run takes, a teammate's page (or a preview link) may show nothing or an error. Say "running tests" in the team chat first.
 
 ## Shared helpers
 
@@ -148,6 +184,8 @@ prisma/
   migrations/          # the SQL that creates and changes those tables
   seed-data.ts         # the categories, tags and courses from the brief
   seed.ts              # adds any of those rows that are missing
+  pretend-cohort.ts    # works out the 32 pretend students (no database)
+  seed-fake.ts         # npm run seed:fake: saves them to the dev database
 tests/
   unit/                # Vitest tests that need no database (npm test)
   integration/         # Vitest tests against the test database (npm test)

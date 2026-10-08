@@ -18,8 +18,8 @@ describe("seedCatalogue", () => {
   // Leave the test database the way the app expects it: freshly seeded, with
   // no renamed tags left behind by the tests below.
   afterAll(async () => {
-    await emptyDatabase(prisma);
-    await seedCatalogue(prisma);
+    // No restoring here: tests/helpers/restoreDevData.ts puts the database
+    // back once, after the whole test run.
     await prisma.$disconnect();
   });
 

@@ -34,6 +34,10 @@ if (!deployedUrl && !testDatabaseUrl) {
 export default defineConfig({
   testDir: "tests/e2e",
 
+  // After the last test, put the shared dev database back to the catalogue
+  // plus the fresh pretend cohort (foundation design decision 12).
+  globalTeardown: "./tests/helpers/playwrightGlobalTeardown.ts",
+
   // One test at a time: tests share one database, and some of them change it.
   fullyParallel: false,
   workers: 1,
