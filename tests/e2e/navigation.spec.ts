@@ -1,6 +1,6 @@
 // Browser tests for the nav bar and the route plan (foundation #7, task 5.4).
 // One test per scenario in the app-navigation spec
-// (openspec/changes/7-foundation/specs/app-navigation/spec.md).
+// (openspec/specs/app-navigation/spec.md).
 //
 // None of these change any data or need anyone to be signed in, so they also
 // run against a deployed site when BASE_URL is set.
