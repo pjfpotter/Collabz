@@ -10,7 +10,7 @@ import { afterAll, beforeEach, describe, expect, it } from "vitest";
 import { prisma } from "@/lib/db";
 
 import { seedCatalogue } from "../../prisma/seed";
-import { emptyDatabase } from "../helpers/database";
+import { countRowsInEveryTable, emptyDatabase } from "../helpers/database";
 
 // Makes a user with a finished profile. `name` only needs to be different for
 // each user in a test; it ends up in the email and the alias.
@@ -174,7 +174,7 @@ describe("database rules", () => {
       },
     });
 
-    const before = await countRowsInEveryTable();
+    const before = await countRowsInEveryTable(prisma);
     const emptyBefore = Object.keys(before).filter((table) => before[table] === 0);
     // If this fails, a table was added to schema.prisma: give it a row above
     // AND a deleteMany() line in emptyDatabase().
@@ -182,36 +182,8 @@ describe("database rules", () => {
 
     await emptyDatabase(prisma);
 
-    const after = await countRowsInEveryTable();
+    const after = await countRowsInEveryTable(prisma);
     const stillFull = Object.keys(after).filter((table) => after[table] > 0);
     expect(stillFull).toEqual([]);
   });
 });
-
-// Counts the rows in every table of our database, asking the database itself
-// for the list of tables rather than keeping a second hand-written list here
-// (which is the thing that could go out of date).
-async function countRowsInEveryTable(): Promise<Record<string, number>> {
-  const tables = await prisma.$queryRaw<{ table_name: string }[]>`
-    -- "::text" turns Postgres's special "name" type into ordinary text,
-    -- which is the only kind Prisma can read back from a raw query.
-    SELECT table_name::text AS table_name
-    FROM information_schema.tables
-    WHERE table_schema = 'public'
-      AND table_type = 'BASE TABLE'
-      -- Prisma's own record of which migrations have run; not one of ours.
-      AND table_name <> '_prisma_migrations'
-  `;
-
-  const counts: Record<string, number> = {};
-  for (const { table_name } of tables) {
-    // The table name comes from the database's own list above, not from a
-    // user, so building the query text from it is safe. The double quotes
-    // are needed because our table names have capital letters.
-    const rows = await prisma.$queryRawUnsafe<{ count: number }[]>(
-      `SELECT COUNT(*)::int AS count FROM "${table_name}"`,
-    );
-    counts[table_name] = rows[0].count;
-  }
-  return counts;
-}

@@ -110,6 +110,23 @@ Vercel builds every commit pushed to GitHub. A commit on `master` becomes the li
 
 Each build runs `prisma migrate deploy && prisma db seed && next build`, so a deploy brings its own database up to date before the app is built. The seed only adds rows that are missing, so running it every time is safe.
 
+## Shared helpers
+
+Five of us build different parts at the same time. To stop one track depending on another track's unfinished code, the parts talk to each other only through a few **shared helpers** with fixed names. Each one has an owner who fills in the real version later; the name, and what it gives back, stay the same.
+
+**The rule:** call these, and never import another track's files. If you need something from another track that isn't here, raise it on the slice map (#18) instead of reaching into their code.
+
+| Helper | File | What it does today | Owner |
+|---|---|---|---|
+| `getCurrentUser()` | `src/lib/currentUser.ts` | Returns the signed-in user, or `null`. For now "signed in" means "picked in the dev switcher" | Slice 1 (#8) swaps in real sign-in |
+| `requireAdmin()` | `src/lib/currentUser.ts` | For admin pages. Sends a signed-out visitor to `/signin`, shows a member "page not found", and returns the user if they are an admin | Slice 8 (#15) |
+| `scoreUser(userId)` | `src/lib/scoring.ts` | Does nothing yet. Call it after a user finishes onboarding or edits their answers | Slice 3 (#10) fills it in |
+| `openConversation(userAId, userBId)` | `src/lib/conversations.ts` | Returns the conversation between two users, creating it if needed. Safe to call twice | Slice 6 (#13) |
+| `closeConversation(conversationId)` | `src/lib/conversations.ts` | Marks a conversation as closed. Safe to call twice | Slice 6 (#13) |
+| `orderUserPair(a, b)` | `src/lib/userPair.ts` | Puts two user ids in the agreed order (lower first) for the `Edge` and `Conversation` tables, which store each pair once | Foundation (#7) |
+
+Each file starts with a comment that says the same in more detail, including what the helper will do once its owner has built it.
+
 ## Project structure
 
 ```
@@ -120,6 +137,11 @@ src/
   lib/
     db.ts              # the one shared database client
     catalogue.ts       # getCatalogue(): reads categories and tags in order
+    currentUser.ts     # getCurrentUser(), requireAdmin()   (shared helpers)
+    scoring.ts         # scoreUser()                        (shared helper)
+    conversations.ts   # openConversation(), closeConversation() (shared helpers)
+    userPair.ts        # orderUserPair(): one agreed order for a pair of users
+    pretendCohort.ts   # the on/off switch for pretend students and the dev switcher
   generated/prisma/    # Prisma's generated client (not committed)
 prisma/
   schema.prisma        # the database tables. Flag changes first (see CLAUDE.md)
@@ -127,7 +149,8 @@ prisma/
   seed-data.ts         # the categories, tags and courses from the brief
   seed.ts              # adds any of those rows that are missing
 tests/
-  integration/         # Vitest tests (npm test)
+  unit/                # Vitest tests that need no database (npm test)
+  integration/         # Vitest tests against the test database (npm test)
   e2e/                 # Playwright browser tests (npm run test:e2e)
   helpers/             # shared test helpers
 openspec/
