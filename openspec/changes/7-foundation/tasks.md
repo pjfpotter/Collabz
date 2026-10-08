@@ -2,16 +2,27 @@
 
 Groups build on each other in order: tables (1), then the helpers that read them (2), then the pretend data (3), then the switcher (4), then the pages and nav that show it all (5). Each group lands its own tests and its own part of the README. Steps marked **(human)** need a browser login or a team conversation, so Patrick does them.
 
+## Auth.js check (task 1.2)
+
+Checked on 8 Oct 2026 against the PostgreSQL schema on https://authjs.dev/getting-started/adapters/prisma.
+
+- `Account`, `Session` and `VerificationToken`: ours are copied field for field, including the "deleted with their user" rule on `Account` and `Session`.
+- `User`: Auth.js has `id`, `name?`, `email? @unique`, `emailVerified?`, `image?`. Ours differs in three ways, all on purpose (design 3):
+  - no `name` and no `image` (we never collect a name, and photos live under `Profile.photoKey`);
+  - `email` is required, not optional, because magic-link sign-in always has one and every pretend user has one.
+- The docs say `Session` is only needed for database sessions and `VerificationToken` for the email (magic link) provider. Slice 1 uses both.
+- The page also mentions an `Authenticator` table for passkeys. We don't use passkeys, so it is left out.
+
 ## 1. Schema: every MVP table
 
 - [ ] 1.1 **(human)** Ask Tom (#8) to check `design.md` decisions 1 and 3 (the `User` and Auth.js tables, `courseId` and `acceptedTermsAt` empty-able, no `name` or `image`), and ask the team to confirm Patrick creates migrations (decision 13). Verify: both answers are recorded as comments on #7
-- [ ] 1.2 Compare the planned `Account`, `Session` and `VerificationToken` tables and `User.emailVerified` with the Prisma schema in the current Auth.js adapter docs, and note any difference at the top of this file under "Auth.js check" (design 3). Verify: the note exists and names the docs page and date checked
-- [ ] 1.3 Add the three enums and the `User`, `Profile`, `ProfileTag` and `TagPairing` models to `prisma/schema.prisma`, plus `aliasWord String?` on `Tag`, with a comment on every model and every non-obvious column saying why (design 1, 2). Verify: `npx prisma validate` passes
-- [ ] 1.4 Add the `Edge`, `GlitchMatch`, `ConnectionRequest`, `Conversation`, `Message`, `Block` and `Report` models, with comments (including the "lower user id goes in `userAId`" rule on `Edge` and `Conversation`) (design 1). Verify: `npx prisma validate` passes
-- [ ] 1.5 Add the Auth.js `Account`, `Session` and `VerificationToken` models as checked in 1.2, with a comment that slice 1 (#8) owns them (design 3). Verify: `npx prisma validate` passes
-- [ ] 1.6 Create the single migration against Neon `dev` with `npx prisma migrate dev --name add_mvp_tables`. Verify: one new folder in `prisma/migrations/`, Neon's table view shows the 14 new tables and the `aliasWord` column, and `npx tsc --noEmit` passes
-- [ ] 1.7 In `tests/helpers/database.ts`, replace `emptyCatalogueTables` with `emptyDatabase(prisma)`, which deletes from every table in an order the database accepts, with a comment explaining the order, and update the two slice 0 test files to call it (design 12). Verify: `npm test` and `npm run test:e2e` both pass
-- [ ] 1.8 Add `tests/integration/schema.test.ts`: two profiles can't share an alias; an edge can't be stored twice for the same pair; a second conversation for the same pair is refused; a tag that a profile uses can't be deleted. Verify: `npm test` passes
+- [x] 1.2 Compare the planned `Account`, `Session` and `VerificationToken` tables and `User.emailVerified` with the Prisma schema in the current Auth.js adapter docs, and note any difference at the top of this file under "Auth.js check" (design 3). Verify: the note exists and names the docs page and date checked
+- [x] 1.3 Add the three enums and the `User`, `Profile`, `ProfileTag` and `TagPairing` models to `prisma/schema.prisma`, plus `aliasWord String?` on `Tag`, with a comment on every model and every non-obvious column saying why (design 1, 2). Verify: `npx prisma validate` passes
+- [x] 1.4 Add the `Edge`, `GlitchMatch`, `ConnectionRequest`, `Conversation`, `Message`, `Block` and `Report` models, with comments (including the "lower user id goes in `userAId`" rule on `Edge` and `Conversation`) (design 1). Verify: `npx prisma validate` passes
+- [x] 1.5 Add the Auth.js `Account`, `Session` and `VerificationToken` models as checked in 1.2, with a comment that slice 1 (#8) owns them (design 3). Verify: `npx prisma validate` passes
+- [x] 1.6 Create the single migration against Neon `dev` with `npx prisma migrate dev --name add_mvp_tables`. Verify: one new folder in `prisma/migrations/`, Neon's table view shows the 14 new tables and the `aliasWord` column, and `npx tsc --noEmit` passes
+- [x] 1.7 In `tests/helpers/database.ts`, replace `emptyCatalogueTables` with `emptyDatabase(prisma)`, which deletes from every table in an order the database accepts, with a comment explaining the order, and update the two slice 0 test files to call it (design 12). Verify: `npm test` and `npm run test:e2e` both pass
+- [x] 1.8 Add `tests/integration/schema.test.ts`: two profiles can't share an alias; an edge can't be stored twice for the same pair; a second conversation for the same pair is refused; a tag that a profile uses can't be deleted. Verify: `npm test` passes
 
 ## 2. The on/off switch and the shared helpers
 

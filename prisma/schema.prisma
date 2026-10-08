@@ -69,15 +69,373 @@ model Tag {
   categoryId String
   category   Category @relation(fields: [categoryId], references: [id])
 
+  // A short word used to build a person's alias, e.g. "Feral" or "Sea Captain"
+  // (-> "The Feral Sea Captain"). Only Energy and Vibe Diagnosis tags use it,
+  // so it is empty on every other tag. The words themselves are seeded by
+  // slice 2 (#9); the column is here so that slice needs no migration
+  // (foundation design decision 2).
+  aliasWord String?
+
+  // The other side of relations defined further down. These lines don't
+  // create columns; they let us ask a tag "which profiles picked you?" and
+  // "which tags are you paired with?".
+  profileTags       ProfileTag[]
+  pairingsAsSeeking TagPairing[] @relation("PairingSeekingTag")
+  pairingsAsQuality TagPairing[] @relation("PairingQualityTag")
+
   // Speeds up "get all tags in this category", the catalogue's main query.
   @@index([categoryId])
 }
 
 // A bootcamp course a user signs up from: "Software" or "Business".
-// Recorded on each user in slice 1, but not used in scoring.
+// Recorded on each user (User.courseId), but not used in scoring.
 model Course {
   id        String    @id // e.g. "software"
   name      String
   order     Int
   retiredAt DateTime?
+
+  // The other side of User.course: lets us load a course with its students.
+  users User[]
+}
+
+// ---------------------------------------------------------------------------
+// People and profiles (foundation #7, design decision 1)
+//
+// From here down, every table was added in ONE migration by the foundation
+// slice, so that five tracks can build at once without each adding "their"
+// tables and tripping over each other. A table here is only a shape: defining
+// `Message` doesn't build messaging, it lets that track start without asking.
+//
+// Shared rules for these tables:
+// - Ids that the database makes up are random strings (`cuid()`), the same
+//   kind Auth.js uses, so slice 1's sign-in fits without changes. (Catalogue
+//   rows above keep their readable ids.)
+// - No `onDelete` rule is set on our own tables, so the database REFUSES to
+//   delete a row that other rows still point at. That's a safety net: nothing
+//   disappears by accident. Tests and the join-up delete in a set order
+//   instead (see tests/helpers/database.ts).
+// - When two users form a pair with no "first" and "second" (a score, a
+//   conversation), the pair is stored ONCE, with the alphabetically lower user
+//   id in `userAId`. Use orderUserPair() from src/lib/userPair.ts so nobody
+//   has to remember that.
+// ---------------------------------------------------------------------------
+
+// What a user is allowed to do. An enum is a fixed list the database enforces,
+// so a typo like "admn" can never be stored.
+enum UserRole {
+  MEMBER // a student
+  ADMIN // can open the /admin screens
+}
+
+// One account. Auth.js (slice 1, #8) creates and reads these rows, so the
+// first four columns follow its schema. We leave out Auth.js's optional `name`
+// and `image` on purpose: we never collect a name (no free text), and photos
+// live in private storage under Profile.photoKey (design decision 3).
+model User {
+  id            String    @id @default(cuid())
+  // Never shown to other users (rule B1). Unique so one address = one account.
+  email         String    @unique
+  // Set by Auth.js when the person opens their magic link.
+  emailVerified DateTime?
+
+  role UserRole @default(MEMBER)
+
+  // Which course they're on. Can be empty because Auth.js creates this row
+  // the moment the magic link is opened; slice 1 decides how course and terms
+  // are collected around that. The rule "no account without a course" lives
+  // in the user-auth spec and slice 1's code, not in this column.
+  courseId String?
+  course   Course? @relation(fields: [courseId], references: [id])
+
+  // When an admin suspended this user. Empty = not suspended. Suspended users
+  // can't sign in and don't appear on the graph or in search (admin spec).
+  suspendedAt     DateTime?
+  // When they accepted the Terms and data policy. Empty for the same reason
+  // as courseId above.
+  acceptedTermsAt DateTime?
+  createdAt       DateTime  @default(now())
+
+  // --- The other side of relations defined below (no columns here) ---
+  profile Profile?
+
+  // Auth.js
+  accounts Account[]
+  sessions Session[]
+
+  // Scores: this user can be either side of a pair, hence two lists.
+  edgesAsA        Edge[]        @relation("EdgeUserA")
+  edgesAsB        Edge[]        @relation("EdgeUserB")
+  glitchMatch     GlitchMatch?  @relation("GlitchMatchOwner")
+  glitchMatchedBy GlitchMatch[] @relation("GlitchMatchTarget")
+
+  requestsSent     ConnectionRequest[] @relation("RequestFromUser")
+  requestsReceived ConnectionRequest[] @relation("RequestToUser")
+
+  conversationsAsA Conversation[] @relation("ConversationUserA")
+  conversationsAsB Conversation[] @relation("ConversationUserB")
+  messagesSent     Message[]
+
+  blocksMade     Block[] @relation("BlockBlocker")
+  blocksReceived Block[] @relation("BlockBlocked")
+
+  reportsMade     Report[] @relation("ReportReporter")
+  reportsReceived Report[] @relation("ReportReported")
+  reportsResolved Report[] @relation("ReportResolver")
+}
+
+// A user's public profile, built in onboarding (slice 2, #9). One per user,
+// which is why the user's id is also this table's id.
+model Profile {
+  userId String @id
+  user   User   @relation(fields: [userId], references: [id])
+
+  // Which silhouette picture they picked, e.g. "silhouette-03". The pictures
+  // are files that ship with the app (slice 2), so this is just their id.
+  silhouette  String
+  // The generated public name, e.g. "The Feral Sea Captain". Unique so two
+  // people can never share one: the database itself rejects a duplicate, which
+  // is the only check that still works when two people finish onboarding at
+  // the same moment (design decision 2).
+  alias       String    @unique
+  // Where their optional photo sits in private storage. Empty = no photo.
+  // It's a storage key, not a public link: photos are only served through a
+  // permission check (rule B3; slice 7 builds it).
+  photoKey    String?
+  // When onboarding was finished. Empty = not finished, which is what an
+  // admin's "reset onboarding" (slice 8) sets it back to.
+  completedAt DateTime?
+
+  tags ProfileTag[]
+}
+
+// One tag a person picked. A row per pick, in one join table, rather than a
+// column per category: admins can add categories later (rule B2), so the
+// shape can't have the categories built into it.
+model ProfileTag {
+  userId  String
+  profile Profile @relation(fields: [userId], references: [userId])
+  tagId   String
+  tag     Tag     @relation(fields: [tagId], references: [id])
+
+  // The two columns together are the id, so the same person can't hold the
+  // same tag twice.
+  @@id([userId, tagId])
+  // Speeds up "who picked this tag?", which the people filters use.
+  @@index([tagId])
+}
+
+// Says which Seeking tag is answered by which Quality tag, e.g. "someone who
+// finishes what I start" <-> "actually finishes the thing". The complement
+// part of the score counts these (slice 3, #10). Stored as data, not implied
+// by the wording, so admins can pair up tags they add (rule B2).
+// Empty until slice 3 seeds the agreed pairs.
+model TagPairing {
+  seekingTagId String
+  seekingTag   Tag    @relation("PairingSeekingTag", fields: [seekingTagId], references: [id])
+  qualityTagId String
+  qualityTag   Tag    @relation("PairingQualityTag", fields: [qualityTagId], references: [id])
+
+  @@id([seekingTagId, qualityTagId])
+  @@index([qualityTagId])
+}
+
+// ---------------------------------------------------------------------------
+// Matching (slice 3, #10 owns the logic)
+// ---------------------------------------------------------------------------
+
+// The stored chemistry score for one pair of people.
+// score = (complement x 3) + overlap + tension, from collabz-mvp-brief.md.
+// The three parts are kept as well as the total, so "why you match" can be
+// explained without recalculating.
+//
+// ONE row per pair, with the lower user id in userAId (see the shared rules
+// above). A pair has one score, so one row can't disagree with itself.
+model Edge {
+  userAId String
+  userA   User   @relation("EdgeUserA", fields: [userAId], references: [id])
+  userBId String
+  userB   User   @relation("EdgeUserB", fields: [userBId], references: [id])
+
+  score      Int
+  complement Int // how many Seeking <-> Quality pairs fit, both directions
+  overlap    Int // +1 for the same Energy, +1 for the same Vibe Diagnosis
+  tension    Int // +1 if their Hero Stories differ
+
+  // Both ids together are the id, so a pair can't be stored twice.
+  @@id([userAId, userBId])
+  // The id above already makes lookups by userAId fast. This does the same
+  // for userBId, because "all of one person's edges" needs both sides.
+  @@index([userBId])
+}
+
+// A person's one random "glitch" match: assigned once, never themselves and
+// never someone already in their top 5. One per user, hence userId is the id.
+model GlitchMatch {
+  userId        String @id
+  user          User   @relation("GlitchMatchOwner", fields: [userId], references: [id])
+  matchedUserId String
+  matchedUser   User   @relation("GlitchMatchTarget", fields: [matchedUserId], references: [id])
+
+  @@index([matchedUserId])
+}
+
+// ---------------------------------------------------------------------------
+// Connecting and messaging (slices 5 and 6, #12 and #13 own the logic)
+// ---------------------------------------------------------------------------
+
+enum ConnectionRequestStatus {
+  PENDING // sent, waiting for an answer
+  APPROVED // the other person said yes: a conversation opens
+  DECLINED // the other person said no
+}
+
+// "A asks to connect with B". Unlike a score, this HAS a direction, so it
+// isn't stored lower-id-first.
+// There is deliberately no "one request per pair" rule here: whether a
+// declined request can be sent again is slice 5's open question, and a unique
+// rule would answer it by accident.
+model ConnectionRequest {
+  id         String @id @default(cuid())
+  fromUserId String
+  fromUser   User   @relation("RequestFromUser", fields: [fromUserId], references: [id])
+  toUserId   String
+  toUser     User   @relation("RequestToUser", fields: [toUserId], references: [id])
+
+  status    ConnectionRequestStatus @default(PENDING)
+  createdAt DateTime                @default(now())
+
+  @@index([fromUserId])
+  @@index([toUserId])
+}
+
+// A private conversation between two connected people. One per pair, with the
+// lower user id in userAId, so openConversation() can be called twice safely
+// and always find the same one.
+model Conversation {
+  id      String @id @default(cuid())
+  userAId String
+  userA   User   @relation("ConversationUserA", fields: [userAId], references: [id])
+  userBId String
+  userB   User   @relation("ConversationUserB", fields: [userBId], references: [id])
+
+  createdAt DateTime  @default(now())
+  // Empty = open. Set when the conversation is closed, e.g. by a block.
+  closedAt  DateTime?
+
+  messages Message[]
+
+  @@unique([userAId, userBId])
+  @@index([userBId])
+}
+
+// One message. `body` is the only free text in the whole app (rule B1).
+model Message {
+  id             String       @id @default(cuid())
+  conversationId String
+  conversation   Conversation @relation(fields: [conversationId], references: [id])
+  senderId       String
+  sender         User         @relation(fields: [senderId], references: [id])
+  body           String
+  createdAt      DateTime     @default(now())
+
+  // Speeds up "this conversation's messages, oldest first".
+  @@index([conversationId, createdAt])
+}
+
+// ---------------------------------------------------------------------------
+// Safety (slice 9, #16 owns the logic)
+// ---------------------------------------------------------------------------
+
+// "blocker has blocked blocked". Has a direction, like a request.
+model Block {
+  blockerId String
+  blocker   User     @relation("BlockBlocker", fields: [blockerId], references: [id])
+  blockedId String
+  blocked   User     @relation("BlockBlocked", fields: [blockedId], references: [id])
+  createdAt DateTime @default(now())
+
+  @@id([blockerId, blockedId])
+  @@index([blockedId])
+}
+
+enum ReportStatus {
+  OPEN // waiting for an admin
+  RESOLVED // an admin has dealt with it
+}
+
+// A report of one user by another, for the admin moderation queue.
+model Report {
+  id         String @id @default(cuid())
+  reporterId String
+  reporter   User   @relation("ReportReporter", fields: [reporterId], references: [id])
+  reportedId String
+  reported   User   @relation("ReportReported", fields: [reportedId], references: [id])
+
+  // Picked from a fixed list, never typed. It's plain text rather than an
+  // enum because slice 9 hasn't decided the list of reasons yet, and an enum
+  // would lock one in.
+  reason String
+  status ReportStatus @default(OPEN)
+
+  // Which admin resolved it. Empty while it's open.
+  resolvedById String?
+  resolvedBy   User?    @relation("ReportResolver", fields: [resolvedById], references: [id])
+  createdAt    DateTime @default(now())
+
+  @@index([status])
+}
+
+// ---------------------------------------------------------------------------
+// Auth.js tables (slice 1, #8 owns them)
+//
+// Copied from the Auth.js Prisma adapter docs
+// (https://authjs.dev/getting-started/adapters/prisma, checked 8 Oct 2026).
+// Auth.js itself is NOT installed yet; slice 1 does that. The tables are here
+// so nobody is blocked waiting for them. Don't rename anything: Auth.js looks
+// these tables and columns up by exactly these names, which is also why some
+// columns use snake_case unlike the rest of the file.
+//
+// Unlike our own tables, Account and Session ARE deleted along with their
+// user (onDelete: Cascade), as in Auth.js's schema: they're sign-in records
+// with no meaning without the account.
+// ---------------------------------------------------------------------------
+
+// A sign-in with an outside provider (e.g. Google). Magic-link sign-in doesn't
+// create these, but the adapter expects the table to exist.
+model Account {
+  id                String  @id @default(cuid())
+  userId            String
+  type              String
+  provider          String
+  providerAccountId String
+  refresh_token     String? @db.Text
+  access_token      String? @db.Text
+  expires_at        Int?
+  token_type        String?
+  scope             String?
+  id_token          String? @db.Text
+  session_state     String?
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([provider, providerAccountId])
+}
+
+// One signed-in browser. Its token is what the sign-in cookie holds.
+model Session {
+  id           String   @id @default(cuid())
+  sessionToken String   @unique
+  userId       String
+  expires      DateTime
+  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+// A magic link that has been emailed and not used yet.
+model VerificationToken {
+  identifier String // the email address
+  token      String
+  expires    DateTime
+
+  @@unique([identifier, token])
 }

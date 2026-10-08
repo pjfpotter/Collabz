@@ -7,18 +7,18 @@ import { afterAll, beforeEach, describe, expect, it } from "vitest";
 import { prisma } from "@/lib/db";
 import { seedCatalogue } from "../../prisma/seed";
 import { seedCategories } from "../../prisma/seed-data";
-import { emptyCatalogueTables } from "../helpers/database";
+import { emptyDatabase } from "../helpers/database";
 
 describe("seedCatalogue", () => {
   // Every test starts from empty tables, so tests can't affect each other.
   beforeEach(async () => {
-    await emptyCatalogueTables(prisma);
+    await emptyDatabase(prisma);
   });
 
   // Leave the test database the way the app expects it: freshly seeded, with
   // no renamed tags left behind by the tests below.
   afterAll(async () => {
-    await emptyCatalogueTables(prisma);
+    await emptyDatabase(prisma);
     await seedCatalogue(prisma);
     await prisma.$disconnect();
   });
