@@ -2,7 +2,8 @@
 
 ## Context
 
-- **What exists when this is applied:** the foundation (#7) has added the `User` table (with `role`, `courseId?`, `acceptedTermsAt?`, `suspendedAt?`, `emailVerified?`) and Auth.js's `Account`, `Session` and `VerificationToken` tables, copied from the Auth.js Prisma adapter docs. Auth.js itself is **not** installed. `getCurrentUser()` in `src/lib/currentUser.ts` reads the dev switcher's cookie, and `isPretendCohortEnabled()` says whether the switcher is allowed at all. The nav bar is `src/components/NavBar.tsx`. Placeholder pages sit at `/signup` and `/signin`.
+- **What exists (foundation #7, merged 8 Oct 2026, checked against `master`):** the `User` table (`email` required and unique, `role`, `courseId?`, `acceptedTermsAt?`, `suspendedAt?`, `emailVerified?`) and Auth.js's `Account`, `Session` and `VerificationToken` tables, copied field for field from the Auth.js Prisma adapter docs (see the "Auth.js check" note in #7's `tasks.md`). Auth.js itself is **not** installed. `getCurrentUser()` in `src/lib/currentUser.ts` reads the dev switcher's cookie through `findPretendUser()`, which already returns nobody when `isPretendCohortEnabled()` is off. `DevUserSwitcher` calls `getCurrentUser()` to show who is selected. The nav bar (`src/components/NavBar.tsx`) already links to Sign up and Sign in for everyone. Placeholder pages sit at `/signup` and `/signin`. Every pretend user has a course and accepted terms, so they all count as finished accounts.
+- **Our `User` differs from Auth.js's on purpose:** no `name`, no `image`, and `email` required. If Auth.js passes `name` or `image` when it creates a user, Prisma will refuse the unknown field. Task 1.3 checks this on the first real sign-in.
 - **Prisma 7:** the client is generated into `src/generated/prisma` and shared from `src/lib/db.ts` as `prisma`, through Neon's adapter. It is not at `@prisma/client`, which is where Auth.js's Prisma adapter looks for its types.
 - **This Next.js (16.3):** what used to be `middleware.ts` is now `proxy.ts`. The bundled auth guide (`node_modules/next/dist/docs/01-app/02-guides/authentication.md`) says Proxy should only do quick cookie checks and the real check belongs in a "Data Access Layer" close to the data. `getCurrentUser()` already is that layer.
 - **The people signing up:** students in a room, on phones, from a QR code, mostly with personal email (Gmail, Outlook, iCloud). Email apps often open links in their own built-in browser.
@@ -85,7 +86,8 @@ Inside `src/lib/currentUser.ts`, `getCurrentUser()` changes to:
 2. If there is no real session and `isPretendCohortEnabled()`, return the switcher's pretend user, exactly as the foundation does today.
 3. Otherwise return `null`.
 
-The choice between those three is a plain function, `pickCurrentUser({ sessionUser, pretendUser, pretendCohortOn })`, so every case is unit-tested without cookies or a browser.
+The choice between those three is a plain function, `pickCurrentUser({ sessionUser, pretendUser })`, so every case is unit-tested without cookies or a browser. `pretendUser` comes from the foundation's `findPretendUser()`, which already returns nobody where the pretend cohort is off, so `pickCurrentUser` doesn't need to check the switch again.
+- *What the switcher shows while really signed in:* `DevUserSwitcher` displays whoever `getCurrentUser()` returns, so it shows the real user (or nobody selected) and picking a pretend user has no effect until you sign out. The README says so.
 - *Why a real session wins over the switcher:* a person who really signed in should never be silently swapped for a pretend user.
 - *Why the switcher path still doesn't hide suspended users:* the foundation needs a teammate to be able to *be* the suspended pretend user to test that they vanish from the graph. Only real sign-ins are refused (decision 6).
 - `requireAdmin()` needs no change: it already calls `getCurrentUser()`.
@@ -114,7 +116,7 @@ Every page that needs a signed-in user asks `getCurrentUser()`. We don't add a `
 - Links expire after **24 hours**, Auth.js's default. *Why keep it:* a student who signs up and checks email later in the day should still get in. The spec fixes this number.
 
 ### 9. The nav bar gets one line
-`SignedInStatus` is a Server Component. Signed in: "Signed in as <your email>" and a **Sign out** button (a tiny form whose Server Action calls `signOut()`). Signed out: **Sign in** and **Sign up** links. The foundation's `NavBar.tsx` gets one added line rendering it, next to the switcher.
+`SignedInStatus` is a Server Component. Signed in: "Signed in as <your email>" and a **Sign out** button (a tiny form whose Server Action calls `signOut()`). Signed out: "Not signed in". It adds no Sign in or Sign up links, because the foundation's nav bar already shows those to everyone (hiding links by sign-in state is join-up's job, #17). The foundation's `NavBar.tsx` gets one added line rendering it, next to the switcher.
 - *Why show the email:* it is the person's *own* email, shown only to them. The rule is that other users never see it.
 - *Why touch a foundation file:* the spec says sign-out is available from every page, and the nav bar is on every page. One line in someone else's file, flagged in the PR, is smaller than any alternative.
 
