@@ -59,6 +59,6 @@ Checked on 8 Oct 2026 against the PostgreSQL schema on https://authjs.dev/gettin
 ## 6. Deploy and hand over to the tracks
 
 - [x] 6.1 **(human)** In Vercel, add `PRETEND_COHORT=on` to the Preview environment only, and check Production does not have it. Verify: Vercel's environment settings show the variable under Preview and not under Production
-- [ ] 6.2 Push, open the PR, and on the preview URL: become `pretend-user-02`, open every nav link, then become `pretend-user-01` and open `/admin`. Verify: #7's success checks 1 to 3 and 5 are ticked in the PR description
+- [x] 6.2 Push, open the PR, and on the preview URL: become `pretend-user-02`, open every nav link, then become `pretend-user-01` and open `/admin`. Verify: #7's success checks 1 to 3 and 5 are ticked in the PR description
 - [ ] 6.3 After merge, on the production URL: check the page has no "sign in as…" control, and run `curl -i -X POST <production url>/api/dev/sign-in-as -d "userId=pretend-user-01"`. Verify: the response is 404, and #7's success check 4 is ticked
 - [ ] 6.4 **(human)** Tell the team on #18 that the foundation is merged: pull `master`, run `npm install`, add `PRETEND_COHORT=on` to `.env`, and that `npm test` resets dev data. Comment on #9 that its tasks 1.1 and 2.1 are already done here. Verify: both comments are posted
