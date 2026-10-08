@@ -8,20 +8,20 @@ import { getCatalogue } from "@/lib/catalogue";
 import { prisma } from "@/lib/db";
 import { seedCatalogue } from "../../prisma/seed";
 import { seedCategories } from "../../prisma/seed-data";
-import { emptyCatalogueTables } from "../helpers/database";
+import { emptyDatabase } from "../helpers/database";
 
 describe("getCatalogue", () => {
   // Start every test from a freshly seeded catalogue, so a tag retired in one
   // test is back in the next.
   beforeEach(async () => {
-    await emptyCatalogueTables(prisma);
+    await emptyDatabase(prisma);
     await seedCatalogue(prisma);
   });
 
   // Leave the test database freshly seeded, with nothing retired.
   afterAll(async () => {
-    await emptyCatalogueTables(prisma);
-    await seedCatalogue(prisma);
+    // No restoring here: tests/helpers/restoreDevData.ts puts the database
+    // back once, after the whole test run.
     await prisma.$disconnect();
   });
 

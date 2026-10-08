@@ -10,7 +10,7 @@ import "dotenv/config"; // load .env so TEST_DATABASE_URL is available here
 import path from "node:path";
 import { defineConfig } from "vitest/config";
 
-// Tests EMPTY the catalogue tables. So they must only ever run against a
+// Tests EMPTY every table. So they must only ever run against a
 // database meant for that. We read a variable that only tests use, and stop
 // straight away if it's missing, rather than falling back to DATABASE_URL,
 // which on some machine might one day be production.
@@ -34,6 +34,10 @@ export default defineConfig({
     // Only our Vitest files. Playwright's browser tests live in tests/e2e
     // and are run separately by `npm run test:e2e`.
     include: ["tests/unit/**/*.test.ts", "tests/integration/**/*.test.ts"],
+
+    // After the last test file, put the shared dev database back to the
+    // catalogue plus the fresh pretend cohort (foundation design decision 12).
+    globalSetup: ["tests/helpers/vitestGlobalSetup.ts"],
 
     // Point the app's database client (src/lib/db.ts reads DATABASE_URL) at
     // the test database for the whole test run.

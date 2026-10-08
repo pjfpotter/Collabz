@@ -16,16 +16,111 @@ export function createTestDatabaseClient(): PrismaClient {
   return new PrismaClient({ adapter: new PrismaNeon({ connectionString }) });
 }
 
-// Deletes every row from the three catalogue tables, so each test starts from
-// a known, empty state.
+// Deletes every row from EVERY table, so each test starts from a known,
+// empty state.
 //
 // The app itself never deletes catalogue rows (they're retired instead,
 // rule B2). Deleting is fine here because this only ever runs against the
-// test database (vitest.config.ts makes sure of that).
-export async function emptyCatalogueTables(prisma: PrismaClient): Promise<void> {
-  // Tags first: each tag points at a category, and the database refuses to
-  // delete a category that still has tags.
+// test database (vitest.config.mts makes sure of that).
+//
+// THE ORDER MATTERS. Our tables have no "delete what points at me too" rule,
+// so the database refuses to delete a row while another row still points at
+// it (see the shared rules in prisma/schema.prisma). So we always delete the
+// row that does the pointing first, and the row it points at afterwards:
+// messages before their conversation, a profile's tags before the profile,
+// everything about a user before the user, and the catalogue last because
+// profiles point at tags and users point at courses.
+//
+// If you add a table to schema.prisma, add it here too, above whatever it
+// points at. tests/integration/schema.test.ts fails if a table is missed.
+export async function emptyDatabase(prisma: PrismaClient): Promise<void> {
+  // Messaging: a message points at its conversation and its sender.
+  await prisma.message.deleteMany();
+  await prisma.conversation.deleteMany();
+
+  // Connecting and safety: each of these only points at users.
+  await prisma.connectionRequest.deleteMany();
+  await prisma.block.deleteMany();
+  await prisma.report.deleteMany();
+
+  // Matching: scores and glitch matches only point at users.
+  await prisma.glitchMatch.deleteMany();
+  await prisma.edge.deleteMany();
+
+  // Profiles: a picked tag points at its profile (and at a tag), and a
+  // profile points at its user.
+  await prisma.profileTag.deleteMany();
+  await prisma.profile.deleteMany();
+
+  // Auth.js sign-in records. Deleting a user would remove their accounts and
+  // sessions anyway (they are the one exception with a cascade rule), but
+  // verification tokens belong to no user, so they need their own line.
+  await prisma.account.deleteMany();
+  await prisma.session.deleteMany();
+  await prisma.verificationToken.deleteMany();
+
+  // Users: nothing points at them any more.
+  await prisma.user.deleteMany();
+
+  // The catalogue. Pairings point at tags, tags point at their category, and
+  // (before the line above) users pointed at courses.
+  await prisma.tagPairing.deleteMany();
   await prisma.tag.deleteMany();
   await prisma.category.deleteMany();
   await prisma.course.deleteMany();
+}
+
+// Counts the rows in every table of our database, asking the database itself
+// for the list of tables rather than keeping a second hand-written list here
+// (which is the thing that could go out of date).
+export async function countRowsInEveryTable(
+  prisma: PrismaClient,
+): Promise<Record<string, number>> {
+  const tables = await prisma.$queryRaw<{ table_name: string }[]>`
+    -- "::text" turns Postgres's special "name" type into ordinary text,
+    -- which is the only kind Prisma can read back from a raw query.
+    SELECT table_name::text AS table_name
+    FROM information_schema.tables
+    WHERE table_schema = 'public'
+      AND table_type = 'BASE TABLE'
+      -- Prisma's own record of which migrations have run; not one of ours.
+      AND table_name <> '_prisma_migrations'
+  `;
+
+  const counts: Record<string, number> = {};
+  for (const { table_name } of tables) {
+    // The table name comes from the database's own list above, not from a
+    // user, so building the query text from it is safe. The double quotes
+    // are needed because our table names have capital letters.
+    const rows = await prisma.$queryRawUnsafe<{ count: number }[]>(
+      `SELECT COUNT(*)::int AS count FROM "${table_name}"`,
+    );
+    counts[table_name] = rows[0].count;
+  }
+  return counts;
+}
+
+// Loads the pretend cohort into the test database, for tests that need
+// people to exist (anything that signs in through the dev switcher).
+// The catalogue must already be seeded.
+//
+// The seed refuses to run unless the pretend cohort is switched on. A test
+// run only ever touches the test database, so here we switch it on for the
+// length of this one call and then put the setting back exactly as it was.
+export async function loadPretendCohortForTests(prisma: PrismaClient): Promise<void> {
+  // Imported here rather than at the top so that test files which only need
+  // emptyDatabase() don't load the whole cohort builder.
+  const { seedPretendCohort } = await import("../../prisma/seed-fake");
+
+  const settingBefore = process.env.PRETEND_COHORT;
+  process.env.PRETEND_COHORT = "on";
+  try {
+    await seedPretendCohort(prisma);
+  } finally {
+    if (settingBefore === undefined) {
+      delete process.env.PRETEND_COHORT;
+    } else {
+      process.env.PRETEND_COHORT = settingBefore;
+    }
+  }
 }

@@ -59,7 +59,7 @@ Then fill in the three values in `.env`:
 
 The Neon project is on Patrick's account with no collaborators, so **ask Patrick for the `dev` branch URLs**. Pass them privately: never paste them into the repo, an issue, a PR or a group chat.
 
-Only ever use the `dev` branch here, never `production`. The tests empty the catalogue tables, which is why they have their own variable and refuse to run without it.
+Only ever use the `dev` branch here, never `production`. The tests empty every table, which is why they have their own variable and refuse to run without it.
 
 You don't need to create any tables: the shared `dev` database already has them, with the catalogue seeded.
 
@@ -87,7 +87,7 @@ npx playwright install chromium
 Things to know:
 
 - **Both sets of tests use the real `dev` database, not a fake one.** Proving that Prisma and Neon work together was the point of slice 0.
-- **We all share that one database.** The tests empty the catalogue tables and put the seed data back when they finish. If two of us run them at the same moment they can trip each other up, and `/catalogue` can look empty for a few seconds. If a run is interrupted and the catalogue stays empty, `npx prisma db seed` refills it.
+- **We all share that one database.** The tests empty every table and put the catalogue and the pretend cohort back when they finish (see [Pretend cohort](#pretend-cohort)). If two of us run them at the same moment they can trip each other up, and `/catalogue` can look empty for a few seconds. If a run is interrupted and the catalogue stays empty, `npx prisma db seed` refills it.
 - **`npm run test:e2e` starts its own copy of the app** on port 3100, so it doesn't clash with an `npm run dev` you already have open.
 - **To check a deployed site instead**, such as a Vercel preview, give it the URL. Only the read-only test runs; the tests that change data skip themselves:
   ```bash
@@ -110,24 +110,132 @@ Vercel builds every commit pushed to GitHub. A commit on `master` becomes the li
 
 Each build runs `prisma migrate deploy && prisma db seed && next build`, so a deploy brings its own database up to date before the app is built. The seed only adds rows that are missing, so running it every time is safe.
 
+## Routes
+
+Every page the app will have already exists, so that two tracks can't invent the same address. Until a page's feature is built it shows a **placeholder** naming the slice that owns it. The nav bar at the top of every page links to all of them.
+
+| Route | Slice | Issue | Track |
+|---|---|---|---|
+| `/`, `/catalogue` | 0 | #6 | built |
+| `/signup`, `/signin` | 1 | #8 | 1 |
+| `/onboarding` | 2 | #9 | 2 |
+| `/matches` | 3 | #10 | 3 |
+| `/graph`, `/people`, `/people/[alias]` | 4 | #11 | 4 |
+| `/requests` | 5 | #12 | 5 |
+| `/messages` | 6 | #13 | 5 |
+| `/account` | 7 | #14 | 1 |
+| `/admin` (and anything under it except reports) | 8 | #15 | 2 |
+| `/admin/reports` | 9 | #16 | 3 |
+| `/api/dev/*`, the nav bar, the shared helpers | foundation | #7 | all |
+
+**What you own.** Your slice owns its routes in the table, anything nested under them (for example `/onboarding/done`), and the API routes of the same name (for example `/api/onboarding/*`). Only change files inside your own routes.
+
+**When you build your page:** replace the placeholder `page.tsx` with the real one. Don't build beside it. If you add a page the nav bar should link to, add it to `navLinks` in `src/components/NavBar.tsx`.
+
+**Admin pages** start with `await requireAdmin();`. Keep that as the first line when you replace the placeholder.
+
+## Dev sign-in
+
+There is no real sign-in until slice 1. Instead, the nav bar has a **"Dev sign-in as"** list of the pretend students. Pick one and press **Switch**, and the whole app treats you as that person until you pick someone else or "Signed out". `getCurrentUser()` returns whoever you picked.
+
+It only appears where `PRETEND_COHORT="on"` is set (see below), and never on the live site.
+
+In Playwright tests, sign in with the helper:
+
+```ts
+import { signInAs } from "../helpers/devSignIn";
+
+await signInAs(page, "pretend-user-02");
+```
+
+The test database needs the cohort first: call `loadPretendCohortForTests(prisma)` from `tests/helpers/database.ts` in your `beforeAll` (see `tests/e2e/switcher.spec.ts` for a full example).
+
+## Pretend cohort
+
+Real students can't sign up yet, so the dev database is filled with **32 pretend students** to build and test against. They only exist on the dev database, never on the live site.
+
+**Switch it on (once per laptop).** Add this line to your `.env`, on its own line:
+
+```
+PRETEND_COHORT="on"
+```
+
+It must be exactly `on`. This one switch allows both the pretend students and the "sign in as…" switcher. It is never set in Vercel's Production settings, and the code refuses on the live site even if it is.
+
+**Load it:**
+
+```bash
+npm run seed:fake
+```
+
+It is safe to run again: it only adds what's missing and never overwrites, so something you changed by hand (say, a request you approved) survives. It needs the tag catalogue first (`npx prisma db seed`).
+
+**Who is in it:**
+
+| Who | Id | Notes |
+|---|---|---|
+| The admin | `pretend-user-01` | Can open `/admin`. Also has a finished profile |
+| The "main character" | `pretend-user-02` | **Start here.** Has an incoming request, an outgoing request and an open conversation with messages, so every feature has something to show |
+| Finished profiles | `pretend-user-01` to `30` | 15 Software, 15 Business, with tags, an alias like "The Pretend Sea Captain 07" and a silhouette |
+| Suspended | `pretend-user-30` | Should not appear on the graph or in search |
+| Not onboarded yet | `pretend-user-31`, `32` | Signed up, no profile: use these to test onboarding |
+
+Between the 30 finished profiles there is a score for every pair (435), a glitch match each, 14 connection requests (8 pending, 4 approved, 2 declined), 4 conversations (3 open with messages, 1 closed), 1 block and 1 open report.
+
+Everyone gets exactly the same cohort, so "sign in as pretend-user-07" means the same person on every laptop and on preview links. The scores are made up until slice 3 builds real scoring.
+
+> **Running the tests resets the shared dev database.** `npm test` and `npm run test:e2e` empty every table and then load a fresh pretend cohort. Anything you changed by hand on dev is lost, and for the minute or two a run takes, a teammate's page (or a preview link) may show nothing or an error. Say "running tests" in the team chat first.
+
+## Shared helpers
+
+Five of us build different parts at the same time. To stop one track depending on another track's unfinished code, the parts talk to each other only through a few **shared helpers** with fixed names. Each one has an owner who fills in the real version later; the name, and what it gives back, stay the same.
+
+**The rule:** call these, and never import another track's files. If you need something from another track that isn't here, raise it on the slice map (#18) instead of reaching into their code.
+
+| Helper | File | What it does today | Owner |
+|---|---|---|---|
+| `getCurrentUser()` | `src/lib/currentUser.ts` | Returns the signed-in user, or `null`. For now "signed in" means "picked in the dev switcher" | Slice 1 (#8) swaps in real sign-in |
+| `requireAdmin()` | `src/lib/currentUser.ts` | For admin pages. Sends a signed-out visitor to `/signin`, shows a member "page not found", and returns the user if they are an admin | Slice 8 (#15) |
+| `scoreUser(userId)` | `src/lib/scoring.ts` | Does nothing yet. Call it after a user finishes onboarding or edits their answers | Slice 3 (#10) fills it in |
+| `openConversation(userAId, userBId)` | `src/lib/conversations.ts` | Returns the conversation between two users, creating it if needed. Safe to call twice | Slice 6 (#13) |
+| `closeConversation(conversationId)` | `src/lib/conversations.ts` | Marks a conversation as closed. Safe to call twice | Slice 6 (#13) |
+| `orderUserPair(a, b)` | `src/lib/userPair.ts` | Puts two user ids in the agreed order (lower first) for the `Edge` and `Conversation` tables, which store each pair once | Foundation (#7) |
+
+Each file starts with a comment that says the same in more detail, including what the helper will do once its owner has built it.
+
 ## Project structure
 
 ```
 src/
   app/                 # the screens (Next.js App Router): one folder per URL
+    layout.tsx         #   wraps every page: puts the nav bar on top
     page.tsx           #   /            home page
     catalogue/page.tsx #   /catalogue   the tag catalogue
+    <route>/page.tsx   #   one placeholder per planned route (see Routes)
+    api/dev/           #   the dev sign-in switcher's API route
+  components/
+    NavBar.tsx         # the nav bar and the list of routes it links to
+    DevUserSwitcher.tsx  # the "Dev sign-in as" list (dev only)
+    PlaceholderPage.tsx  # what an unbuilt page shows
   lib/
     db.ts              # the one shared database client
     catalogue.ts       # getCatalogue(): reads categories and tags in order
+    currentUser.ts     # getCurrentUser(), requireAdmin()   (shared helpers)
+    scoring.ts         # scoreUser()                        (shared helper)
+    conversations.ts   # openConversation(), closeConversation() (shared helpers)
+    userPair.ts        # orderUserPair(): one agreed order for a pair of users
+    pretendCohort.ts   # the on/off switch for pretend students and the dev switcher
   generated/prisma/    # Prisma's generated client (not committed)
 prisma/
   schema.prisma        # the database tables. Flag changes first (see CLAUDE.md)
   migrations/          # the SQL that creates and changes those tables
   seed-data.ts         # the categories, tags and courses from the brief
   seed.ts              # adds any of those rows that are missing
+  pretend-cohort.ts    # works out the 32 pretend students (no database)
+  seed-fake.ts         # npm run seed:fake: saves them to the dev database
 tests/
-  integration/         # Vitest tests (npm test)
+  unit/                # Vitest tests that need no database (npm test)
+  integration/         # Vitest tests against the test database (npm test)
   e2e/                 # Playwright browser tests (npm run test:e2e)
   helpers/             # shared test helpers
 openspec/

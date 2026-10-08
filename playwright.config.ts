@@ -34,6 +34,10 @@ if (!deployedUrl && !testDatabaseUrl) {
 export default defineConfig({
   testDir: "tests/e2e",
 
+  // After the last test, put the shared dev database back to the catalogue
+  // plus the fresh pretend cohort (foundation design decision 12).
+  globalTeardown: "./tests/helpers/playwrightGlobalTeardown.ts",
+
   // One test at a time: tests share one database, and some of them change it.
   fullyParallel: false,
   workers: 1,
@@ -53,8 +57,16 @@ export default defineConfig({
     : {
         command: `npx next dev --port ${localPort}`,
         url: `http://localhost:${localPort}`,
-        // Point the app at the test database. Values set here win over .env.
-        env: { DATABASE_URL: testDatabaseUrl! },
+        // Values set here win over .env.
+        env: {
+          // Point the app at the test database.
+          DATABASE_URL: testDatabaseUrl!,
+          // Switch on the pretend cohort for the tests' own server, so the
+          // "sign in as…" switcher is there to sign tests in with. This is
+          // only ever a local server against the test database, never a
+          // deployed site (see src/lib/pretendCohort.ts).
+          PRETEND_COHORT: "on",
+        },
         // Always start a fresh server, so we know which database it uses.
         reuseExistingServer: false,
         // The first `next dev` start compiles the app, which can be slow.
