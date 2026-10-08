@@ -4,10 +4,12 @@
 import { describe, expect, it } from "vitest";
 
 import {
+  CROWDED_OPACITY_FLOOR,
   MAX_EDGE_OPACITY,
   MAX_EDGE_WIDTH,
   MIN_EDGE_OPACITY,
   MIN_EDGE_WIDTH,
+  UNCROWDED_LINE_COUNT,
   buildGraph,
   edgeStyle,
   type GraphInput,
@@ -16,13 +18,13 @@ import type { VisiblePerson } from "@/lib/cohort/visiblePeople";
 
 describe("edgeStyle", () => {
   it("draws the highest score at full thickness and its least faint", () => {
-    expect(edgeStyle(10, 10)).toEqual({ width: MAX_EDGE_WIDTH, opacity: MAX_EDGE_OPACITY });
+    expect(edgeStyle(10, 10)).toMatchObject({ width: MAX_EDGE_WIDTH, opacity: MAX_EDGE_OPACITY });
   });
 
   it("draws a score of zero at its thinnest and faintest, but still draws it", () => {
     const style = edgeStyle(0, 10);
 
-    expect(style).toEqual({ width: MIN_EDGE_WIDTH, opacity: MIN_EDGE_OPACITY });
+    expect(style).toMatchObject({ width: MIN_EDGE_WIDTH, opacity: MIN_EDGE_OPACITY });
     // "Every edge is drawn" (Patrick's decision): faint, never invisible.
     expect(style.width).toBeGreaterThan(0);
     expect(style.opacity).toBeGreaterThan(0);
@@ -39,11 +41,43 @@ describe("edgeStyle", () => {
     expect(middle.opacity).toBeLessThan(high.opacity);
   });
 
-  it("puts a score halfway to the highest halfway between the limits", () => {
+  it("keeps a middling score faint: half the top score is drawn an eighth of the way up", () => {
     const style = edgeStyle(5, 10);
 
-    expect(style.width).toBeCloseTo((MIN_EDGE_WIDTH + MAX_EDGE_WIDTH) / 2);
-    expect(style.opacity).toBeCloseTo((MIN_EDGE_OPACITY + MAX_EDGE_OPACITY) / 2);
+    // The strength is in proportion (half)...
+    expect(style.strength).toBeCloseTo(0.5);
+    // ...but how much the line stands out is the strength multiplied by
+    // itself twice (half x half x half = an eighth), so hundreds of middling
+    // lines don't drown out the few strong ones.
+    expect(style.width).toBeCloseTo(MIN_EDGE_WIDTH + 0.125 * (MAX_EDGE_WIDTH - MIN_EDGE_WIDTH));
+    expect(style.opacity).toBeCloseTo(
+      MIN_EDGE_OPACITY + 0.125 * (MAX_EDGE_OPACITY - MIN_EDGE_OPACITY),
+    );
+  });
+
+  it("draws lines just the same until the graph gets crowded", () => {
+    // The pretend cohort has 406 lines, under the limit.
+    expect(edgeStyle(10, 10, 406)).toEqual(edgeStyle(10, 10));
+    expect(edgeStyle(10, 10, UNCROWDED_LINE_COUNT)).toEqual(edgeStyle(10, 10));
+  });
+
+  it("makes every line fainter, but no thinner, in a crowded graph", () => {
+    const uncrowded = edgeStyle(10, 10);
+    // Four times the limit: the square root rule gives half the opacity.
+    const crowded = edgeStyle(10, 10, UNCROWDED_LINE_COUNT * 4);
+
+    expect(crowded.opacity).toBeCloseTo(uncrowded.opacity / 2);
+    expect(crowded.width).toBe(uncrowded.width);
+    expect(crowded.strength).toBe(uncrowded.strength);
+  });
+
+  it("never fades a crowded graph's lines below the floor", () => {
+    const uncrowded = edgeStyle(10, 10);
+    const hugeCohort = edgeStyle(10, 10, 1_000_000);
+
+    expect(hugeCohort.opacity).toBeCloseTo(uncrowded.opacity * CROWDED_OPACITY_FLOOR);
+    // Still drawn, however many lines there are.
+    expect(edgeStyle(0, 10, 1_000_000).opacity).toBeGreaterThan(0);
   });
 
   it("measures against the highest score, whatever range the scores have", () => {
@@ -55,7 +89,7 @@ describe("edgeStyle", () => {
 
   it("draws every line the same when every score is equal", () => {
     // Each score IS the highest, so each is drawn at full strength.
-    expect(edgeStyle(3, 3)).toEqual({ width: MAX_EDGE_WIDTH, opacity: MAX_EDGE_OPACITY });
+    expect(edgeStyle(3, 3)).toMatchObject({ width: MAX_EDGE_WIDTH, opacity: MAX_EDGE_OPACITY });
   });
 
   it("draws every line at its faintest when every score is zero", () => {
@@ -63,12 +97,12 @@ describe("edgeStyle", () => {
 
     // The thing to avoid is 0 divided by 0, which is "not a number" and
     // would draw nothing at all.
-    expect(style).toEqual({ width: MIN_EDGE_WIDTH, opacity: MIN_EDGE_OPACITY });
+    expect(style).toMatchObject({ width: MIN_EDGE_WIDTH, opacity: MIN_EDGE_OPACITY });
   });
 
   it("stays inside the limits for a score below zero or above the highest", () => {
-    expect(edgeStyle(-5, 10)).toEqual({ width: MIN_EDGE_WIDTH, opacity: MIN_EDGE_OPACITY });
-    expect(edgeStyle(99, 10)).toEqual({ width: MAX_EDGE_WIDTH, opacity: MAX_EDGE_OPACITY });
+    expect(edgeStyle(-5, 10)).toMatchObject({ width: MIN_EDGE_WIDTH, opacity: MIN_EDGE_OPACITY });
+    expect(edgeStyle(99, 10)).toMatchObject({ width: MAX_EDGE_WIDTH, opacity: MAX_EDGE_OPACITY });
   });
 });
 

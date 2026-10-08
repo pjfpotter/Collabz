@@ -8,6 +8,11 @@
 import { expect, test } from "@playwright/test";
 
 // Every link in the nav bar, with the heading its page should show.
+//
+// `needsProfile: true` marks a page that is BUILT and only for people with a
+// finished profile. Nobody is signed in during these tests, so following that
+// link ends up on the sign-in page instead. (What the page shows to someone
+// who is signed in is tested in that page's own file, e.g. graph.spec.ts.)
 // Keep this in step with `navLinks` in src/components/NavBar.tsx: if a link
 // is added there, the "has a link to every page" test below fails until it
 // is added here too.
@@ -17,7 +22,7 @@ const publicLinks = [
   { label: "Sign in", path: "/signin", heading: "Sign in" },
   { label: "Onboarding", path: "/onboarding", heading: "Onboarding" },
   { label: "Matches", path: "/matches", heading: "Matches" },
-  { label: "Graph", path: "/graph", heading: "Graph" },
+  { label: "Graph", path: "/graph", heading: "Graph", needsProfile: true },
   { label: "People", path: "/people", heading: "People" },
   { label: "Requests", path: "/requests", heading: "Requests" },
   { label: "Messages", path: "/messages", heading: "Messages" },
@@ -58,8 +63,14 @@ for (const link of publicLinks) {
 
     await mainNav(page).getByRole("link", { name: link.label, exact: true }).click();
 
-    await expect(page).toHaveURL(new RegExp(`${link.path}$`));
-    await expect(page.getByRole("heading", { level: 1, name: link.heading })).toBeVisible();
+    if (link.needsProfile) {
+      // A built page that needs a finished profile: signed out, the link
+      // leads to the sign-in page.
+      await expect(page).toHaveURL(/\/signin$/);
+    } else {
+      await expect(page).toHaveURL(new RegExp(`${link.path}$`));
+      await expect(page.getByRole("heading", { level: 1, name: link.heading })).toBeVisible();
+    }
     await expect(mainNav(page)).toBeVisible();
   });
 }

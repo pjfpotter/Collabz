@@ -25,8 +25,8 @@
 // The names for tracks 3 and 5 are track 4's PROPOSAL. They are not agreed
 // yet (task 1.2), so join-up may also need to rename them.
 //
-// This file ends in .tsx, not .ts, only because SilhouetteStandIn returns a
-// picture written as JSX, and JSX is only allowed in .tsx files.
+// ONE EXCEPTION: SilhouetteStandIn lives in its own file next to this one
+// (see section 5 below for why). It is still listed and exported here.
 
 import { redirect } from "next/navigation";
 
@@ -322,46 +322,19 @@ function lowerCaseFirstLetter(text: string): string {
 // 5. SilhouetteStandIn
 // ---------------------------------------------------------------------------
 
-type SilhouetteStandInProps = {
-  // The person's silhouette id, e.g. "silhouette-07". Not used to choose a
-  // picture yet (there is only one), but taken now so the pages don't change
-  // when the real pictures arrive.
-  silhouette: string;
-  // Width and height in pixels. The picture is square.
-  size?: number;
-};
-
 // STAND-IN for track 2 (#9). Real version: silhouetteUrl(id) and the 12
 // pictures in public/silhouettes/.
-// Join-up: replace the <svg> with an <img> whose src is silhouetteUrl(id).
 //
-// Draws ONE neutral head-and-shoulders shape for everybody.
+// The picture itself lives in its own file, SilhouetteStandIn.tsx, and is
+// only passed on from here. WHY: the graph's panel is drawn in the browser,
+// and a browser component can't import THIS file, because this file also
+// talks to the database. A file with nothing but the picture in it can be
+// imported from anywhere.
 //
-// - It is an inline SVG (a picture written as shapes), so there is no image
-//   file to load.
-// - `fill="currentColor"` makes it take the colour of the text around it, so
-//   it works in light and dark mode with no extra code.
-// - `aria-hidden` tells screen readers to skip it. It is decoration: the
-//   alias is always written next to it, and everyone's picture is the same.
-export function SilhouetteStandIn({ silhouette, size = 48 }: SilhouetteStandInProps) {
-  return (
-    <svg
-      width={size}
-      height={size}
-      viewBox="0 0 48 48"
-      fill="currentColor"
-      aria-hidden="true"
-      // Lets a test, or anyone looking in dev tools, see which silhouette
-      // this person chose even though the picture doesn't show it yet.
-      data-silhouette={silhouette}
-    >
-      {/* The head. */}
-      <circle cx="24" cy="17" r="9" />
-      {/* The shoulders: a curve from bottom-left, up over, to bottom-right. */}
-      <path d="M6 44c0-10 8-16 18-16s18 6 18 16z" />
-    </svg>
-  );
-}
+// Server code imports it from here like the other five. The one browser
+// component that needs it (src/app/graph/CohortGraph.tsx) imports it from
+// "@/lib/cohort/SilhouetteStandIn" directly.
+export { SilhouetteStandIn } from "./SilhouetteStandIn";
 
 // ---------------------------------------------------------------------------
 // 6. requireFinishedProfile

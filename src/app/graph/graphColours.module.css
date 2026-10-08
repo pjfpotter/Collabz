@@ -1,0 +1,58 @@
+/*
+  THE GRAPH'S COLOURS (slice 4, #11, design decision 4).
+
+  Every colour the graph uses is named here, ONCE, with a value for light
+  mode and a value for dark mode. Two things read them:
+
+  - the legend above the graph, which is ordinary HTML, uses them directly
+    with var(--graph-software) and so on;
+  - the graph itself is drawn on a canvas, which can't use CSS, so
+    CohortGraph.tsx looks the values up from this class when it starts.
+
+  That way the legend and the drawing can never disagree about a colour.
+
+  The names starting "--" are CSS variables. Putting them on a class means
+  they only exist inside the element that has the class, so they can't clash
+  with anything else on the site.
+
+  WHY THESE COLOURS: blue and orange are the pair that stays easiest to tell
+  apart for the common kinds of colour blindness. And nothing relies on
+  colour alone: the course is also written in the legend and the panel, a
+  glitch match also has a DASHED ring and a DASHED line, and the viewer's
+  matches are also listed in words under the graph.
+*/
+
+.graphColours {
+  /* A dot's colour is its owner's course. */
+  --graph-software: #2563eb; /* blue */
+  --graph-business: #ea580c; /* orange */
+  /* A course that has no colour of its own yet (one an admin adds later). */
+  --graph-other-course: #6b7280; /* grey */
+
+  /* The ring round each of your top 5, and the lines to them. */
+  --graph-highlight: #be185d; /* deep pink */
+  /* The dashed ring round your glitch match, and the dashed line to it. */
+  --graph-glitch: #0f766e; /* teal */
+
+  /* Every other line, drawn faint. Also the ring round your own dot. */
+  --graph-line: #171717;
+  /* Alias labels, and the thin outline that keeps them readable over lines. */
+  --graph-label: #171717;
+  --graph-label-outline: #ffffff;
+}
+
+/* The same names with lighter values, for a dark background. This follows
+   the device's setting, the same way the rest of the site does
+   (src/app/globals.css). */
+@media (prefers-color-scheme: dark) {
+  .graphColours {
+    --graph-software: #60a5fa;
+    --graph-business: #fb923c;
+    --graph-other-course: #9ca3af;
+    --graph-highlight: #f472b6;
+    --graph-glitch: #2dd4bf;
+    --graph-line: #ededed;
+    --graph-label: #ededed;
+    --graph-label-outline: #0a0a0a;
+  }
+}

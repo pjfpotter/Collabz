@@ -205,16 +205,30 @@ Each file starts with a comment that says the same in more detail, including wha
 
 ## Graph and people search
 
-Track 4 (slice 4, issue #11) builds the cohort graph, the people list and the profile page. **This section is being built**: the helpers below exist, and the three pages are still placeholders.
+Track 4 (slice 4, issue #11) builds the cohort graph, the people list and the profile page. **This section is being built**: `/graph` is built, and the two people pages are still placeholders.
 
 **Routes this track owns:**
 
 | Route | What it will show |
 |---|---|
-| `/graph` | The whole cohort as a graph, with a line for every pair's score |
+| `/graph` | **Built.** The whole cohort as a graph, with a line for every pair's score |
 | `/people` | Everyone as a list, with filters for course, skill and interest |
 | `/people/[alias]` | One person's profile and why you match |
 | `/api/people/[alias]/connect` | Where the "Connect" button posts to |
+
+**To try the graph:** `npm run dev`, pick `02` in the "Dev sign-in as" list, press Switch, and open `/graph`. You need to be signed in as someone with a finished profile: signed out you are sent to `/signin`, and users 31 and 32 (no profile) are sent to `/onboarding`.
+
+**Where the graph's code is:**
+
+| File | What it does |
+|---|---|
+| `src/lib/cohort/graphData.ts` | Works out the dots and lines on the server, including every rule (who is highlighted, how thick and faint each line is). Tested |
+| `src/app/graph/page.tsx` | The page: the legend, the graph, and "Your top 5" and "Your glitch match" as links |
+| `src/app/graph/CohortGraph.tsx` | Draws the dots and lines in the browser, and the panel when you tap a dot. No rules in here |
+| `src/app/graph/CohortGraphLoader.tsx` | Makes sure the drawing code only ever loads in the browser |
+| `src/app/graph/graphColours.module.css` | Every colour the graph uses, for light and dark mode |
+
+**To change how the graph looks**, the numbers are named constants at the top of `graphData.ts` (line thickness and faintness) and `CohortGraph.tsx` (dot sizes, spacing, labels).
 
 **Helpers other tracks may use** (all in `src/lib/cohort/`):
 
@@ -224,7 +238,7 @@ Track 4 (slice 4, issue #11) builds the cohort graph, the people list and the pr
 | `aliasToAddress(alias)` | `aliasAddress.ts` | Turns an alias into the last part of a profile address: "The Feral Sea Captain II" becomes `the-feral-sea-captain-ii`. Link to a profile with `/people/` followed by this |
 | `findPersonByAddress(people, address)` | `aliasAddress.ts` | The other way round: finds the person a profile address belongs to |
 
-**Stand-ins.** This track needs six things that other tracks own and haven't built yet. Rather than wait, it uses simple temporary versions, all in one file: `src/lib/cohort/standIns.tsx`. Join-up (#17) replaces each one with a call to the real thing.
+**Stand-ins.** This track needs six things that other tracks own and haven't built yet. Rather than wait, it uses simple temporary versions, all in one file: `src/lib/cohort/standIns.ts`. (The silhouette picture sits beside it in `SilhouetteStandIn.tsx`, because the browser needs it too.) Join-up (#17) replaces each one with a call to the real thing.
 
 | Stand-in | What it does for now | Real owner | What replaces it |
 |---|---|---|---|
