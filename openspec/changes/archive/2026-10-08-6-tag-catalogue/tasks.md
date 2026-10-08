@@ -39,6 +39,6 @@ Groups follow the layers in `design.md`, so they can be split between us: groups
 
 ## 7. Docs and wrap-up
 
-- [ ] 7.1 Update `README.md`: the `.env` setup, `npm run dev`, `npm test`, `npm run test:e2e`, the project structure, and that the catalogue lives at `/catalogue`. Verify: Tom follows the README from a fresh clone and gets the page and tests running
+- [ ] 7.1 Update `README.md`: the `.env` setup, `npm run dev`, `npm test`, `npm run test:e2e`, the project structure, and that the catalogue lives at `/catalogue`. Verify: Tom follows the README from a fresh clone and gets the page and tests running. *(README written and merged in PR #21. Tom's fresh-clone check was still owed when this change was archived on 8 Oct 2026, Patrick's decision.)*
 - 7.2 *(dropped, Patrick, 5 Oct 2026)* No `contributions.md`: a per-person tally could cause friction in the group. What we want instead is for everyone to be able to explain the codebase, architecture and tech stack
-- [ ] 7.3 After merge, open `/catalogue` on the production URL and repeat the success checks from #6. Verify: all ticked in the issue
+- [x] 7.3 After merge, open `/catalogue` on the production URL and repeat the success checks from #6. Verify: all ticked in the issue
