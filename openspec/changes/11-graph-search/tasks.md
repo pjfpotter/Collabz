@@ -31,9 +31,9 @@ Checked on 8 Oct 2026 against the merged `prisma/schema.prisma`, `src/lib/` and 
 
 ## 3. Graph data
 
-- [ ] 3.1 Add `edgeStyle(score, maxScore)` in `src/lib/cohort/graphData.ts`, returning thickness and opacity, with the numbers as named constants and a comment that they are tuned by eye (design 4). Unit test: both rise with score, stay inside their limits, and behave when every score is equal or zero. Verify: `npm test` passes
-- [ ] 3.2 Add the plain node-and-link builder and `buildGraphData(viewerId, filters)` that feeds it from `getVisiblePeople()`, the edges, `getTopFive` and `GlitchMatch` (design 2). Unit test the builder: flags for viewer, top 5, glitch and filter are right; node ids are alias addresses; the output contains no email and no database user id; 100 made-up people give 4,950 links. Verify: `npm test` passes
-- [ ] 3.3 Integration test `buildGraphData` with hand-made users: an edge to a suspended user is left out, and a glitch match sets `isGlitch` on that link in either direction. Verify: `npm test` passes
+- [x] 3.1 Add `edgeStyle(score, maxScore)` in `src/lib/cohort/graphData.ts`, returning thickness and opacity, with the numbers as named constants and a comment that they are tuned by eye (design 4). Unit test: both rise with score, stay inside their limits, and behave when every score is equal or zero. Verify: `npm test` passes
+- [x] 3.2 Add the plain node-and-link builder and `buildGraphData(viewerId, filters)` that feeds it from `getVisiblePeople()`, the edges, `getTopFive` and `GlitchMatch` (design 2). Unit test the builder: flags for viewer, top 5, glitch and filter are right; node ids are alias addresses; the output contains no email and no database user id; 100 made-up people give 4,950 links. Verify: `npm test` passes
+- [x] 3.3 Integration test `buildGraphData` with hand-made users: an edge to a suspended user is left out, and a glitch match sets `isGlitch` on that link in either direction. Verify: `npm test` passes
 
 ## 4. The graph page
 
