@@ -1,6 +1,6 @@
 // Tests for `npm run seed:fake` (foundation #7, task 3.4), against the real
 // test database. One test per scenario in the pretend-cohort spec
-// (openspec/changes/7-foundation/specs/pretend-cohort/spec.md).
+// (openspec/specs/pretend-cohort/spec.md).
 //
 // What the cohort CONTAINS (who is in the top 5, that scores add up...) is
 // checked without a database in tests/unit/pretendCohort.build.test.ts. These
