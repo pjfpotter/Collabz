@@ -203,6 +203,59 @@ Five of us build different parts at the same time. To stop one track depending o
 
 Each file starts with a comment that says the same in more detail, including what the helper will do once its owner has built it.
 
+## Graph and people search
+
+Track 4 (slice 4, issue #11) builds the cohort graph, the people list and the profile page. All three pages are built. The Connect button is a stand-in until slice 5 (#12) lands: it checks the rules, then says requests aren't switched on yet.
+
+**Routes this track owns:**
+
+| Route | What it will show |
+|---|---|
+| `/graph` | **Built.** The whole cohort as a graph, with a line for every pair's score |
+| `/people` | **Built.** Everyone as a list, best match first, with filters for course, skill and interest |
+| `/people/[alias]` | **Built.** One person's profile, why you match, and the Connect button |
+| `/api/people/[alias]/connect` | **Built.** Where the "Connect" button posts to |
+
+**To try the graph:** `npm run dev`, pick `02` in the "Dev sign-in as" list, press Switch, and open `/graph`. You need to be signed in as someone with a finished profile: signed out you are sent to `/signin`, and users 31 and 32 (no profile) are sent to `/onboarding`.
+
+**Where the graph's code is:**
+
+| File | What it does |
+|---|---|
+| `src/lib/cohort/graphData.ts` | Works out the dots and lines on the server, including every rule (who is highlighted, how thick and faint each line is). Tested |
+| `src/app/graph/page.tsx` | The page: the legend, the graph, and "Your top 5" and "Your glitch match" as links |
+| `src/app/graph/CohortGraph.tsx` | Draws the dots and lines in the browser, and the panel when you tap a dot. No rules in here |
+| `src/app/graph/CohortGraphLoader.tsx` | Makes sure the drawing code only ever loads in the browser |
+| `src/app/graph/graphColours.module.css` | Every colour the graph uses, for light and dark mode |
+
+**Filters.** `/people` can be narrowed by course, one skill and one interest, and a person must fit all the ones chosen. The filters live in the page address (`/people?course=business`), so they survive a refresh and can be shared, and "Show on the graph" hands the same address to `/graph`, which dims everyone who doesn't fit. The rules are in `src/lib/cohort/search.ts`. **The Skill and Interest dropdowns are hidden for now**: they appear by themselves once slice 2 (#9) adds the `skills` and `interests` categories.
+
+**The profile page and Connect.** `/people/[alias]` shows a person's alias, silhouette, bio, course and tags grouped by category (retired tags included). For someone else it adds the score and the reasons, and then one of: a **Connect** button (they are in your top 5 or are your glitch match), the status of a pending or approved request between you, or nothing. Your own profile shows neither, and links to `/account`. An address nobody visible has, including a suspended person's, shows "page not found". The button posts to `/api/people/[alias]/connect`, which checks the top 5 / glitch rule again on the server (hiding a button stops nobody sending the request by hand): 401 if signed out, 404 if nobody lives there, 403 if the person isn't one of your matches, otherwise it calls `sendConnectionRequest()`. The shared rules are in `src/lib/cohort/profile.ts`.
+
+**To change how the graph looks**, the numbers are named constants at the top of `graphData.ts` (line thickness and faintness) and `CohortGraph.tsx` (dot sizes, spacing, labels).
+
+**Helpers other tracks may use** (all in `src/lib/cohort/`):
+
+| Helper | File | What it does |
+|---|---|---|
+| `getVisiblePeople()` | `visiblePeople.ts` | Everyone who has finished their profile and isn't suspended, with alias, silhouette, course and tags. Never an email. If your page lists people, start from this, so a suspended person can't slip through |
+| `aliasToAddress(alias)` | `aliasAddress.ts` | Turns an alias into the last part of a profile address: "The Feral Sea Captain II" becomes `the-feral-sea-captain-ii`. Link to a profile with `/people/` followed by this |
+| `findPersonByAddress(people, address)` | `aliasAddress.ts` | The other way round: finds the person a profile address belongs to |
+| `getConnectPermission(viewerId, otherUserId)` | `profile.ts` | Says why the viewer may connect with someone (`"top-five"` or `"glitch"`), or `null` if they may not. Slice 5's request screens can use it to stay in step with the profile page |
+
+**Stand-ins.** This track needs six things that other tracks own and haven't built yet. Rather than wait, it uses simple temporary versions, all in one file: `src/lib/cohort/standIns.ts`. (The silhouette picture sits beside it in `SilhouetteStandIn.tsx`, because the browser needs it too.) Join-up (#17) replaces each one with a call to the real thing.
+
+| Stand-in | What it does for now | Real owner | What replaces it |
+|---|---|---|---|
+| `getTopFive(userId)` | Reads the stored scores and returns the five best visible matches. Ties go to whoever finished their profile first | Track 3 (#10) | Track 3's top 5 query |
+| `explainMatch(userAId, userBId)` | A few short sentences from the three stored parts of a score, plus the skills and interests both people picked | Track 3 (#10) | Track 3's real breakdown |
+| `sendConnectionRequest(fromUserId, toUserId)` | Stores nothing and answers "Connection requests aren't switched on yet." | Track 5 (#12) | Track 5's request helper |
+| `profileBio(tagsByCategory)` | One sentence from the Hero Story and Energy tag names | Track 2 (#9) | `generateBio()` |
+| `SilhouetteStandIn` | The same head-and-shoulders shape for everyone | Track 2 (#9) | `silhouetteUrl()` and the 12 pictures |
+| `requireFinishedProfile()` | Sends a signed-out visitor to `/signin` and someone with no finished profile to `/onboarding` | Track 2 (#9) | `redirectIfOnboardingIncomplete()` |
+
+The names for tracks 3 and 5 are track 4's proposal and aren't agreed yet. **If you are on track 2, 3 or 5:** you don't need to do anything with this file. Build your real version under whatever name you settle on, and join-up does the swap.
+
 ## Project structure
 
 ```
@@ -225,6 +278,7 @@ src/
     conversations.ts   # openConversation(), closeConversation() (shared helpers)
     userPair.ts        # orderUserPair(): one agreed order for a pair of users
     pretendCohort.ts   # the on/off switch for pretend students and the dev switcher
+    cohort/            # slice 4: who is visible, alias addresses, and the stand-ins
   generated/prisma/    # Prisma's generated client (not committed)
 prisma/
   schema.prisma        # the database tables. Flag changes first (see CLAUDE.md)

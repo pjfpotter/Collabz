@@ -8,6 +8,11 @@
 import { expect, test } from "@playwright/test";
 
 // Every link in the nav bar, with the heading its page should show.
+//
+// `needsProfile: true` marks a page that is BUILT and only for people with a
+// finished profile. Nobody is signed in during these tests, so following that
+// link ends up on the sign-in page instead. (What the page shows to someone
+// who is signed in is tested in that page's own file, e.g. graph.spec.ts.)
 // Keep this in step with `navLinks` in src/components/NavBar.tsx: if a link
 // is added there, the "has a link to every page" test below fails until it
 // is added here too.
@@ -17,8 +22,8 @@ const publicLinks = [
   { label: "Sign in", path: "/signin", heading: "Sign in" },
   { label: "Onboarding", path: "/onboarding", heading: "Onboarding" },
   { label: "Matches", path: "/matches", heading: "Matches" },
-  { label: "Graph", path: "/graph", heading: "Graph" },
-  { label: "People", path: "/people", heading: "People" },
+  { label: "Graph", path: "/graph", heading: "Graph", needsProfile: true },
+  { label: "People", path: "/people", heading: "People", needsProfile: true },
   { label: "Requests", path: "/requests", heading: "Requests" },
   { label: "Messages", path: "/messages", heading: "Messages" },
   { label: "Account", path: "/account", heading: "Account" },
@@ -58,8 +63,14 @@ for (const link of publicLinks) {
 
     await mainNav(page).getByRole("link", { name: link.label, exact: true }).click();
 
-    await expect(page).toHaveURL(new RegExp(`${link.path}$`));
-    await expect(page.getByRole("heading", { level: 1, name: link.heading })).toBeVisible();
+    if (link.needsProfile) {
+      // A built page that needs a finished profile: signed out, the link
+      // leads to the sign-in page.
+      await expect(page).toHaveURL(/\/signin$/);
+    } else {
+      await expect(page).toHaveURL(new RegExp(`${link.path}$`));
+      await expect(page.getByRole("heading", { level: 1, name: link.heading })).toBeVisible();
+    }
     await expect(mainNav(page)).toBeVisible();
   });
 }
@@ -76,7 +87,7 @@ for (const link of adminLinks) {
 }
 
 test("the Collabz link goes back to the home page", async ({ page }) => {
-  await page.goto("/people");
+  await page.goto("/requests");
 
   await mainNav(page).getByRole("link", { name: "Collabz" }).click();
 
@@ -93,12 +104,16 @@ test("a page that isn't built yet says so and names who will build it", async ({
 });
 
 // Spec scenario: "A page with a person in its address"
-test("/people/ followed by any alias shows the profile placeholder, not an error", async ({ page }) => {
+// Slice 4 (#11) replaced the placeholder with the real profile page, which is
+// only for people with a finished profile. Nobody is signed in here, so the
+// route still answers for any alias (no error) by sending the visitor to
+// sign in. What a signed-in person sees is tested in profile.spec.ts.
+test("/people/ followed by any alias is a real route: signed out, it goes to sign in, not an error", async ({ page }) => {
   const response = await page.goto("/people/the-feral-sea-captain");
 
   expect(response?.status()).toBe(200);
-  await expect(page.getByRole("heading", { level: 1, name: "Profile" })).toBeVisible();
-  await expect(page.getByText("Slice 4 (issue #11) will build it.")).toBeVisible();
+  await expect(page).toHaveURL(/\/signin/);
+  await expect(page.getByRole("heading", { level: 1, name: "Sign in" })).toBeVisible();
 });
 
 // Spec scenario: "Existing pages are unchanged"
@@ -114,7 +129,7 @@ test("/catalogue still shows the catalogue, now under the nav bar", async ({ pag
 test("at phone width every link is reachable and nothing scrolls sideways", async ({ page }) => {
   // 375 pixels is a common small phone.
   await page.setViewportSize({ width: 375, height: 700 });
-  await page.goto("/people");
+  await page.goto("/requests");
 
   for (const link of [...publicLinks, ...adminLinks]) {
     await expect(
