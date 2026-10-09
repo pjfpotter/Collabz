@@ -98,6 +98,8 @@ git commit --amend --trailer "Reviewed-by: <name>"
 
 We use GitHub's native PR approval as the primary sign-off mechanism — a named reviewer clicks **Approve** before merge. That merge is the evidence trail.
 
+> **Temporary exception (set 9 Oct 2026, for the Thursday deadline):** Tom and Marvin are unavailable, so the `master` ruleset now requires 0 approving reviews and authors may merge their own PRs. Pull requests are still required. Why: GitHub never counts an author's own approval, so a required review would block everyone. `Reviewed-by` is still only added when someone *else* has actually looked at the diff. Put the required review back to 1 after the deadline.
+
 To cover the bit PR approval alone doesn't prove — that each person can actually explain their contribution — we add two small files into the same `openspec/changes/<issue-number>-<slug>/` folder OpenSpec already creates:
 
 - **`approval.md`** — one line per person: "Reviewed, can explain what's in/out, where it lives, how it's checked. Approved <date>."
