@@ -205,7 +205,7 @@ Each file starts with a comment that says the same in more detail, including wha
 
 ## Graph and people search
 
-Track 4 (slice 4, issue #11) builds the cohort graph, the people list and the profile page. **This section is being built**: `/graph` and `/people` are built, and the profile page is still a placeholder.
+Track 4 (slice 4, issue #11) builds the cohort graph, the people list and the profile page. All three pages are built. The Connect button is a stand-in until slice 5 (#12) lands: it checks the rules, then says requests aren't switched on yet.
 
 **Routes this track owns:**
 
@@ -213,8 +213,8 @@ Track 4 (slice 4, issue #11) builds the cohort graph, the people list and the pr
 |---|---|
 | `/graph` | **Built.** The whole cohort as a graph, with a line for every pair's score |
 | `/people` | **Built.** Everyone as a list, best match first, with filters for course, skill and interest |
-| `/people/[alias]` | One person's profile and why you match |
-| `/api/people/[alias]/connect` | Where the "Connect" button posts to |
+| `/people/[alias]` | **Built.** One person's profile, why you match, and the Connect button |
+| `/api/people/[alias]/connect` | **Built.** Where the "Connect" button posts to |
 
 **To try the graph:** `npm run dev`, pick `02` in the "Dev sign-in as" list, press Switch, and open `/graph`. You need to be signed in as someone with a finished profile: signed out you are sent to `/signin`, and users 31 and 32 (no profile) are sent to `/onboarding`.
 
@@ -230,6 +230,8 @@ Track 4 (slice 4, issue #11) builds the cohort graph, the people list and the pr
 
 **Filters.** `/people` can be narrowed by course, one skill and one interest, and a person must fit all the ones chosen. The filters live in the page address (`/people?course=business`), so they survive a refresh and can be shared, and "Show on the graph" hands the same address to `/graph`, which dims everyone who doesn't fit. The rules are in `src/lib/cohort/search.ts`. **The Skill and Interest dropdowns are hidden for now**: they appear by themselves once slice 2 (#9) adds the `skills` and `interests` categories.
 
+**The profile page and Connect.** `/people/[alias]` shows a person's alias, silhouette, bio, course and tags grouped by category (retired tags included). For someone else it adds the score and the reasons, and then one of: a **Connect** button (they are in your top 5 or are your glitch match), the status of a pending or approved request between you, or nothing. Your own profile shows neither, and links to `/account`. An address nobody visible has, including a suspended person's, shows "page not found". The button posts to `/api/people/[alias]/connect`, which checks the top 5 / glitch rule again on the server (hiding a button stops nobody sending the request by hand): 401 if signed out, 404 if nobody lives there, 403 if the person isn't one of your matches, otherwise it calls `sendConnectionRequest()`. The shared rules are in `src/lib/cohort/profile.ts`.
+
 **To change how the graph looks**, the numbers are named constants at the top of `graphData.ts` (line thickness and faintness) and `CohortGraph.tsx` (dot sizes, spacing, labels).
 
 **Helpers other tracks may use** (all in `src/lib/cohort/`):
@@ -239,6 +241,7 @@ Track 4 (slice 4, issue #11) builds the cohort graph, the people list and the pr
 | `getVisiblePeople()` | `visiblePeople.ts` | Everyone who has finished their profile and isn't suspended, with alias, silhouette, course and tags. Never an email. If your page lists people, start from this, so a suspended person can't slip through |
 | `aliasToAddress(alias)` | `aliasAddress.ts` | Turns an alias into the last part of a profile address: "The Feral Sea Captain II" becomes `the-feral-sea-captain-ii`. Link to a profile with `/people/` followed by this |
 | `findPersonByAddress(people, address)` | `aliasAddress.ts` | The other way round: finds the person a profile address belongs to |
+| `getConnectPermission(viewerId, otherUserId)` | `profile.ts` | Says why the viewer may connect with someone (`"top-five"` or `"glitch"`), or `null` if they may not. Slice 5's request screens can use it to stay in step with the profile page |
 
 **Stand-ins.** This track needs six things that other tracks own and haven't built yet. Rather than wait, it uses simple temporary versions, all in one file: `src/lib/cohort/standIns.ts`. (The silhouette picture sits beside it in `SilhouetteStandIn.tsx`, because the browser needs it too.) Join-up (#17) replaces each one with a call to the real thing.
 

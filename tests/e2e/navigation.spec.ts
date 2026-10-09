@@ -104,12 +104,16 @@ test("a page that isn't built yet says so and names who will build it", async ({
 });
 
 // Spec scenario: "A page with a person in its address"
-test("/people/ followed by any alias shows the profile placeholder, not an error", async ({ page }) => {
+// Slice 4 (#11) replaced the placeholder with the real profile page, which is
+// only for people with a finished profile. Nobody is signed in here, so the
+// route still answers for any alias (no error) by sending the visitor to
+// sign in. What a signed-in person sees is tested in profile.spec.ts.
+test("/people/ followed by any alias is a real route: signed out, it goes to sign in, not an error", async ({ page }) => {
   const response = await page.goto("/people/the-feral-sea-captain");
 
   expect(response?.status()).toBe(200);
-  await expect(page.getByRole("heading", { level: 1, name: "Profile" })).toBeVisible();
-  await expect(page.getByText("Slice 4 (issue #11) will build it.")).toBeVisible();
+  await expect(page).toHaveURL(/\/signin/);
+  await expect(page.getByRole("heading", { level: 1, name: "Sign in" })).toBeVisible();
 });
 
 // Spec scenario: "Existing pages are unchanged"

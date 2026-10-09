@@ -2,11 +2,22 @@
 
 Start only once #7 (foundation) has merged into `master` and this branch has been rebased onto it. Groups build on each other: the shared "who is visible" data (2), then the graph (3 and 4), the people list (5), the profile page (6). Each group lands its own tests and its own part of the README. Steps marked **(human)** need a team conversation.
 
-## Where we left off (8 Oct 2026, end of session)
+## Where we left off (9 Oct 2026)
 
-**Done and committed on `feature/11-graph-search`: groups 1 to 5 (18 of 25 tasks).** `/graph` and `/people` are built and tested. The branch is NOT pushed yet, and there is no PR for the build.
+**Groups 1 to 5 are committed and pushed. Group 6 (22 of 25 tasks) is built, tested and ticked but NOT yet committed.** `/graph`, `/people` and `/people/[alias]` all work, and so does `POST /api/people/[alias]/connect`.
 
-**Next: group 6, the profile page and Connect** (tasks 6.1 to 6.4), then group 7 (push, PR, preview checks). Nothing in group 6 is started. `/people/[alias]` is still the foundation's placeholder.
+**Left: group 7, which needs a human.** 7.1 needs the commit, the push, the PR, and the five preview checks (the fifth on a real phone). 7.2 needs two issue comments. Ready-to-paste drafts of the PR description and both comments were written to the session's scratchpad (`pr-body.md`, `issue-comments.md`); if they are gone, the "Things to know" and "Decisions" below are the content.
+
+Last full run (9 Oct): `npm test` 209 passed, `npm run test:e2e` 66 passed, type-check, lint and `next build` clean.
+
+**Decisions made in group 6 where the design was silent** (the PR description repeats these):
+- An existing pending or approved request shows "A connection request is waiting between you two." or "You are connected." in place of the button. It doesn't say who asked, because accepting is slice 5's job.
+- Someone who is both in your top 5 and your glitch match is described as the glitch match.
+- A glitch match who has been suspended since gets no Connect.
+- Connecting with yourself answers 403.
+- The "top 5 or glitch match" rule is one function, `getConnectPermission()` in `src/lib/cohort/profile.ts`, used by both the page and the route so they can't disagree.
+- Not added, as the note below asks to check first: "why you match" inside the graph's panel. The profile page already shows it.
+- The pretend cohort already contains some `ConnectionRequest` rows, so `tests/e2e/profile.spec.ts` clears them before it starts.
 
 Things the next session needs to know that the tasks below don't say:
 
@@ -14,7 +25,7 @@ Things the next session needs to know that the tasks below don't say:
 - **Asked for, not built, and probably another slice:** richer animation (for example lighting up a dot's lines on hover or tap), and "why you match" inside the graph's panel. The second could be a small extra in group 6, since `explainMatch()` already exists. Ask before adding either.
 - **`standIns.ts` holds five of the six stand-ins.** `SilhouetteStandIn` is in its own file, `SilhouetteStandIn.tsx`, because the browser needs it and can't import a file that talks to the database. `design.md` doesn't mention this.
 - **A pair can have more than one `ConnectionRequest`** (see "Names used" below). Task 6.2 must look at the newest pending or approved one, in either direction.
-- **Three foundation tests were changed** in `tests/e2e/navigation.spec.ts`, because `/graph` and `/people` are no longer placeholders. Group 6 will need the same for the "/people/ followed by any alias shows the profile placeholder" test.
+- **Four foundation tests were changed** in `tests/e2e/navigation.spec.ts`, because `/graph`, `/people` and `/people/[alias]` are no longer placeholders. (The fourth, for the profile address, now expects a signed-out visitor to be sent to `/signin`.)
 - **`next.config.ts` now sets `turbopack.root`** (commit `c875012`). It is a shared file, so mention it in the PR.
 - **The three screenshots in `screenshots/`** were taken before the movement was added. Retake them for the PR (task 7.1) if they should match exactly.
 - **Not yet tried on a real phone.** The one thing to check there: with pulling switched on, a tap that wobbles slightly might count as a pull and not open the panel.
@@ -73,10 +84,10 @@ Checked on 8 Oct 2026 against the merged `prisma/schema.prisma`, `src/lib/` and 
 
 ## 6. The profile page and Connect
 
-- [ ] 6.1 Replace #7's placeholder with `src/app/people/[alias]/page.tsx`: `requireFinishedProfile()`, `findPersonByAddress`, `notFound()` for no match, then alias, silhouette, `profileBio`, course and tags grouped by category in catalogue order, including retired tags (design 10). Verify: `npm run dev`, a profile opened from the list shows all of these and no email
-- [ ] 6.2 Add the match section for someone else's profile: the score, `explainMatch()`, and one of a "Connect" button, the status of an existing pending or approved request, or nothing; and for your own profile neither, with a link to `/account` (design 10). Verify: as `pretend-user-02`, a top 5 profile shows the button, their glitch match shows the button and says so, and a profile outside both shows neither
-- [ ] 6.3 Add `src/app/api/people/[alias]/connect/route.ts`: 401 if not signed in, 404 if nobody matches, 403 if the person isn't in the viewer's top 5 or their glitch match, otherwise call `sendConnectionRequest()` and return its answer; and make the button post to it and show "Connection requests aren't switched on yet" (design 10). Integration test the route for each of those cases, and that 403 stores nothing. Verify: `npm test` passes
-- [ ] 6.4 Add `tests/e2e/profile.spec.ts`: a profile outside the top 5 shows the breakdown and no Connect button; one in the top 5 shows the button and pressing it shows the message; your own shows neither; an unknown address and a suspended person's address show "page not found"; signed out goes to `/signin`. Verify: `npm run test:e2e` passes
+- [x] 6.1 Replace #7's placeholder with `src/app/people/[alias]/page.tsx`: `requireFinishedProfile()`, `findPersonByAddress`, `notFound()` for no match, then alias, silhouette, `profileBio`, course and tags grouped by category in catalogue order, including retired tags (design 10). Verify: `npm run dev`, a profile opened from the list shows all of these and no email
+- [x] 6.2 Add the match section for someone else's profile: the score, `explainMatch()`, and one of a "Connect" button, the status of an existing pending or approved request, or nothing; and for your own profile neither, with a link to `/account` (design 10). Verify: as `pretend-user-02`, a top 5 profile shows the button, their glitch match shows the button and says so, and a profile outside both shows neither
+- [x] 6.3 Add `src/app/api/people/[alias]/connect/route.ts`: 401 if not signed in, 404 if nobody matches, 403 if the person isn't in the viewer's top 5 or their glitch match, otherwise call `sendConnectionRequest()` and return its answer; and make the button post to it and show "Connection requests aren't switched on yet" (design 10). Integration test the route for each of those cases, and that 403 stores nothing. Verify: `npm test` passes
+- [x] 6.4 Add `tests/e2e/profile.spec.ts`: a profile outside the top 5 shows the breakdown and no Connect button; one in the top 5 shows the button and pressing it shows the message; your own shows neither; an unknown address and a suspended person's address show "page not found"; signed out goes to `/signin`. Verify: `npm run test:e2e` passes
 
 ## 7. Deploy and hand over
 
