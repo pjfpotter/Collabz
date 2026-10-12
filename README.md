@@ -196,7 +196,10 @@ Five of us build different parts at the same time. To stop one track depending o
 |---|---|---|---|
 | `getCurrentUser()` | `src/lib/currentUser.ts` | Returns the signed-in user, or `null`. For now "signed in" means "picked in the dev switcher" | Slice 1 (#8) swaps in real sign-in |
 | `requireAdmin()` | `src/lib/currentUser.ts` | For admin pages. Sends a signed-out visitor to `/signin`, shows a member "page not found", and returns the user if they are an admin | Slice 8 (#15) |
-| `scoreUser(userId)` | `src/lib/scoring.ts` | Does nothing yet. Call it after a user finishes onboarding or edits their answers | Slice 3 (#10) fills it in |
+| `scoreUser(userId)` | `src/lib/scoring.ts` | Rescores one user against everyone with a finished profile and keeps their glitch match valid. Call it after a user finishes onboarding or edits their answers, and after an admin suspends them or resets their onboarding so they drop out | Slice 3 (#10), built |
+| `getTopFive(userId)` | `src/lib/matching/` | The user's five best matches, best first, from the stored scores. Suspended and unfinished people are left out | Slice 3 (#10), built |
+| `explainMatch(userAId, userBId)` | `src/lib/matching/` | Why two people match, in plain sentences, with the points each is worth. The first id is "you". `null` if either person has no scores | Slice 3 (#10), built |
+| `ensureGlitchMatch(userId)` | `src/lib/matching/` | The user's stored glitch match, choosing one if they have none yet. Safe to call on every page load | Slice 3 (#10), built |
 | `openConversation(userAId, userBId)` | `src/lib/conversations.ts` | Returns the conversation between two users, creating it if needed. Safe to call twice | Slice 6 (#13) |
 | `closeConversation(conversationId)` | `src/lib/conversations.ts` | Marks a conversation as closed. Safe to call twice | Slice 6 (#13) |
 | `orderUserPair(a, b)` | `src/lib/userPair.ts` | Puts two user ids in the agreed order (lower first) for the `Edge` and `Conversation` tables, which store each pair once | Foundation (#7) |

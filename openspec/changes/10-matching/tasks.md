@@ -42,9 +42,9 @@ Checked on 12 Oct 2026 against the merged `master` (task 1.3). Everything in `de
 
 ## 5. Top 5 and explanation for pages
 
-- [ ] 5.1 `src/lib/matching/topFive.ts`: `getTopFive(userId)` with the tie-break from the spec (score, earliest finisher, lower id), leaving out suspended and unfinished people (design 7). Verify: integration test with equal scores returns the earlier finisher first and the same order on two calls
-- [ ] 5.2 `explainMatch(userAId, userBId)` loading the two people and calling the pure function from 3.2, returning `{ score, sentences, sharedSkills, sharedInterests }`. Verify: integration test for a pretend pair, including one with shared Skills that do not change the score
-- [ ] 5.3 `src/lib/matching/index.ts` exporting `scoreUser`, `getTopFive`, `explainMatch` and `ensureGlitchMatch`, and add them to the shared helper list in the README. Verify: `src/lib/` import check in `tests/integration/sharedHelpers.test.ts` still passes
+- [x] 5.1 `src/lib/matching/topFive.ts`: `getTopFive(userId)` with the tie-break from the spec (score, earliest finisher, lower id), leaving out suspended and unfinished people (design 7). Verify: integration test with equal scores returns the earlier finisher first and the same order on two calls
+- [x] 5.2 `explainMatch(userAId, userBId)` loading the two people and calling the pure function from 3.2, returning `{ score, sentences, sharedSkills, sharedInterests }`. Verify: integration test for a pretend pair, including one with shared Skills that do not change the score
+- [x] 5.3 `src/lib/matching/index.ts` exporting `scoreUser`, `getTopFive`, `explainMatch` and `ensureGlitchMatch`, and add them to the shared helper list in the README. Verify: `src/lib/` import check in `tests/integration/sharedHelpers.test.ts` still passes
 
 ## 6. The `/matches` page
 
