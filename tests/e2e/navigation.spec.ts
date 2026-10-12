@@ -24,7 +24,7 @@ const publicLinks = [
   { label: "Matches", path: "/matches", heading: "Matches" },
   { label: "Graph", path: "/graph", heading: "Graph", needsProfile: true },
   { label: "People", path: "/people", heading: "People", needsProfile: true },
-  { label: "Requests", path: "/requests", heading: "Requests" },
+  { label: "Requests", path: "/requests", heading: "Requests", needsProfile: true },
   { label: "Messages", path: "/messages", heading: "Messages" },
   { label: "Account", path: "/account", heading: "Account" },
 ];
