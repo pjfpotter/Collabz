@@ -34,9 +34,9 @@ Names used, so the tasks stay short:
 
 ## 5. The list, the count and `areConnected`
 
-- [ ] 5.1 Add `src/lib/requests/listRequests.ts` with `getRequestsPage(userId)` returning the waiting requests (alias address, alias, silhouette, request id, sent date) and the sent requests (same, plus a status of `waiting`, `connected` or `declined`), and `countWaitingRequests(userId)` using the same waiting filter (design decision 5). Integration test: a suspended sender's and a blocked sender's pending requests are in neither the list nor the count; the count equals the list's length; nothing in the result is an email or a user id. Verify: `npm test` passes
-- [ ] 5.2 Add `src/lib/requests/areConnected.ts` as in design decision 6. Integration test: approved either way round is true; pending, declined and none are false; approved then blocked in either direction is false. Verify: `npm test` passes
-- [ ] 5.3 README: list `areConnected`, `countWaitingRequests` and `getRequestsPage` in the shared helpers table, with "Slice 7 uses `areConnected` before serving a photo" as the note. Verify: all three appear
+- [x] 5.1 Add `src/lib/requests/listRequests.ts` with `getRequestsPage(userId)` returning the waiting requests (alias address, alias, silhouette, request id, sent date) and the sent requests (same, plus a status of `waiting`, `connected` or `declined`), and `countWaitingRequests(userId)` using the same waiting filter (design decision 5). Integration test: a suspended sender's and a blocked sender's pending requests are in neither the list nor the count; the count equals the list's length; nothing in the result is an email or a user id. Verify: `npm test` passes
+- [x] 5.2 Add `src/lib/requests/areConnected.ts` as in design decision 6. Integration test: approved either way round is true; pending, declined and none are false; approved then blocked in either direction is false. Verify: `npm test` passes
+- [x] 5.3 README: list `areConnected`, `countWaitingRequests` and `getRequestsPage` in the shared helpers table, with "Slice 7 uses `areConnected` before serving a photo" as the note. Verify: all three appear
 
 ## 6. The page and the nav count
 

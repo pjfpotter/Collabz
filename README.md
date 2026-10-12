@@ -282,6 +282,9 @@ Track 5 (slice 5, issue #12) lets someone ask a match to connect, and the other 
 |---|---|---|
 | `sendConnectionRequest(fromUserId, toUserId)` | `sendRequest.ts` | Stores a pending request, or refuses with a `reason` and a sentence the page can show as it is. All the send rules live here. The Connect button already calls it |
 | `answerRequest(requestId, viewerId, "approve" or "decline")` | `answerRequest.ts` | Approves or declines, and on approve calls `openConversation()` |
+| `areConnected(userIdA, userIdB)` | `areConnected.ts` | True when the two have an approved request and neither has blocked the other. **Slice 7 (#14) uses this before serving a photo.** Slice 5 builds no photo code, only this rule |
+| `countWaitingRequests(userId)` | `listRequests.ts` | How many requests are waiting for this person's answer: the number on the nav bar's Requests link. Always the length of the page's waiting list |
+| `getRequestsPage(userId)` | `listRequests.ts` | The two lists for `/requests`: waiting for you, and sent by you with their status. Only aliases, addresses and silhouette ids: never an email or a user id |
 
 The words people see (every refusal and success sentence) are in `messages.ts`, so the code, the tests and the pages can't drift apart.
 
