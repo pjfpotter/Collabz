@@ -39,6 +39,14 @@ export type SeedCourse = {
   name: string;
 };
 
+// One Seeking tag and the Quality tags that satisfy it (slice 3, #10).
+// A Seeking tag is met when the other person has ANY ONE of these Qualities.
+// seed.ts turns each Quality in the list into one TagPairing row.
+export type SeedPairing = {
+  seekingTagId: string;
+  qualityTagIds: string[];
+};
+
 export const seedCategories: SeedCategory[] = [
   {
     id: "hero-story",
@@ -447,4 +455,67 @@ export const seedCategories: SeedCategory[] = [
 export const seedCourses: SeedCourse[] = [
   { id: "software", name: "Software" },
   { id: "business", name: "Business" },
+];
+
+// Which Seeking tag is satisfied by which Quality tags (slice 3, #10, design
+// decision 3). The matching score's "complement" part counts these.
+//
+// WHY THESE ARE WRITTEN BY ID AND NOT BY NAME: tag names can be reworded by
+// an admin, but an id never changes (rule B2), so a pairing keeps pointing
+// at the right tag after a rename.
+//
+// This is the team's agreed list (see design.md for the reason behind each
+// pair). Every one of the 12 Seeking tags appears once, and every one of the
+// 12 Qualities satisfies at least one Seeking tag. 23 pairs in total.
+export const seedPairings: SeedPairing[] = [
+  {
+    seekingTagId: "seeking-makes-money-happen",
+    qualityTagIds: ["qualities-knows-someone", "qualities-room-believes-it"],
+  },
+  {
+    seekingTagId: "seeking-finishes-what-i-start",
+    qualityTagIds: ["qualities-finishes-the-thing", "qualities-keeps-operation-running"],
+  },
+  {
+    seekingTagId: "seeking-tells-me-idea-is-bad",
+    qualityTagIds: ["qualities-says-hard-thing-kindly", "qualities-notices-what-was-missed"],
+  },
+  {
+    seekingTagId: "seeking-makes-it-real",
+    qualityTagIds: ["qualities-builds-with-hands", "qualities-fog-into-floor-plan"],
+  },
+  {
+    seekingTagId: "seeking-boring-bits",
+    qualityTagIds: ["qualities-keeps-operation-running", "qualities-finishes-the-thing"],
+  },
+  {
+    seekingTagId: "seeking-believes-before-proof",
+    qualityTagIds: ["qualities-room-believes-it", "qualities-keeps-going-after-no"],
+  },
+  {
+    seekingTagId: "seeking-knows-the-room",
+    qualityTagIds: ["qualities-knows-someone", "qualities-room-believes-it"],
+  },
+  {
+    seekingTagId: "seeking-stays-when-hard",
+    qualityTagIds: ["qualities-stays-calm", "qualities-keeps-going-after-no"],
+  },
+  {
+    // Only one Quality is about how things look, so this has one pair.
+    seekingTagId: "seeking-makes-it-look-good",
+    qualityTagIds: ["qualities-beautiful-on-purpose"],
+  },
+  {
+    seekingTagId: "seeking-asks-smart-questions",
+    qualityTagIds: ["qualities-notices-what-was-missed", "qualities-goes-deep"],
+  },
+  {
+    // The weakest pairing, and the one most worth arguing about (design 3).
+    seekingTagId: "seeking-matches-my-chaos",
+    qualityTagIds: ["qualities-goes-deep", "qualities-keeps-going-after-no"],
+  },
+  {
+    seekingTagId: "seeking-done-this-before",
+    qualityTagIds: ["qualities-knows-someone", "qualities-fog-into-floor-plan"],
+  },
 ];

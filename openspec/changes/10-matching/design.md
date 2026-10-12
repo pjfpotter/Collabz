@@ -40,7 +40,7 @@ For each direction, complement counts how many of one person's Seeking tags are 
 
 ### 3. The pairings are drafted here and edited by the team before approval
 
-12 Seeking tags, each paired with the Quality tags that would satisfy it (24 rows). This is **a draft for the team to change**, in the same way slice 2's tag lists were: the wording of the tags only implies the pairings. It was checked against `prisma/seed-data.ts`: every id below exists, and every one of the 12 Quality tags satisfies at least one Seeking tag, so no Quality is dead weight.
+12 Seeking tags, each paired with the Quality tags that would satisfy it (23 rows: 11 Seeking tags have two Qualities and "Makes it look as good as it is" has one). This is **a draft for the team to change**, in the same way slice 2's tag lists were: the wording of the tags only implies the pairings. It was checked against `prisma/seed-data.ts`: every id below exists, and every one of the 12 Quality tags satisfies at least one Seeking tag, so no Quality is dead weight.
 
 Each Seeking tag is satisfied by two Qualities, so a Seeking tag is met if the other person has **either** one (decision 2).
 
