@@ -4,8 +4,8 @@
 //
 // It is a Client Component because pressing it sends something from the
 // browser. It posts to /api/people/[alias]/connect and shows the answer in
-// words. Until slice 5 (#12) lands, the answer is always "Connection requests
-// aren't switched on yet."
+// words: "Your connection request has been sent.", or the reason it was
+// refused (slice 5, #12, src/lib/requests/messages.ts).
 
 import { useState } from "react";
 

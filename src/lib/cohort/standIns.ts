@@ -1,29 +1,34 @@
 // STAND-INS: temporary versions of things OTHER TRACKS own (slice 4, #11,
 // design decision 9).
 //
-// The graph, the people list and the profile page need six things that
-// belong to tracks 2, 3 and 5, and those tracks are being built at the same
+// The graph, the people list and the profile page need five things that
+// belong to tracks 2 and 3, and those tracks are being built at the same
 // time as this one. Instead of waiting, track 4 uses the simple versions in
 // this file.
+//
+// A SIXTH THING, sendConnectionRequest, WAS A STAND-IN UNTIL SLICE 5 (#12).
+// It is real now (src/lib/requests/sendRequest.ts). It is still exported from
+// here, as one line in section 3, so the route and the pages that import it
+// from this file did not have to change.
 //
 // WHY THEY ARE ALL IN ONE FILE: join-up (#17) is then one mechanical job:
 // open this file, replace the inside of each function with a call to the real
 // one, and delete whatever is left. Nobody has to hunt through the pages.
 //
-// THE RULE FOR TRACK 4's OWN CODE: import these six names from here and
+// THE RULE FOR TRACK 4's OWN CODE: import these names from here and
 // nowhere else. Never import another track's files directly (CLAUDE.md).
 //
 // | Stand-in                | Real owner     | Swapped for                       |
 // |-------------------------|----------------|-----------------------------------|
 // | getTopFive              | track 3 (#10)  | track 3's top 5 query             |
 // | explainMatch            | track 3 (#10)  | track 3's real breakdown          |
-// | sendConnectionRequest   | track 5 (#12)  | track 5's request helper          |
 // | profileBio              | track 2 (#9)   | generateBio()                     |
 // | SilhouetteStandIn       | track 2 (#9)   | silhouetteUrl() + the 12 pictures |
 // | requireFinishedProfile  | track 2 (#9)   | redirectIfOnboardingIncomplete()  |
 //
-// The names for tracks 3 and 5 are track 4's PROPOSAL. They are not agreed
-// yet (task 1.2), so join-up may also need to rename them.
+// The names for track 3 are track 4's PROPOSAL. They are not agreed yet (task
+// 1.2), so join-up may also need to rename them. Track 5's name was agreed
+// when slice 5 was built.
 //
 // ONE EXCEPTION: SilhouetteStandIn lives in its own file next to this one
 // (see section 5 below for why). It is still listed and exported here.
@@ -234,43 +239,21 @@ function describeTension(tension: number): string {
 }
 
 // ---------------------------------------------------------------------------
-// 3. sendConnectionRequest
+// 3. sendConnectionRequest (NO LONGER A STAND-IN)
 // ---------------------------------------------------------------------------
 
-// What the page is told after trying to send a request.
-export type SendConnectionRequestResult = {
-  // true once a request really has been stored. Always false for now.
-  sent: boolean;
-  // A sentence the page can show as it is.
-  message: string;
-};
-
-// The exact sentence, exported so the pages and the tests use the same one.
-export const REQUESTS_NOT_SWITCHED_ON_MESSAGE =
-  "Connection requests aren't switched on yet.";
-
-// STAND-IN for track 5 (#12). Proposed real name:
-// sendConnectionRequest(fromUserId, toUserId).
-// Join-up: replace the inside with a call to track 5's helper, and agree what
-// it returns when it refuses (design, Open Questions).
+// Slice 5 (#12) built the real helper, so this is not a stand-in any more:
+// it is the real function, passed on under the same name. Pressing Connect
+// now stores a pending request, or refuses with a reason.
 //
-// STORES NOTHING. It only answers "not switched on yet". Track 5 owns the
-// ConnectionRequest table's rules (who may ask whom, no duplicates, blocks),
-// so writing rows here would mean guessing those rules.
-//
-// It is `async` and takes both ids, although it uses neither yet, so that the
-// code calling it won't have to change when the real one arrives.
-export async function sendConnectionRequest(
-  fromUserId: string,
-  toUserId: string,
-): Promise<SendConnectionRequestResult> {
-  // Neither id is used yet. `void` tells the linter "unused on purpose", so
-  // it doesn't warn about them.
-  void fromUserId;
-  void toUserId;
-
-  return { sent: false, message: REQUESTS_NOT_SWITCHED_ON_MESSAGE };
-}
+// WHY IT IS STILL EXPORTED FROM THIS FILE: the connect route and its tests
+// import it from here (the rule in the header). Re-exporting keeps that true
+// without touching those files. Join-up (#17) may point them straight at
+// src/lib/requests/sendRequest.ts and delete this section.
+export {
+  sendConnectionRequest,
+  type SendConnectionRequestResult,
+} from "@/lib/requests/sendRequest";
 
 // ---------------------------------------------------------------------------
 // 4. profileBio

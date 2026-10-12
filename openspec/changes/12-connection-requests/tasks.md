@@ -21,10 +21,10 @@ Names used, so the tasks stay short:
 
 ## 3. Swap slice 4's stand-in
 
-- [ ] 3.1 In `src/lib/cohort/standIns.ts`, make `sendConnectionRequest` call the real helper (keep its name and signature), update its header comment and the stand-ins table at the top so it no longer lists it as a stand-in, and remove `REQUESTS_NOT_SWITCHED_ON_MESSAGE` once nothing imports it. Verify: `npx tsc --noEmit` and `npm run lint` pass, and a search for `REQUESTS_NOT_SWITCHED_ON_MESSAGE` finds nothing
-- [ ] 3.2 Update `tests/integration/standIns.test.ts` and `tests/integration/profile.test.ts`, which assert "stores nothing" and the not-switched-on message: the connect route now stores one pending request for a top 5 person and answers `sent: true`, still stores nothing and answers 403 outside the top 5, and answers `sent: false` with the right reason for an existing request. Verify: `npm test` passes
-- [ ] 3.3 Update `tests/e2e/profile.spec.ts`: pressing Connect on a top 5 profile now shows the "request sent" sentence, and reloading the page shows "A connection request is waiting between you two." in place of the button; the cleared-requests set-up stays. Verify: `npm run test:e2e` passes
-- [ ] 3.4 README: in the slice 4 section, change the Connect description and the stand-ins table row for `sendConnectionRequest` (it is real now, owned by `src/lib/requests/`). Verify: nothing in `README.md` still says requests "aren't switched on yet"
+- [x] 3.1 In `src/lib/cohort/standIns.ts`, make `sendConnectionRequest` call the real helper (keep its name and signature), update its header comment and the stand-ins table at the top so it no longer lists it as a stand-in, and remove `REQUESTS_NOT_SWITCHED_ON_MESSAGE` once nothing imports it. Verify: `npx tsc --noEmit` and `npm run lint` pass, and a search for `REQUESTS_NOT_SWITCHED_ON_MESSAGE` finds nothing
+- [x] 3.2 Update `tests/integration/standIns.test.ts` and `tests/integration/profile.test.ts`, which assert "stores nothing" and the not-switched-on message: the connect route now stores one pending request for a top 5 person and answers `sent: true`, still stores nothing and answers 403 outside the top 5, and answers `sent: false` with the right reason for an existing request. Verify: `npm test` passes
+- [x] 3.3 Update `tests/e2e/profile.spec.ts`: pressing Connect on a top 5 profile now shows the "request sent" sentence, and reloading the page shows "A connection request is waiting between you two." in place of the button; the cleared-requests set-up stays. Verify: `npm run test:e2e` passes
+- [x] 3.4 README: in the slice 4 section, change the Connect description and the stand-ins table row for `sendConnectionRequest` (it is real now, owned by `src/lib/requests/`). Verify: nothing in `README.md` still says requests "aren't switched on yet"
 
 ## 4. Answering a request
 

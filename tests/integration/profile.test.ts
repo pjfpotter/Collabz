@@ -21,8 +21,8 @@ import {
   getConnectPermission,
   getProfileLookup,
 } from "@/lib/cohort/profile";
-import { REQUESTS_NOT_SWITCHED_ON_MESSAGE } from "@/lib/cohort/standIns";
 import { prisma } from "@/lib/db";
+import { REFUSAL_MESSAGES, REQUEST_SENT_MESSAGE } from "@/lib/requests/messages";
 
 import { seedCatalogue } from "../../prisma/seed";
 import { emptyDatabase } from "../helpers/database";
@@ -283,18 +283,36 @@ describe("POST /api/people/[alias]/connect", () => {
     expect(await prisma.connectionRequest.count()).toBe(0);
   });
 
-  it("passes someone in the top 5 to the stand-in and returns its answer", async () => {
-    const { viewer } = await makeViewerWithTopFiveAndOutsider();
+  it("stores a pending request for someone in the top 5 and says it was sent", async () => {
+    const { viewer, anna } = await makeViewerWithTopFiveAndOutsider();
     signedInAs.user = { id: viewer };
 
     const response = await callConnect("the-test-anna");
     expect(response.status).toBe(200);
-    expect(await response.json()).toEqual({
+    expect(await response.json()).toEqual({ sent: true, message: REQUEST_SENT_MESSAGE });
+
+    const rows = await prisma.connectionRequest.findMany();
+    expect(rows).toHaveLength(1);
+    expect(rows[0]).toMatchObject({ fromUserId: viewer, toUserId: anna, status: "PENDING" });
+  });
+
+  it("answers 200 with the reason, and stores nothing more, when a request already exists", async () => {
+    const { viewer } = await makeViewerWithTopFiveAndOutsider();
+    signedInAs.user = { id: viewer };
+
+    await callConnect("the-test-anna");
+    const second = await callConnect("the-test-anna");
+
+    // The route's own checks (401, 404, 403) are about who may SEE the
+    // button. A refusal from the helper is still a normal answer, with a
+    // sentence the button shows as it is.
+    expect(second.status).toBe(200);
+    expect(await second.json()).toEqual({
       sent: false,
-      message: REQUESTS_NOT_SWITCHED_ON_MESSAGE,
+      message: REFUSAL_MESSAGES["already-pending"],
+      reason: "already-pending",
     });
-    // The stand-in stores nothing (track 5 owns that table's rules).
-    expect(await prisma.connectionRequest.count()).toBe(0);
+    expect(await prisma.connectionRequest.count()).toBe(1);
   });
 
   it("lets the glitch match through even outside the top 5", async () => {
@@ -304,6 +322,7 @@ describe("POST /api/people/[alias]/connect", () => {
 
     const response = await callConnect("the-test-ben");
     expect(response.status).toBe(200);
+    expect((await response.json()).sent).toBe(true);
   });
 
   it("answers 403 when you try to connect with yourself", async () => {

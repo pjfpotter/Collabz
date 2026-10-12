@@ -1,5 +1,9 @@
 // Tests for the stand-ins that read the database (slice 4, #11, task 2.3):
-// getTopFive, explainMatch and sendConnectionRequest.
+// getTopFive and explainMatch.
+//
+// sendConnectionRequest used to be tested here too. It is the real helper now
+// (slice 5, #12), and its rules are tested in tests/integration/sendRequest.test.ts.
+// One test below only checks that this file still hands out the real one.
 //
 // profileBio has no database, so its tests are in tests/unit/profileBio.test.ts.
 // requireFinishedProfile needs a real browser request (it reads a cookie and
@@ -7,12 +11,7 @@
 
 import { afterAll, beforeEach, describe, expect, it } from "vitest";
 
-import {
-  REQUESTS_NOT_SWITCHED_ON_MESSAGE,
-  explainMatch,
-  getTopFive,
-  sendConnectionRequest,
-} from "@/lib/cohort/standIns";
+import { explainMatch, getTopFive, sendConnectionRequest } from "@/lib/cohort/standIns";
 import { prisma } from "@/lib/db";
 
 import { seedCatalogue } from "../../prisma/seed";
@@ -241,13 +240,16 @@ describe("explainMatch", () => {
 });
 
 describe("sendConnectionRequest", () => {
-  it("answers that requests aren't switched on, and stores nothing", async () => {
+  it("is the real helper, so it stores a pending request", async () => {
     const anna = await createPerson(prisma, "anna");
     const ben = await createPerson(prisma, "ben");
+    await createScore(prisma, anna, ben, 9);
 
     const result = await sendConnectionRequest(anna, ben);
 
-    expect(result).toEqual({ sent: false, message: REQUESTS_NOT_SWITCHED_ON_MESSAGE });
-    expect(await prisma.connectionRequest.count()).toBe(0);
+    expect(result.sent).toBe(true);
+    const rows = await prisma.connectionRequest.findMany();
+    expect(rows).toHaveLength(1);
+    expect(rows[0]).toMatchObject({ fromUserId: anna, toUserId: ben, status: "PENDING" });
   });
 });
