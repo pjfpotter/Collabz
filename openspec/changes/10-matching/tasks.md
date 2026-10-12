@@ -30,8 +30,8 @@ Checked on 12 Oct 2026 against the merged `master` (task 1.3). Everything in `de
 
 ## 3. The formula (pure functions, no database)
 
-- [ ] 3.1 `src/lib/matching/score.ts`: `calculateScore(a, b, pairings)` returning `{ score, complement, overlap, tension }`, counting satisfied Seeking tags once each (design 1, 2). Verify: Vitest covers a hand-worked example from the brief, a Seeking tag with two satisfying Qualities counting once, both directions, same Energy and same Vibe, same and different Hero Story, and "Skills and Interests change nothing"
-- [ ] 3.2 `src/lib/matching/explain.ts`: pure function that turns the same inputs into the list of plain sentences and the shared Skills and Interests (design 8). Verify: Vitest covers a pair with every reason, a pair with none, and that the listed reasons add up to the number from `calculateScore`
+- [x] 3.1 `src/lib/matching/score.ts`: `calculateScore(a, b, pairings)` returning `{ score, complement, overlap, tension }`, counting satisfied Seeking tags once each (design 1, 2). Verify: Vitest covers a hand-worked example from the brief, a Seeking tag with two satisfying Qualities counting once, both directions, same Energy and same Vibe, same and different Hero Story, and "Skills and Interests change nothing"
+- [x] 3.2 `src/lib/matching/explain.ts`: pure function that turns the same inputs into the list of plain sentences and the shared Skills and Interests (design 8). Verify: Vitest covers a pair with every reason, a pair with none, and that the listed reasons add up to the number from `calculateScore`
 
 ## 4. Saving scores and picking glitch matches
 
