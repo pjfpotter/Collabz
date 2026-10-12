@@ -89,6 +89,14 @@ Checked on 8 Oct 2026 against the merged `prisma/schema.prisma`, `src/lib/` and 
 - [x] 6.3 Add `src/app/api/people/[alias]/connect/route.ts`: 401 if not signed in, 404 if nobody matches, 403 if the person isn't in the viewer's top 5 or their glitch match, otherwise call `sendConnectionRequest()` and return its answer; and make the button post to it and show "Connection requests aren't switched on yet" (design 10). Integration test the route for each of those cases, and that 403 stores nothing. Verify: `npm test` passes
 - [x] 6.4 Add `tests/e2e/profile.spec.ts`: a profile outside the top 5 shows the breakdown and no Connect button; one in the top 5 shows the button and pressing it shows the message; your own shows neither; an unknown address and a suspended person's address show "page not found"; signed out goes to `/signin`. Verify: `npm run test:e2e` passes
 
+## 8. Dots stay where they are put
+
+Added after the group 7 preview checks passed, at Patrick's request: when a dot is pulled out it should stay where it is left, so a tangle of connections can be teased apart (as in Obsidian). The layout drift and the "others shuffle out of the way" movement stay. Changes design decision 6.
+
+- [x] 8.1 Add `src/lib/cohort/dragLimit.ts` with `findSettledCircle(points)` (the centre of the settled graph and the distance of its farthest dot) and `limitToCircle(point, circle, limitMultiplier)` (the nearest spot inside a circle that many times that radius), and unit test both in `tests/unit/dragLimit.test.ts`: a point inside is unchanged; one outside lands on the edge in the same direction; the centre of an empty list doesn't produce NaN. Verify: `npm test` passes
+- [ ] 8.2 In `CohortGraph.tsx`, work out the circle once when the opening layout first settles, keep a dot inside 2 times its radius while it is pulled (`onNodeDrag`), and pin it where it is let go (`onNodeDragEnd` sets `fx` and `fy`). Do not draw the circle or change the zoom-to-fit. Verify: pull a dot out and let go, and it stays; pull it a very long way and it stops at the edge; a tap still opens the panel; `npx tsc --noEmit` and `npm run lint` pass
+- [x] 8.3 Update `design.md` decision 6 and the comments in `CohortGraph.tsx` that say a dot "springs back when let go". Verify: no comment or doc in the change still describes the snap-back
+
 ## 7. Deploy and hand over
 
 - [ ] 7.1 Push, open the PR with the two screenshots from 4.4, and on the preview URL as `pretend-user-02` repeat #11's five success checks, the last one on a real phone. Verify: all five are ticked in the PR description, with a note that Connect is a stand-in until slice 5
