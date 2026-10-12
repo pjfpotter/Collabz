@@ -125,7 +125,7 @@ test.describe("signed in as a member with a finished profile", () => {
   });
 
   // Spec scenario: "Person in the top 5"
-  test("a top 5 profile shows the breakdown and a Connect button that says requests aren't on yet", async ({
+  test("a top 5 profile shows the breakdown and a Connect button that sends a request", async ({
     page,
   }) => {
     const { topFive } = await getMatchAddresses(page);
@@ -135,10 +135,24 @@ test.describe("signed in as a member with a finished profile", () => {
     const connect = page.getByRole("button", { name: "Connect" });
     await expect(connect).toBeVisible();
 
-    await connect.click();
-    await expect(page.getByTestId("connect-message")).toHaveText(
-      "Connection requests aren't switched on yet.",
-    );
+    try {
+      // Slice 5 (#12): pressing it now stores a real pending request.
+      await connect.click();
+      await expect(page.getByTestId("connect-message")).toHaveText(
+        "Your connection request has been sent.",
+      );
+
+      // And after a reload the page shows that a request is waiting, in place
+      // of the button, so it can't be pressed twice.
+      await page.reload();
+      await expect(page.getByTestId("request-status")).toHaveText(
+        "A connection request is waiting between you two.",
+      );
+      await expect(page.getByRole("button", { name: "Connect" })).toHaveCount(0);
+    } finally {
+      // Clean up so the other tests start without it.
+      await prisma!.connectionRequest.deleteMany();
+    }
   });
 
   // Spec scenario: "Glitch match"
@@ -158,8 +172,8 @@ test.describe("signed in as a member with a finished profile", () => {
     const address = topFive[0];
 
     // Find who that is and add a pending request from them to the member.
-    // (The Connect button is a stand-in until slice 5, so the row is added
-    // directly.)
+    // (The row is added directly because the button only sends requests
+    // FROM the member, and this test needs one coming the other way.)
     const people = await prisma!.profile.findMany({ select: { alias: true, userId: true } });
     const person = people.find((candidate) => `/people/${aliasToAddress(candidate.alias)}` === address)!;
     await prisma!.connectionRequest.create({

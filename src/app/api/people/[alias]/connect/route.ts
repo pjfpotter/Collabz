@@ -6,8 +6,8 @@
 //
 // WHY THE SERVER CHECKS AGAIN: hiding the button on the page stops nobody from
 // sending the request by hand. So this route repeats the "top 5 or glitch
-// match" check. Track 5 will also enforce the rules inside its own helper,
-// and two locks are fine.
+// match" check. Slice 5's helper also enforces it, along with the rest of the
+// rules, and two locks are fine.
 //
 // Answers:
 //   401 - nobody is signed in
@@ -15,9 +15,10 @@
 //         person, who is not visible)
 //   403 - the person is not in the viewer's top 5 or glitch match; NOTHING is
 //         stored in that case
-//   200 - the stand-in's answer, { sent, message }. Until slice 5 lands this
-//         is always { sent: false, message: "Connection requests aren't
-//         switched on yet." }
+//   200 - the helper's answer, { sent, message } (and a `reason` when it
+//         refused). { sent: true } means a pending request was stored.
+//         { sent: false } is a refusal such as "a request is already
+//         waiting", with a sentence the button shows as it is.
 
 import { NextResponse } from "next/server";
 

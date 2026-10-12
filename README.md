@@ -205,7 +205,7 @@ Each file starts with a comment that says the same in more detail, including wha
 
 ## Graph and people search
 
-Track 4 (slice 4, issue #11) builds the cohort graph, the people list and the profile page. All three pages are built. The Connect button is a stand-in until slice 5 (#12) lands: it checks the rules, then says requests aren't switched on yet.
+Track 4 (slice 4, issue #11) builds the cohort graph, the people list and the profile page. All three pages are built. The Connect button sends a real connection request, now that slice 5 (#12) has built the helper behind it.
 
 **Routes this track owns:**
 
@@ -230,7 +230,7 @@ Track 4 (slice 4, issue #11) builds the cohort graph, the people list and the pr
 
 **Filters.** `/people` can be narrowed by course, one skill and one interest, and a person must fit all the ones chosen. The filters live in the page address (`/people?course=business`), so they survive a refresh and can be shared, and "Show on the graph" hands the same address to `/graph`, which dims everyone who doesn't fit. The rules are in `src/lib/cohort/search.ts`. **The Skill and Interest dropdowns are hidden for now**: they appear by themselves once slice 2 (#9) adds the `skills` and `interests` categories.
 
-**The profile page and Connect.** `/people/[alias]` shows a person's alias, silhouette, bio, course and tags grouped by category (retired tags included). For someone else it adds the score and the reasons, and then one of: a **Connect** button (they are in your top 5 or are your glitch match), the status of a pending or approved request between you, or nothing. Your own profile shows neither, and links to `/account`. An address nobody visible has, including a suspended person's, shows "page not found". The button posts to `/api/people/[alias]/connect`, which checks the top 5 / glitch rule again on the server (hiding a button stops nobody sending the request by hand): 401 if signed out, 404 if nobody lives there, 403 if the person isn't one of your matches, otherwise it calls `sendConnectionRequest()`. The shared rules are in `src/lib/cohort/profile.ts`.
+**The profile page and Connect.** `/people/[alias]` shows a person's alias, silhouette, bio, course and tags grouped by category (retired tags included). For someone else it adds the score and the reasons, and then one of: a **Connect** button (they are in your top 5 or are your glitch match), the status of a pending or approved request between you, or nothing. Your own profile shows neither, and links to `/account`. An address nobody visible has, including a suspended person's, shows "page not found". The button posts to `/api/people/[alias]/connect`, which checks the top 5 / glitch rule again on the server (hiding a button stops nobody sending the request by hand): 401 if signed out, 404 if nobody lives there, 403 if the person isn't one of your matches, otherwise it calls `sendConnectionRequest()`, which stores a pending request or answers with the reason it refused (slice 5, #12). The shared rules are in `src/lib/cohort/profile.ts`.
 
 **To change how the graph looks**, the numbers are named constants at the top of `graphData.ts` (line thickness and faintness) and `CohortGraph.tsx` (dot sizes, spacing, labels).
 
@@ -243,18 +243,56 @@ Track 4 (slice 4, issue #11) builds the cohort graph, the people list and the pr
 | `findPersonByAddress(people, address)` | `aliasAddress.ts` | The other way round: finds the person a profile address belongs to |
 | `getConnectPermission(viewerId, otherUserId)` | `profile.ts` | Says why the viewer may connect with someone (`"top-five"` or `"glitch"`), or `null` if they may not. Slice 5's request screens can use it to stay in step with the profile page |
 
-**Stand-ins.** This track needs six things that other tracks own and haven't built yet. Rather than wait, it uses simple temporary versions, all in one file: `src/lib/cohort/standIns.ts`. (The silhouette picture sits beside it in `SilhouetteStandIn.tsx`, because the browser needs it too.) Join-up (#17) replaces each one with a call to the real thing.
+**Stand-ins.** This track needs five things that other tracks own and haven't built yet. Rather than wait, it uses simple temporary versions, all in one file: `src/lib/cohort/standIns.ts`. (The silhouette picture sits beside it in `SilhouetteStandIn.tsx`, because the browser needs it too.) Join-up (#17) replaces each one with a call to the real thing.
 
 | Stand-in | What it does for now | Real owner | What replaces it |
 |---|---|---|---|
 | `getTopFive(userId)` | Reads the stored scores and returns the five best visible matches. Ties go to whoever finished their profile first | Track 3 (#10) | Track 3's top 5 query |
 | `explainMatch(userAId, userBId)` | A few short sentences from the three stored parts of a score, plus the skills and interests both people picked | Track 3 (#10) | Track 3's real breakdown |
-| `sendConnectionRequest(fromUserId, toUserId)` | Stores nothing and answers "Connection requests aren't switched on yet." | Track 5 (#12) | Track 5's request helper |
 | `profileBio(tagsByCategory)` | One sentence from the Hero Story and Energy tag names | Track 2 (#9) | `generateBio()` |
 | `SilhouetteStandIn` | The same head-and-shoulders shape for everyone | Track 2 (#9) | `silhouetteUrl()` and the 12 pictures |
 | `requireFinishedProfile()` | Sends a signed-out visitor to `/signin` and someone with no finished profile to `/onboarding` | Track 2 (#9) | `redirectIfOnboardingIncomplete()` |
 
-The names for tracks 3 and 5 are track 4's proposal and aren't agreed yet. **If you are on track 2, 3 or 5:** you don't need to do anything with this file. Build your real version under whatever name you settle on, and join-up does the swap.
+The names for track 3 are track 4's proposal and aren't agreed yet. **If you are on track 2 or 3:** you don't need to do anything with this file. Build your real version under whatever name you settle on, and join-up does the swap.
+
+**No longer a stand-in:** `sendConnectionRequest(fromUserId, toUserId)`. Slice 5 (#12) built the real one in `src/lib/requests/sendRequest.ts`, and `standIns.ts` passes it on under the same name, so the Connect route needed no change.
+
+## Connection requests
+
+Track 5 (slice 5, issue #12) lets someone ask a match to connect, and the other person approve or decline. Nothing private opens until both say yes: approving opens a conversation, and nobody's email is ever shown. **To try it:** `npm run dev`, pick `02` in the "Dev sign-in as" list, press Switch, and open `/requests`. User 02 has a request waiting, one they sent, and a conversation already open.
+
+**The rules, in plain words:**
+
+- You can only ask someone in your **top 5** or your **glitch match**, and the server refuses anyone else even if the request is sent by hand.
+- You can't ask yourself, someone suspended, or someone either of you has blocked.
+- **One request per pair, ever.** If a request exists in either direction (waiting, approved or declined), nobody can send another. A **decline is final** for the pair.
+- Only the person who was asked can approve or decline, only once, and only while the sender is still allowed (not suspended, not blocked).
+
+**Routes this track owns:**
+
+| Route | What it does |
+|---|---|
+| `/requests` | **Built.** Requests waiting for your answer (with Approve and Decline) and the ones you sent, each marked Waiting, Connected or Declined. Signed out you are sent to `/signin` |
+| `POST /api/requests/[id]/approve` | **Built.** Approves a request sent to you and opens a conversation. 401 signed out, 404 not found or not yours, 409 already answered or no longer allowed |
+| `POST /api/requests/[id]/decline` | **Built.** Declines a request sent to you. Same answers |
+
+**Helpers other tracks may use** (all in `src/lib/requests/`):
+
+| Helper | File | What it does |
+|---|---|---|
+| `sendConnectionRequest(fromUserId, toUserId)` | `sendRequest.ts` | Stores a pending request, or refuses with a `reason` and a sentence the page can show as it is. All the send rules live here. The Connect button already calls it |
+| `answerRequest(requestId, viewerId, "approve" or "decline")` | `answerRequest.ts` | Approves or declines, and on approve calls `openConversation()` |
+| `areConnected(userIdA, userIdB)` | `areConnected.ts` | True when the two have an approved request and neither has blocked the other. **Slice 7 (#14) uses this before serving a photo.** Slice 5 builds no photo code, only this rule |
+| `countWaitingRequests(userId)` | `listRequests.ts` | How many requests are waiting for this person's answer: the number on the nav bar's Requests link. Always the length of the page's waiting list |
+| `getRequestsPage(userId)` | `listRequests.ts` | The two lists for `/requests`: waiting for you, and sent by you with their status. Only aliases, addresses and silhouette ids: never an email or a user id |
+
+**The waiting count.** The nav bar's Requests link shows `(2)` when two requests are waiting for you, on every page, and nothing when none are. It is `src/components/WaitingRequestsCount.tsx`, and it uses the same filter as the page's list so the two can't disagree.
+
+**What the page leaves out, quietly:** a request from or to someone who has been suspended or hasn't finished their profile, and any pair where either has blocked the other.
+
+**Two things on the profile page are still rough** (it is slice 4's, so they are tidied at join-up, #17): after a decline it still shows the Connect button, though pressing it answers that a new request can't be sent, and a waiting request says "a request is waiting between you two" without saying who asked. The server always answers correctly; only the wording on that page is behind.
+
+The words people see (every refusal and success sentence) are in `messages.ts`, so the code, the tests and the pages can't drift apart.
 
 ## Project structure
 
