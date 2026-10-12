@@ -257,6 +257,34 @@ The names for track 3 are track 4's proposal and aren't agreed yet. **If you are
 
 **No longer a stand-in:** `sendConnectionRequest(fromUserId, toUserId)`. Slice 5 (#12) built the real one in `src/lib/requests/sendRequest.ts`, and `standIns.ts` passes it on under the same name, so the Connect route needed no change.
 
+## Connection requests
+
+Track 5 (slice 5, issue #12) lets someone ask a match to connect, and the other person approve or decline. Nothing private opens until both say yes: approving opens a conversation, and nobody's email is ever shown. **This is being built group by group; the `/requests` page is still a placeholder.**
+
+**The rules, in plain words:**
+
+- You can only ask someone in your **top 5** or your **glitch match**, and the server refuses anyone else even if the request is sent by hand.
+- You can't ask yourself, someone suspended, or someone either of you has blocked.
+- **One request per pair, ever.** If a request exists in either direction (waiting, approved or declined), nobody can send another. A **decline is final** for the pair.
+- Only the person who was asked can approve or decline, only once, and only while the sender is still allowed (not suspended, not blocked).
+
+**Routes this track owns:**
+
+| Route | What it does |
+|---|---|
+| `/requests` | Placeholder for now; will list requests waiting for you and the ones you sent |
+| `POST /api/requests/[id]/approve` | **Built.** Approves a request sent to you and opens a conversation. 401 signed out, 404 not found or not yours, 409 already answered or no longer allowed |
+| `POST /api/requests/[id]/decline` | **Built.** Declines a request sent to you. Same answers |
+
+**Helpers other tracks may use** (all in `src/lib/requests/`):
+
+| Helper | File | What it does |
+|---|---|---|
+| `sendConnectionRequest(fromUserId, toUserId)` | `sendRequest.ts` | Stores a pending request, or refuses with a `reason` and a sentence the page can show as it is. All the send rules live here. The Connect button already calls it |
+| `answerRequest(requestId, viewerId, "approve" or "decline")` | `answerRequest.ts` | Approves or declines, and on approve calls `openConversation()` |
+
+The words people see (every refusal and success sentence) are in `messages.ts`, so the code, the tests and the pages can't drift apart.
+
 ## Project structure
 
 ```

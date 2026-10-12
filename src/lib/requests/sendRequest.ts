@@ -35,7 +35,6 @@ import { Prisma } from "@/generated/prisma/client";
 // harmless. getConnectPermission is the one "top 5 or glitch match" rule,
 // shared with the profile page, which README names as the helper for slice 5.
 import { getConnectPermission } from "@/lib/cohort/profile";
-import { getVisiblePeople } from "@/lib/cohort/visiblePeople";
 import { prisma } from "@/lib/db";
 
 import {
@@ -43,6 +42,7 @@ import {
   REQUEST_SENT_MESSAGE,
   type RefusalReason,
 } from "./messages";
+import { hasBlockBetween, isUserVisible } from "./pairRules";
 
 // Prisma's code for "the database stopped this transaction because another
 // one running at the same time conflicted with it". It is not a bug: it is
@@ -194,21 +194,6 @@ async function findExistingRequestReason(
   return null;
 }
 
-// Has either of the two blocked the other? (The Block table is slice 9's.
-// This only reads it.)
-async function hasBlockBetween(userId: string, otherUserId: string): Promise<boolean> {
-  const block = await prisma.block.findFirst({
-    where: {
-      OR: [
-        { blockerId: userId, blockedId: otherUserId },
-        { blockerId: otherUserId, blockedId: userId },
-      ],
-    },
-    select: { blockerId: true },
-  });
-  return block !== null;
-}
-
 // Sends a connection request from one person to another, or refuses.
 //
 // Stores exactly one PENDING request when it says `sent: true`, and stores
@@ -226,9 +211,7 @@ export async function sendConnectionRequest(
 
   // 2. The other person must be visible: a finished profile, not suspended.
   // This is the same rule the graph and the people list use.
-  const visiblePeople = await getVisiblePeople();
-  const isVisible = visiblePeople.some((person) => person.userId === toUserId);
-  if (!isVisible) {
+  if (!(await isUserVisible(toUserId))) {
     return refuse("unavailable");
   }
 

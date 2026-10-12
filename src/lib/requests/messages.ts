@@ -42,3 +42,28 @@ export const REFUSAL_MESSAGES: Record<RefusalReason, string> = {
   // says one thing whichever lock catches it first.
   "not-a-match": "You can only connect with your top 5 matches and your glitch match.",
 };
+
+// ---------------------------------------------------------------------------
+// Answering a request (task 4.1)
+// ---------------------------------------------------------------------------
+
+// Why an answer was refused.
+export type AnswerRefusalReason =
+  // No request with that id, OR it exists but was not sent to the person
+  // answering. The same reason for both, so a request id can't be used to
+  // find out whether someone else's request exists.
+  | "not-found"
+  // It was approved or declined already. The first answer stands.
+  | "already-answered"
+  // Pending, but the sender has since been suspended, or one of the two has
+  // blocked the other.
+  | "unavailable";
+
+export const ANSWER_REFUSAL_MESSAGES: Record<AnswerRefusalReason, string> = {
+  "not-found": "That request could not be found.",
+  "already-answered": "That request has already been answered.",
+  unavailable: "That request can no longer be answered.",
+};
+
+export const REQUEST_APPROVED_MESSAGE = "You are now connected.";
+export const REQUEST_DECLINED_MESSAGE = "The request was declined.";
