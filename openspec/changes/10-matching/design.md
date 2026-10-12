@@ -40,22 +40,40 @@ For each direction, complement counts how many of one person's Seeking tags are 
 
 ### 3. The pairings are drafted here and edited by the team before approval
 
-12 Seeking tags, each paired with two Quality tags (24 rows). This is **a draft for the team to change**, in the same way slice 2's tag lists were: the wording of the tags only implies the pairings.
+12 Seeking tags, each paired with the Quality tags that would satisfy it (24 rows). This is **a draft for the team to change**, in the same way slice 2's tag lists were: the wording of the tags only implies the pairings. It was checked against `prisma/seed-data.ts`: every id below exists, and every one of the 12 Quality tags satisfies at least one Seeking tag, so no Quality is dead weight.
 
-| Seeking | Is satisfied by (Qualities) |
-|---|---|
-| Someone who can actually make money happen | Knows someone who knows someone · Makes the room believe it too |
-| Someone who finishes what I start | Actually finishes the thing · Keeps the whole operation from falling over |
-| Someone who tells me when the idea is bad | Says the hard thing kindly · Notices the thing everyone else missed |
-| Someone who makes it real with their hands | Builds it with their actual hands · Turns fog into a floor plan |
-| Someone who makes the boring bits happen | Keeps the whole operation from falling over · Actually finishes the thing |
-| Someone who believes it before there's proof | Makes the room believe it too · Keeps going after the tenth "no" |
-| Someone who already knows the room | Knows someone who knows someone · Makes the room believe it too |
-| Someone who stays when it gets hard | Stays calm when everyone else is not · Keeps going after the tenth "no" |
-| Someone who makes it look as good as it is | Makes it beautiful on purpose |
-| Someone who asks the annoying smart questions | Notices the thing everyone else missed · Goes deep when it matters |
-| Someone who matches my chaos | Goes deep when it matters · Keeps going after the tenth "no" |
-| Someone who's done this before | Knows someone who knows someone · Turns fog into a floor plan |
+Each Seeking tag is satisfied by two Qualities, so a Seeking tag is met if the other person has **either** one (decision 2).
+
+| Seeking (id) | Satisfied by (Quality id) | Why |
+|---|---|---|
+| Someone who can actually make money happen (`seeking-makes-money-happen`) | Knows someone who knows someone (`qualities-knows-someone`) | Money usually arrives through a contact |
+| | Makes the room believe it too (`qualities-room-believes-it`) | Selling is making people believe |
+| Someone who finishes what I start (`seeking-finishes-what-i-start`) | Actually finishes the thing (`qualities-finishes-the-thing`) | Said in the tag itself |
+| | Keeps the whole operation from falling over (`qualities-keeps-operation-running`) | Finishing needs the machinery to keep running |
+| Someone who tells me when the idea is bad (`seeking-tells-me-idea-is-bad`) | Says the hard thing kindly (`qualities-says-hard-thing-kindly`) | Honest feedback you can hear |
+| | Notices the thing everyone else missed (`qualities-notices-what-was-missed`) | Spots the flaw before you do |
+| Someone who makes it real with their hands (`seeking-makes-it-real`) | Builds it with their actual hands (`qualities-builds-with-hands`) | Said in the tag itself |
+| | Turns fog into a floor plan (`qualities-fog-into-floor-plan`) | Turns a vague idea into something buildable |
+| Someone who makes the boring bits happen (`seeking-boring-bits`) | Keeps the whole operation from falling over (`qualities-keeps-operation-running`) | The boring bits are the operation |
+| | Actually finishes the thing (`qualities-finishes-the-thing`) | Boring work only counts once done |
+| Someone who believes it before there's proof (`seeking-believes-before-proof`) | Makes the room believe it too (`qualities-room-believes-it`) | Belief that spreads |
+| | Keeps going after the tenth "no" (`qualities-keeps-going-after-no`) | Belief that survives rejection |
+| Someone who already knows the room (`seeking-knows-the-room`) | Knows someone who knows someone (`qualities-knows-someone`) | The room is a network |
+| | Makes the room believe it too (`qualities-room-believes-it`) | Knows how to work a room |
+| Someone who stays when it gets hard (`seeking-stays-when-hard`) | Stays calm when everyone else is not (`qualities-stays-calm`) | Stays through the panic |
+| | Keeps going after the tenth "no" (`qualities-keeps-going-after-no`) | Stays through the discouragement |
+| Someone who makes it look as good as it is (`seeking-makes-it-look-good`) | Makes it beautiful on purpose (`qualities-beautiful-on-purpose`) | Only one Quality is about looks |
+| Someone who asks the annoying smart questions (`seeking-asks-smart-questions`) | Notices the thing everyone else missed (`qualities-notices-what-was-missed`) | Questions come from noticing |
+| | Goes deep when it matters (`qualities-goes-deep`) | Questions come from depth |
+| Someone who matches my chaos (`seeking-matches-my-chaos`) | Goes deep when it matters (`qualities-goes-deep`) | Willing to dive into the mess with you |
+| | Keeps going after the tenth "no" (`qualities-keeps-going-after-no`) | Keeps up with a relentless pace |
+| Someone who's done this before (`seeking-done-this-before`) | Knows someone who knows someone (`qualities-knows-someone`) | Experience comes with a network |
+| | Turns fog into a floor plan (`qualities-fog-into-floor-plan`) | Has a plan because they have been here before |
+
+**Things the team may want to argue about:**
+- "Matches my chaos" is the weakest pairing. "Stays calm" would be the opposite of matching, so it was deliberately left out.
+- "Makes it look as good as it is" has only one satisfying Quality, because only one Quality is about design. Adding a second would make it easier to score.
+- "Knows someone who knows someone" and "Makes the room believe it too" each satisfy three Seeking tags, so they will be the most common reasons for a match.
 
 Stored as `TagPairing` rows and seeded in `prisma/seed-data.ts` by tag id (the ids are stable, rule B2). The seed uses `createMany` with `skipDuplicates`, so a re-seed adds what is missing and never removes or overwrites. "Matches my chaos" is the weakest pairing and the one most worth arguing about.
 
