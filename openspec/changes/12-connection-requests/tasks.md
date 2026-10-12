@@ -9,7 +9,7 @@ Names used, so the tasks stay short:
 
 ## 1. Before building
 
-- [ ] 1.1 **(human)** Assign yourself to #12 (`gh issue edit 12 --add-assignee @me`) and post the agreed names on #12 and #11: `sendConnectionRequest(fromUserId, toUserId)` returning `{ sent, message, reason? }`, and `areConnected(userIdA, userIdB)` for #14. This closes task 1.2 of the archived #11 change. Verify: both comments exist and #12 shows an assignee
+- [x] 1.1 **(human)** Assign yourself to #12 (`gh issue edit 12 --add-assignee @me`) and post the agreed names on #12 and #11: `sendConnectionRequest(fromUserId, toUserId)` returning `{ sent, message, reason? }`, and `areConnected(userIdA, userIdB)` for #14. This closes task 1.2 of the archived #11 change. Verify: both comments exist and #12 shows an assignee
 - [x] 1.2 Read the Next.js 16 guides in `node_modules/next/dist/docs/` for route handlers, Server Components that read cookies, and `router.refresh()`, and note any difference from what design decisions 4, 7 and 9 assume in this file's "Notes" section. Verify: the notes exist, or say "nothing differs"
 
 ## 2. The send rules
@@ -50,7 +50,7 @@ Names used, so the tasks stay short:
 ## 7. Deploy and hand over
 
 - [ ] 7.1 **(human)** Push, open the PR, and on the preview URL as `pretend-user-02` repeat #12's four success checks, the second on a real phone. Verify: all four are ticked in the PR description, with the proposal's assumptions listed for the reviewer to confirm
-- [ ] 7.2 **(human)** Comment on #14 (use `areConnected` for photos), #13 (approval opens the conversation through `openConversation()`; closed conversations are slice 6's call) and #17 (the two profile page gaps in design decision 8). Verify: three comments exist
+- [x] 7.2 **(human)** Comment on #14 (use `areConnected` for photos), #13 (approval opens the conversation through `openConversation()`; closed conversations are slice 6's call) and #17 (the two profile page gaps in design decision 8). Verify: three comments exist
 - [ ] 7.3 After the PR merges, archive with `/opsx:archive`, sync the specs, and update `ARCHITECTURE.md` for the new request flow and the nav count. Verify: `openspec/specs/connection-requests/spec.md` holds the new requirements and `ARCHITECTURE.md` mentions the request flow
 
 ## Notes
