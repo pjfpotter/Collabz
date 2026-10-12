@@ -49,9 +49,9 @@ Names used, so the tasks stay short:
 
 ## 7. Deploy and hand over
 
-- [ ] 7.1 **(human)** Push, open the PR, and on the preview URL as `pretend-user-02` repeat #12's four success checks, the second on a real phone. Verify: all four are ticked in the PR description, with the proposal's assumptions listed for the reviewer to confirm
+- [x] 7.1 **(human)** Push, open the PR, and on the preview URL as `pretend-user-02` repeat #12's four success checks, the second on a real phone. Verify: all four are ticked in the PR description, with the proposal's assumptions listed for the reviewer to confirm **Done 12 Oct 2026: Patrick reported that all four preview checks passed before merging PR #32. The boxes in the PR description were left unticked.**
 - [x] 7.2 **(human)** Comment on #14 (use `areConnected` for photos), #13 (approval opens the conversation through `openConversation()`; closed conversations are slice 6's call) and #17 (the two profile page gaps in design decision 8). Verify: three comments exist
-- [ ] 7.3 After the PR merges, archive with `/opsx:archive`, sync the specs, and update `ARCHITECTURE.md` for the new request flow and the nav count. Verify: `openspec/specs/connection-requests/spec.md` holds the new requirements and `ARCHITECTURE.md` mentions the request flow
+- [x] 7.3 After the PR merges, archive with `/opsx:archive`, sync the specs, and update `ARCHITECTURE.md` for the new request flow and the nav count. Verify: `openspec/specs/connection-requests/spec.md` holds the new requirements and `ARCHITECTURE.md` mentions the request flow
 
 ## Notes
 
