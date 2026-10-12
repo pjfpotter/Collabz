@@ -82,6 +82,9 @@ Tapping a node shows a panel with the alias, silhouette, course, score with you 
 - *Why not go straight to the profile:* on a touch screen, people tap while trying to drag. A panel is cheap to dismiss, whereas a page change loses your place in the graph.
 - Dragging the background moves the view and pinching zooms, which the library provides. The canvas is sized to its container's width, about 70% of the screen height, and re-measured when the screen rotates. The graph zooms to fit once after it settles.
 - The layout stops moving after a set number of steps. *Why:* a graph that never settles drains a phone battery and is hard to tap.
+- A dot that is pulled out **stays where it is let go**, so a tangle of connections can be teased apart (as in Obsidian). The other dots shuffle round it for the same short settle, then everything stops. *Why:* a dot that springs back makes dragging pointless, because you can never leave two clusters apart to look at them.
+- A pulled dot is held inside a circle at **2 times the radius of the settled graph** (middle: the average dot position; radius: the farthest dot from it), worked out once when the opening layout first settles. The circle isn't drawn and the view isn't zoomed out to show it: the graph is framed as before, and people find the limit by zooming out and pulling. *Why:* without a limit one flick can leave a dot thousands of pixels away, where it can't be found. The rule lives in `src/lib/cohort/dragLimit.ts` so it can be unit tested.
+- Pins last until the page is reloaded. Nothing is saved, and there is no "put everything back" control (a reload does that).
 
 ### 7. An alias becomes a readable address
 `src/lib/cohort/aliasAddress.ts` exports `aliasToAddress(alias)`: lower case, anything that isn't a letter or number becomes a dash, and dashes at the ends are trimmed. *"The Feral Sea Captain II"* becomes `the-feral-sea-captain-ii`.

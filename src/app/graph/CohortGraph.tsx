@@ -32,6 +32,8 @@ import ForceGraph2D, {
 // built.
 import type { GraphLink, GraphNode } from "@/lib/cohort/graphData";
 import { SilhouetteStandIn } from "@/lib/cohort/SilhouetteStandIn";
+// Plain arithmetic (no database code), so it is safe to import in the browser.
+import { findSettledCircle, limitToCircle, type Circle } from "@/lib/cohort/dragLimit";
 
 import { courseColourName } from "./graphColours";
 import styles from "./graphColours.module.css";
@@ -85,13 +87,20 @@ const LONGEST_LINE = 220;
 // gentle drifting-into-place you see when the page opens. Then it STOPS.
 // WHY IT STOPS: a graph that never settles drains a phone's battery and is
 // hard to tap. Pulling a dot starts it moving again for the same number of
-// steps, so the others shuffle to make room and then settle.
+// steps, so the others shuffle to make room and then settle round it.
 const HIDDEN_LAYOUT_STEPS = 60;
 const MOVING_LAYOUT_STEPS = 180;
 // How quickly the movement dies away: 0 would never slow down, 1 stops dead.
 // The library's own default is 0.4. A little higher makes the drift calmer
 // and less bouncy.
 const MOVEMENT_DAMPING = 0.5;
+// A dot that is pulled out stays where it is let go, so a tangle of lines can
+// be teased apart. This is how far out it may be pulled: this many times the
+// radius of the settled graph (the distance from its middle to its farthest
+// dot). Past that the dot just stops at the edge. The limit isn't drawn and
+// the view isn't zoomed out to show it: people find it by zooming out and
+// pulling.
+const DRAG_LIMIT_MULTIPLIER = 2;
 // How long the "zoom to fit" glide takes once the layout has settled, in
 // thousandths of a second.
 const FIT_GLIDE_TIME = 500;
@@ -210,13 +219,18 @@ export default function CohortGraph({ nodes, links }: CohortGraphProps) {
   // wherever the person has put it: pulling a dot must not make the whole
   // graph jump back to "fit everything".
   const hasSettledRef = useRef(false);
+  // The circle round the graph as it first settled, which the drag limit is
+  // measured from. Null until then, so there is no limit while the graph is
+  // still drifting into place. A ref, so changing it doesn't redraw anything.
+  const settledCircleRef = useRef<Circle | null>(null);
 
   // The library CHANGES the node and link objects it is given (it writes x
   // and y onto them). The props came from the server and shouldn't be
   // changed, so we make our own copy once, when the component first appears,
   // and hand the library that. The function form of useState means "run this
-  // only the first time".
-  const [graphData] = useState(() => ({
+  // only the first time". The type is spelled out so TypeScript knows these
+  // copies are the library's kind of node, which gains x and y.
+  const [graphData] = useState<{ nodes: DrawnNode[]; links: DrawnLink[] }>(() => ({
     nodes: nodes.map((node) => ({ ...node })),
     links: links.map((link) => ({ ...link })),
   }));
@@ -476,6 +490,16 @@ export default function CohortGraph({ nodes, links }: CohortGraphProps) {
           onEngineStop={() => {
             if (!hasSettledRef.current) {
               hasSettledRef.current = true;
+              // Measure the settled graph once, for the drag limit. The
+              // library has written x and y onto our copies of the nodes by
+              // now. Only dots that have a position are counted.
+              settledCircleRef.current = findSettledCircle(
+                graphData.nodes.flatMap((node) =>
+                  typeof node.x === "number" && typeof node.y === "number"
+                    ? [{ x: node.x, y: node.y }]
+                    : [],
+                ),
+              );
               fittedZoomRef.current = fitGraphToCanvas(
                 graphRef.current,
                 size.width,
@@ -484,12 +508,43 @@ export default function CohortGraph({ nodes, links }: CohortGraphProps) {
             }
           }}
           // --- Touch and mouse ---
-          // A dot can be pulled around: the others shuffle out of its way and
-          // it springs back when let go. A quick tap or click on a dot, with
-          // no pulling, opens the panel instead. Dragging the background
-          // moves the view, and pinching or the scroll wheel zooms: the
-          // library does all of this by itself.
+          // A dot can be pulled around: the others shuffle out of its way,
+          // and it STAYS where it is let go, so tangles of lines can be
+          // teased apart. It can't be pulled further than
+          // DRAG_LIMIT_MULTIPLIER times the settled graph's radius. A quick
+          // tap or click on a dot, with no pulling, opens the panel instead.
+          // Dragging the background moves the view, and pinching or the
+          // scroll wheel zooms: the library does all of this by itself.
           enableNodeDrag={true}
+          // Runs over and over while a dot is being pulled. By now the
+          // library has already moved the dot to the pointer, so we only
+          // need to pull it back if that is past the limit. (The library
+          // works the dot's position out afresh from the pointer on every
+          // call, so correcting it here never accumulates.)
+          onNodeDrag={(node) => {
+            const circle = settledCircleRef.current;
+            if (!circle || node.x === undefined || node.y === undefined) return;
+            const allowed = limitToCircle(
+              { x: node.x, y: node.y },
+              circle,
+              DRAG_LIMIT_MULTIPLIER,
+            );
+            // fx and fy are "fixed" positions: the layout engine keeps a dot
+            // with these set exactly there instead of moving it.
+            node.x = allowed.x;
+            node.y = allowed.y;
+            node.fx = allowed.x;
+            node.fy = allowed.y;
+          }}
+          // Runs once when a pulled dot is let go. (It is not called for a
+          // plain tap, so tapping a dot never pins it.) The library clears
+          // fx and fy at this point, which is what made a dot spring back
+          // under its lines' pull. Setting them again to where it is pins it
+          // there. The others settle round it, then everything stops.
+          onNodeDragEnd={(node) => {
+            node.fx = node.x;
+            node.fy = node.y;
+          }}
           onNodeClick={(node) => setSelectedId(String(node.id))}
           // Tapping empty space closes the panel.
           onBackgroundClick={() => setSelectedId(null)}
