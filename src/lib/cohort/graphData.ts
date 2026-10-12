@@ -35,7 +35,7 @@ import { getVisiblePeople, type VisiblePerson } from "./visiblePeople";
 // pretend cohort and a made-up cohort of 100. If the graph looks like a
 // hairball, or the weak lines vanish altogether, this is the one place to
 // change. The screenshots they were tuned to are in
-// openspec/changes/11-graph-search/screenshots/.
+// openspec/changes/archive/2026-10-12-11-graph-search/screenshots/.
 //
 // Thickness is in pixels. Opacity runs from 0 (invisible) to 1 (solid).
 export const MIN_EDGE_WIDTH = 0.5;

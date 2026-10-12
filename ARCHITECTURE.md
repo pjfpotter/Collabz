@@ -8,7 +8,7 @@ Update this as the last step whenever `/opsx:archive-change` lands a change that
 
 Collabz is our version of the course brief "Bootcamp Connect". It matches software-course and business-course students by **chemistry**, not CVs. People build a profile by picking tags from fixed lists, the app scores every pair, and everyone sees the whole cohort as a live graph. Two people who both agree to connect get a private conversation.
 
-> **Status (8 Oct 2026):** slice 0 and the foundation (#7) are built and live. The app runs on Vercel, talks to Neon through Prisma, and shows the tag catalogue at `/catalogue`. The foundation added every MVP database table, a placeholder page for every route, a cohort of pretend students and a dev-only way to act as any of them. No real feature (sign-up, onboarding, matching, graph, requests, messages) is built yet: the five tracks are building those in parallel on top of the foundation (slice map: issue #18). The per-capability specs are in `openspec/specs/`. The reasoning behind them is `openspec/changes/archive/2026-10-01-2-mvp-overview/` as amended by `openspec/changes/archive/2026-10-01-4-brief-alignment/`. Where the two disagree, #4 wins.
+> **Status (12 Oct 2026):** slice 0, the foundation (#7) and slice 4 (#11, the graph, the people list and profile pages) are built and live. The app runs on Vercel, talks to Neon through Prisma, and shows the tag catalogue at `/catalogue`. The foundation added every MVP database table, a placeholder page for every route, a cohort of pretend students and a dev-only way to act as any of them. Slice 4 then added the cohort graph, the people list with its filters and the profile pages. They run on the pretend cohort and on stand-ins for other tracks' work (see below). The other real features (sign-up, onboarding, matching, requests, messages) are not built yet: the tracks are building those in parallel on top of the foundation (slice map: issue #18). The per-capability specs are in `openspec/specs/`. The reasoning behind them is `openspec/changes/archive/2026-10-01-2-mvp-overview/` as amended by `openspec/changes/archive/2026-10-01-4-brief-alignment/`. Where the two disagree, #4 wins.
 
 ## The pieces
 
@@ -25,11 +25,18 @@ Collabz is our version of the course brief "Bootcamp Connect". It matches softwa
 - **Shared helpers** (`src/lib/`): the only way one track reaches another track's feature. `getCurrentUser` and `requireAdmin` (who is using the app, and are they an admin), `scoreUser` (slice 3 fills it in), `openConversation` and `closeConversation`, and `orderUserPair`.
 - **Tests**: Vitest checks the seeds, the database rules and the helpers, and Playwright checks the pages, the nav bar and the switcher in a real browser. Both run against the real `dev` database, not a fake one, and put the catalogue and the pretend cohort back when they finish.
 
+**Built (slice 4, #11):**
+
+- **The cohort graph** (`/graph`, `src/app/graph/`): every visible person is a dot and every score a line, drawn on a canvas by `react-force-graph`. A good match pulls two dots closer. Your top 5 and glitch match are highlighted, and the same people are listed in words below it. Tapping a dot opens a small panel, not the profile.
+- **The people list and profile pages** (`/people` and `/people/[alias]`): the list filters by course (skill and interest dropdowns appear once onboarding adds those categories), and each profile shows the bio, tags and "why you match". A "Connect" button appears only for your top 5 and glitch match.
+- **The server decides, the canvas only draws** (`src/lib/cohort/`): who is visible, who is in the top 5, how thick a line is and who may be connected with are all worked out in tested server code (`visiblePeople.ts`, `graphData.ts`, `profile.ts`). The browser code is told "draw this one dashed" and holds no rules, because nothing can test inside a canvas.
+- **Stand-ins for other tracks' work** (`src/lib/cohort/standIns.ts`): six temporary versions of things tracks 2, 3 and 5 will own (top 5, "why you match", send a request, the generated bio, the silhouette picture, the onboarding check). They sit in one file so that join-up (#17) is one mechanical job.
+
 **Planned:**
+
 
 - **Auth.js with email magic links**: sign-in without passwords. Needs an email-sending service (chosen in slice 1).
 - **Private file storage (proposed: Vercel Blob)**: optional profile photos. Photos are only served through the app, after a permission check.
-- **`react-force-graph`**: draws the cohort graph in the browser.
 
 ## How a request flows through the system
 
@@ -75,13 +82,19 @@ The flows below are planned, not built yet.
 - **Pretend students live in their own seed file, behind their own command:** the catalogue seed runs on every deploy, including production, and pretend students must never get there.
 - **A pair of users is stored once, lower id first** (`orderUserPair`): a score or a conversation belongs to the pair, and storing it once means there can never be two that disagree.
 - **Tracks call each other only through the shared helpers:** when the real version of a helper lands, nobody else's code has to change.
+- **The graph shows every edge, and readability comes from thickness, fading and distance:** hiding weak lines would hide the shape of the cohort, which is the point of the graph. Stronger scores draw thicker, darker and closer.
+- **The same function decides who can be contacted on the page and in the server route** (`getConnectPermission`): if the button and the route each had their own copy, they could one day disagree, and the route is the one that matters.
+- **The graph layout settles and stops:** a graph that never stops drains a phone's battery and is hard to tap. Pulling a dot restarts it for a short settle.
+- **A pulled dot stays where it is let go, up to twice the settled graph's radius** (`dragLimit.ts`): the point of pulling is to tease apart a tangle and look, so snapping back defeats it. The limit stops one flick leaving a dot out of reach. Pins last until a reload, because nothing is saved.
 - **A member who opens an admin page gets "page not found", not "access denied":** it gives nothing away, and Next.js's "forbidden" page is still experimental.
 
-Full reasoning: `openspec/changes/archive/2026-10-01-2-mvp-overview/design.md` and `openspec/changes/archive/2026-10-01-4-brief-alignment/design.md`. For slice 0: `openspec/changes/archive/2026-10-08-6-tag-catalogue/design.md`. For the foundation: `openspec/changes/archive/2026-10-08-7-foundation/design.md`.
+Full reasoning: `openspec/changes/archive/2026-10-01-2-mvp-overview/design.md` and `openspec/changes/archive/2026-10-01-4-brief-alignment/design.md`. For slice 0: `openspec/changes/archive/2026-10-08-6-tag-catalogue/design.md`. For the foundation: `openspec/changes/archive/2026-10-08-7-foundation/design.md`. For the graph, people list and profile pages: `openspec/changes/archive/2026-10-12-11-graph-search/design.md`.
 
 ## Open questions / known gaps
 
-- Only slice 0 and the foundation are built. There are no real users and no real sign-in, and every page except `/` and `/catalogue` is a placeholder.
+- Only slice 0, the foundation and slice 4 are built. There are no real users and no real sign-in. The graph, people list and profile pages work on the pretend cohort, and the other pages are placeholders.
+- The six stand-ins in `src/lib/cohort/standIns.ts` are temporary, and their names for tracks 3 and 5 (`getTopFive`, `explainMatch`, `sendConnectionRequest`) were never agreed with them, because nobody is assigned to #10 or #12 yet (task 1.2 was left open). Join-up (#17) swaps them for the real ones and may need to rename them.
+- "Connect" is a stand-in: it checks who may be contacted but stores nothing, until slice 5 (#12). The graph and list don't yet hide people who have blocked you, and profiles don't show photos yet.
 - The pretend cohort, the dev switcher and their switch are temporary. Join-up (#17) deletes them once real sign-in and real profiles exist.
 - `scoreUser` does nothing yet, and the Seeking↔Quality pairings table is empty. Slice 3 fills in both. The pretend students' scores are made-up numbers, not real calculations.
 - Tests empty the tables on the shared `dev` database and refill them at the end. Two people running tests at the same moment can trip each other up, and anything changed by hand on `dev` is lost on the next test run.
