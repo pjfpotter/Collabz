@@ -35,10 +35,10 @@ Checked on 12 Oct 2026 against the merged `master` (task 1.3). Everything in `de
 
 ## 4. Saving scores and picking glitch matches
 
-- [ ] 4.1 `src/lib/matching/eligiblePeople.ts`: finished and not suspended, with their tag ids, with a comment pointing at slice 4's `getVisiblePeople` (design 6). Verify: integration test with a finished, an unfinished and a suspended pretend user returns only the finished one
-- [ ] 4.2 `src/lib/matching/glitch.ts`: `pickGlitchMatch(userId, candidates, topFiveIds, random)` and `ensureGlitchMatch(userId)`, keeping a stored match while it is valid (design 5). Verify: Vitest covers never yourself, never in the top 5, kept on reload, replaced when suspended, replaced when it enters the top 5, and nobody eligible
-- [ ] 4.3 Fill in `scoreUser` in `src/lib/scoring.ts` following design 4: one transaction, delete this user's edges, write new ones with `skipDuplicates`, ensure the glitch match and repair others' glitch matches that now point into their top 5. Keep the name and signature, and update its header comment. Verify: `npx tsc --noEmit` passes
-- [ ] 4.4 Integration tests against the test database: a newcomer gets one edge per other finished person; changing one user's answers changes only that user's edges (another pair's row is byte-for-byte the same); an unfinished user gets no edges; a suspended user drops out; a second `scoreUser` call gives identical rows. Verify: `npm test` passes
+- [x] 4.1 `src/lib/matching/eligiblePeople.ts`: finished and not suspended, with their tag ids, with a comment pointing at slice 4's `getVisiblePeople` (design 6). Verify: integration test with a finished, an unfinished and a suspended pretend user returns only the finished one
+- [x] 4.2 `src/lib/matching/glitch.ts`: `pickGlitchMatch(userId, candidates, topFiveIds, random)` and `ensureGlitchMatch(userId)`, keeping a stored match while it is valid (design 5). Verify: Vitest covers never yourself, never in the top 5, kept on reload, replaced when suspended, replaced when it enters the top 5, and nobody eligible
+- [x] 4.3 Fill in `scoreUser` in `src/lib/scoring.ts` following design 4: one transaction, delete this user's edges, write new ones with `skipDuplicates`, ensure the glitch match and repair others' glitch matches that now point into their top 5. Keep the name and signature, and update its header comment. Verify: `npx tsc --noEmit` passes
+- [x] 4.4 Integration tests against the test database: a newcomer gets one edge per other finished person; changing one user's answers changes only that user's edges (another pair's row is byte-for-byte the same); an unfinished user gets no edges; a suspended user drops out; a second `scoreUser` call gives identical rows. Verify: `npm test` passes
 
 ## 5. Top 5 and explanation for pages
 
