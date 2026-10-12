@@ -2,11 +2,26 @@
 
 Start only once the proposal is approved and this branch has been rebased onto `master`. Each group adds its own tests. Steps marked **(human)** need a team conversation or a browser login.
 
+## Names used
+
+Checked on 12 Oct 2026 against the merged `master` (task 1.3). Everything in `design.md` matches the code except the points below, which the build follows:
+
+- **`Edge`** has `userAId`, `userBId`, `score`, `complement`, `overlap`, `tension`; **`GlitchMatch`** has `userId` (the owner) and `matchedUserId`; **`TagPairing`** has `seekingTagId` and `qualityTagId`. All as the design says.
+- **Category ids** in `prisma/seed-data.ts` are `hero-story`, `energy`, `vibe-diagnosis`, `qualities` and `seeking`. There are no `skills` or `interests` categories yet (slice 2 adds them), so the shared Skills and Interests lists are empty until then. The stand-in already uses the ids `"skills"` and `"interests"`, and this slice uses the same two.
+- **Tag ids** are `seeking-<short name>` and `qualities-<short name>` (note `qualities-`, plural). The 24 pairs in design 3 use these ids and all exist.
+- **`explainMatch`'s stand-in returns `MatchExplanation | null`**, with `null` when no score is stored for the pair. Design 7 does not mention the `null`. The real function keeps it, so join-up stays a swap.
+- **`getTopFive`'s stand-in** returns `{ userId, score }[]` (the type is `TopMatch`) and already uses the spec's tie-break, via slice 4's `getVisiblePeople` (people have `userId` and `completedAt`). The real one returns the same shape.
+- **`scoreUser(userId): Promise<void>`** is the stub to fill in; keep the name and signature.
+- **The pretend cohort's edges** are invented by `prisma/pretend-cohort.ts`, so `npm run rescore:all` (7.1) replaces them with calculated ones.
+- **Tests share the dev database.** `TEST_DATABASE_URL` is currently the same URL as `DATABASE_URL`, and the test run empties the tables and restores the dev data afterwards (`tests/helpers/restoreDevData.ts`). Do not run two test runs, or the dev server's pages, at the same time.
+
 ## 1. Settle the open decisions
 
-- [ ] 1.1 **(human)** Team edits and agrees the 12 Seeking→Quality pairings in design 3 (24 rows). Verify: the agreed list is recorded as a comment on #10 and `design.md` is updated to match
-- [ ] 1.2 **(human)** Confirm with track 4 (Patrick) the names `getTopFive` and `explainMatch` and their return shapes, and with the team that a glitch match is kept on rescore unless it becomes invalid (design 5, 7). Verify: answers recorded as a comment on #10
-- [ ] 1.3 Read the merged `src/lib/scoring.ts`, `src/lib/userPair.ts`, `src/lib/cohort/standIns.ts` and `prisma/schema.prisma` (`Edge`, `GlitchMatch`, `TagPairing`) and note any name that differs from `design.md` in a short "Names used" note at the top of this file. Verify: the note exists and `npm test` passes on the untouched branch
+- [x] 1.1 **(human)** Team edits and agrees the 12 Seeking→Quality pairings in design 3 (24 rows). Verify: the agreed list is recorded as a comment on #10 and `design.md` is updated to match
+  - *Assumed approved by Patrick on 12 Oct 2026 so the build could start. The list is on #10 (comment 6124729602) and in design 3, unchanged. If the team edits it, only task 2.1's data changes, then `npm run rescore:all`.*
+- [x] 1.2 **(human)** Confirm with track 4 (Patrick) the names `getTopFive` and `explainMatch` and their return shapes, and with the team that a glitch match is kept on rescore unless it becomes invalid (design 5, 7). Verify: answers recorded as a comment on #10
+  - *Assumed confirmed by Patrick on 12 Oct 2026 (he is track 4 and the glitch rule is the design's own): the names and shapes in design 7 stand, with `explainMatch` keeping its `| null`, and a glitch match is kept on rescore unless it becomes invalid. Not yet written up as a comment on #10.*
+- [x] 1.3 Read the merged `src/lib/scoring.ts`, `src/lib/userPair.ts`, `src/lib/cohort/standIns.ts` and `prisma/schema.prisma` (`Edge`, `GlitchMatch`, `TagPairing`) and note any name that differs from `design.md` in a short "Names used" note at the top of this file. Verify: the note exists and `npm test` passes on the untouched branch
 
 ## 2. Pairings as data
 
