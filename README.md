@@ -259,7 +259,7 @@ The names for track 3 are track 4's proposal and aren't agreed yet. **If you are
 
 ## Connection requests
 
-Track 5 (slice 5, issue #12) lets someone ask a match to connect, and the other person approve or decline. Nothing private opens until both say yes: approving opens a conversation, and nobody's email is ever shown. **This is being built group by group; the `/requests` page is still a placeholder.**
+Track 5 (slice 5, issue #12) lets someone ask a match to connect, and the other person approve or decline. Nothing private opens until both say yes: approving opens a conversation, and nobody's email is ever shown. **To try it:** `npm run dev`, pick `02` in the "Dev sign-in as" list, press Switch, and open `/requests`. User 02 has a request waiting, one they sent, and a conversation already open.
 
 **The rules, in plain words:**
 
@@ -272,7 +272,7 @@ Track 5 (slice 5, issue #12) lets someone ask a match to connect, and the other 
 
 | Route | What it does |
 |---|---|
-| `/requests` | Placeholder for now; will list requests waiting for you and the ones you sent |
+| `/requests` | **Built.** Requests waiting for your answer (with Approve and Decline) and the ones you sent, each marked Waiting, Connected or Declined. Signed out you are sent to `/signin` |
 | `POST /api/requests/[id]/approve` | **Built.** Approves a request sent to you and opens a conversation. 401 signed out, 404 not found or not yours, 409 already answered or no longer allowed |
 | `POST /api/requests/[id]/decline` | **Built.** Declines a request sent to you. Same answers |
 
@@ -285,6 +285,12 @@ Track 5 (slice 5, issue #12) lets someone ask a match to connect, and the other 
 | `areConnected(userIdA, userIdB)` | `areConnected.ts` | True when the two have an approved request and neither has blocked the other. **Slice 7 (#14) uses this before serving a photo.** Slice 5 builds no photo code, only this rule |
 | `countWaitingRequests(userId)` | `listRequests.ts` | How many requests are waiting for this person's answer: the number on the nav bar's Requests link. Always the length of the page's waiting list |
 | `getRequestsPage(userId)` | `listRequests.ts` | The two lists for `/requests`: waiting for you, and sent by you with their status. Only aliases, addresses and silhouette ids: never an email or a user id |
+
+**The waiting count.** The nav bar's Requests link shows `(2)` when two requests are waiting for you, on every page, and nothing when none are. It is `src/components/WaitingRequestsCount.tsx`, and it uses the same filter as the page's list so the two can't disagree.
+
+**What the page leaves out, quietly:** a request from or to someone who has been suspended or hasn't finished their profile, and any pair where either has blocked the other.
+
+**Two things on the profile page are still rough** (it is slice 4's, so they are tidied at join-up, #17): after a decline it still shows the Connect button, though pressing it answers that a new request can't be sent, and a waiting request says "a request is waiting between you two" without saying who asked. The server always answers correctly; only the wording on that page is behind.
 
 The words people see (every refusal and success sentence) are in `messages.ts`, so the code, the tests and the pages can't drift apart.
 

@@ -63,11 +63,13 @@ test("labels the admin, the suspended user and the ones who haven't onboarded", 
 
 // Spec scenario: "Become a pretend user"
 test("picking a pretend user signs you in and returns you to the same page", async ({ page }) => {
-  await page.goto("/requests");
+  // /catalogue is a page that never redirects. (This used /requests until
+  // slice 5 (#12) built it: signed out, that page now sends you to /signin.)
+  await page.goto("/catalogue");
 
   await signInAs(page, member);
 
-  await expect(page).toHaveURL(/\/requests$/);
+  await expect(page).toHaveURL(/\/catalogue$/);
   await expect(page.locator(switcher)).toHaveValue(member);
 });
 

@@ -2,7 +2,8 @@
 // design decision 11). It is used once, in src/app/layout.tsx.
 //
 // It links to every page in the route plan, so anyone can reach any part of
-// the app from anywhere, and it holds the dev "sign in as…" switcher.
+// the app from anywhere, and it holds the dev "sign in as…" switcher. The
+// Requests link also shows how many connection requests are waiting for you.
 //
 // FOR NOW IT SHOWS EVERY LINK TO EVERYONE, including Admin. That is on
 // purpose: while we build, we all need to reach every page quickly. Hiding
@@ -15,6 +16,8 @@
 import Link from "next/link";
 
 import { DevUserSwitcher } from "@/components/DevUserSwitcher";
+// Slice 5 (#12): the number of requests waiting for you, beside the Requests link.
+import { WaitingRequestsCount } from "@/components/WaitingRequestsCount";
 
 // THE ROUTE PLAN: every page that can be opened without choosing a person,
 // in the order a new student meets them. (/people/[alias] isn't here because
@@ -60,6 +63,9 @@ export function NavBar() {
             className="py-1 text-sm underline underline-offset-4"
           >
             {link.label}
+            {/* Only the Requests link carries a count. It draws nothing when
+                you are signed out or nothing is waiting. */}
+            {link.href === "/requests" && <WaitingRequestsCount />}
           </Link>
         ))}
       </nav>
