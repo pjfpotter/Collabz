@@ -51,7 +51,7 @@ Checked on 8 Oct 2026 against the merged `prisma/schema.prisma`, `src/lib/` and 
 ## 1. Check the starting point and agree names
 
 - [x] 1.1 Read the merged `prisma/schema.prisma`, `src/lib/` and #7's README sections, and note any name that differs from `design.md` (`Edge` columns, `GlitchMatch`, `getCurrentUser`, `orderUserPair`, the pretend cohort's counts) in a short "Names used" note at the top of this file. Verify: the note exists, and `npm test` passes on the untouched branch
-- [ ] 1.2 **(human)** Agree the helper names with track 3 (`getTopFive`, `explainMatch`, and whether the top 5 leaves out suspended people) and track 5 (`sendConnectionRequest` and what it returns when it refuses) (design 9, Open Questions). Verify: the agreed names are recorded as comments on #10 and #12, and this file's note is updated if any changed
+- [ ] 1.2 **(human)** Agree the helper names with track 3 (`getTopFive`, `explainMatch`, and whether the top 5 leaves out suspended people) and track 5 (`sendConnectionRequest` and what it returns when it refuses) (design 9, Open Questions). Verify: the agreed names are recorded as comments on #10 and #12, and this file's note is updated if any changed **Left open when archived (12 Oct 2026):** nobody was assigned to #10 or #12, so the names were never agreed. They are still our proposal; whoever builds those slices should confirm or change them, then swap the stand-ins in `src/lib/cohort/standIns.ts`.
 - [x] 1.3 Install `react-force-graph-2d` and prove it works in our app: a temporary Client Component loaded with `dynamic(..., { ssr: false })` that draws three dots and two lines on the `/graph` page (design 3). Verify: `npm run dev` shows the dots with no error in the browser console, and `npm run build` succeeds. If it fails, stop and raise it before going on
 
 ## 2. Who is visible, and the stand-ins
@@ -99,5 +99,5 @@ Added after the group 7 preview checks passed, at Patrick's request: when a dot 
 
 ## 7. Deploy and hand over
 
-- [ ] 7.1 Push, open the PR with the two screenshots from 4.4, and on the preview URL as `pretend-user-02` repeat #11's five success checks, the last one on a real phone. Verify: all five are ticked in the PR description, with a note that Connect is a stand-in until slice 5
-- [ ] 7.2 **(human)** Comment on #17 with the swap list from `src/lib/cohort/standIns.ts` (six stand-ins, their owners and real names), and that hiding blocked people and showing photos on the profile page are still to do. Comment on #9 that alias addresses are settled by `aliasToAddress()`. Verify: both comments are posted
+- [x] 7.1 Push, open the PR with the two screenshots from 4.4, and on the preview URL as `pretend-user-02` repeat #11's five success checks, the last one on a real phone. Verify: all five are ticked in the PR description, with a note that Connect is a stand-in until slice 5
+- [x] 7.2 **(human)** Comment on #17 with the swap list from `src/lib/cohort/standIns.ts` (six stand-ins, their owners and real names), and that hiding blocked people and showing photos on the profile page are still to do. Comment on #9 that alias addresses are settled by `aliasToAddress()`. Verify: both comments are posted

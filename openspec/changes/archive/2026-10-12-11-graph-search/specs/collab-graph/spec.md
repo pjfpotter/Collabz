@@ -104,3 +104,24 @@ On a phone-width screen the graph SHALL fit the width of the screen, and the use
 #### Scenario: Touch
 - **WHEN** a user drags, pinches and taps on the graph on a touch screen
 - **THEN** the view moves, zooms, and a tapped node shows that person's details
+
+### Requirement: A pulled node stays where it is let go
+A user SHALL be able to pull a node to a new place on the graph, and it SHALL stay there until the page is reloaded, so that tangled connections can be teased apart and looked at. The other nodes SHALL move to make room and then settle. A node SHALL NOT be able to be pulled further from the middle of the graph than twice the distance of the farthest node when the graph first settled; a node pulled further SHALL stop at that limit. Tapping a node without pulling it SHALL NOT move it.
+
+**Brief:** Supporting (readability of the graph) · **MVP:** In · **Thursday:** Out
+
+#### Scenario: Pulled node stays
+- **WHEN** a user pulls a node away from its neighbours and lets go
+- **THEN** the node stays where it was let go, and the other nodes settle around it
+
+#### Scenario: Limit on how far
+- **WHEN** a user pulls a node far beyond the rest of the graph
+- **THEN** the node stops at the limit and goes no further, however far the pointer goes
+
+#### Scenario: Tap does not move a node
+- **WHEN** a user taps a node without pulling it
+- **THEN** that person's details are shown and the node has not moved
+
+#### Scenario: Reload puts everything back
+- **WHEN** a user has moved some nodes and then reloads the page
+- **THEN** the graph is laid out afresh, with no node pinned
