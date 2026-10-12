@@ -41,6 +41,7 @@
 - *Why blocked and suspended people get the same vague `unavailable`:* telling someone "this person blocked you" is a safety leak. One message ("You can't send a request to this person.") covers both.
 - *Why check 4 comes before 5:* if someone has since dropped out of your top 5 and a request already exists, "a request is already waiting" is the more useful answer.
 - *Why `getConnectPermission()` and not a second copy of the top 5 rule:* `README.md` names it as the helper for slice 5, and one copy of the rule means the profile page and this helper can't disagree. At join-up, `getTopFive()` swaps inside it and nothing here changes.
+- *If a pair somehow has more than one row* (the pretend cohort does; the app itself will not create this): "connected" is reported before "waiting", and "waiting" before "declined", so the person hears the most useful thing. (Decided in the build, 12 Oct 2026.)
 - **Alternative rejected:** putting the rules in a new slice 5 route. Two routes could drift, and #12's success check is that refusal holds "even by calling the server directly", which means the helper itself.
 
 ### 2. Slice 4's route keeps its own check and calls the helper through the stand-in
