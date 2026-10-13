@@ -66,6 +66,10 @@ export default defineConfig({
           // only ever a local server against the test database, never a
           // deployed site (see src/lib/pretendCohort.ts).
           PRETEND_COHORT: "on",
+          // Slice 1 (#8): one made-up address that becomes an admin when it
+          // signs up, so tests/e2e/signup.spec.ts can check ADMIN_EMAILS works.
+          // A .test address, so it can never be a real person.
+          ADMIN_EMAILS: "first-admin@collabz.test",
         },
         // Always start a fresh server, so we know which database it uses.
         reuseExistingServer: false,

@@ -76,6 +76,18 @@ export function checkSignUpForm(
   return problems;
 }
 
+// Turns the list of problems into "field -> message", which is easier for a
+// form to use: { email: "Enter your email address.", courseId: "..." }.
+export function problemsByField(
+  problems: SignUpProblem[],
+): Partial<Record<SignUpField, string>> {
+  const byField: Partial<Record<SignUpField, string>> = {};
+  for (const problem of problems) {
+    byField[problem.field] = problem.message;
+  }
+  return byField;
+}
+
 // What's wrong with this email address, or null if nothing is.
 //
 // Used by checkSignUpForm above, and on its own by the sign-in form, which

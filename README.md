@@ -149,6 +149,14 @@ Real sign-in (slice 1, #8) uses **magic links**: enter your email on `/signup` o
 
 **`ADMIN_EMAILS` only applies when an account is first created.** Adding someone after they've signed up does nothing; an existing admin promotes them instead (or edit their `role` in Neon).
 
+**QR code for the live test.** Students sign up by scanning a QR code that points at the live sign-up page. Make it with the real production address:
+
+```bash
+npm run qr -- https://<production address>/signup
+```
+
+It writes `public/qr-code.png`, which the site then serves at `/qr-code.png`, ready to print. Scan it with a phone before printing, to check it opens the right page.
+
 **Test inbox.** While the pretend cohort is on, links for `@collabz.test` addresses (the pretend students) aren't emailed: they're written to `.magic-links/<email>.txt` (gitignored). That's how the Playwright tests sign in for real. To try it by hand: sign in as `pretend-02@collabz.test` on `/signin`, then open the link in `.magic-links/pretend-02@collabz.test.txt`.
 
 In Playwright tests that are *about* signing in, use the helper:
