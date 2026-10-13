@@ -9,6 +9,7 @@
     "lint": "eslint",
     "postinstall": "prisma generate",
     "seed:fake": "tsx prisma/seed-fake.ts",
+    "rescore:all": "tsx scripts/rescore-all.ts",
     "test": "vitest run",
     "test:e2e": "playwright test",
     "qr": "tsx scripts/make-qr-code.ts"

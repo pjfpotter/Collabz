@@ -219,7 +219,7 @@ It must be exactly `on`. This one switch allows both the pretend students and th
 npm run seed:fake
 ```
 
-It is safe to run again: it only adds what's missing and never overwrites, so something you changed by hand (say, a request you approved) survives. It needs the tag catalogue first (`npx prisma db seed`).
+It is safe to run again: it only adds what's missing and never overwrites, so something you changed by hand (say, a request you approved) survives. The one exception is chemistry scores, which are recalculated every time (see [Matching](#matching)). It needs the tag catalogue first (`npx prisma db seed`).
 
 **Who is in it:**
 
@@ -231,9 +231,9 @@ It is safe to run again: it only adds what's missing and never overwrites, so so
 | Suspended | `pretend-user-30` | Should not appear on the graph or in search |
 | Not onboarded yet | `pretend-user-31`, `32` | Signed up, no profile: use these to test onboarding |
 
-Between the 30 finished profiles there is a score for every pair (435), a glitch match each, 14 connection requests (8 pending, 4 approved, 2 declined), 4 conversations (3 open with messages, 1 closed), 1 block and 1 open report.
+Between the 29 finished, unsuspended people there is a score for every pair (406), they each have a glitch match, 14 connection requests (8 pending, 4 approved, 2 declined), 4 conversations (3 open with messages, 1 closed), 1 block and 1 open report.
 
-Everyone gets exactly the same cohort, so "sign in as pretend-user-07" means the same person on every laptop and on preview links. The scores are made up until slice 3 builds real scoring.
+Everyone gets exactly the same cohort, so "sign in as pretend-user-07" means the same person on every laptop and on preview links. The scores are real: the seed works them out with the matching formula, so they are the same ones a real cohort with these answers would get.
 
 > **Running the tests resets the shared dev database.** `npm test` and `npm run test:e2e` empty every table and then load a fresh pretend cohort. Anything you changed by hand on dev is lost, and for the minute or two a run takes, a teammate's page (or a preview link) may show nothing or an error. Say "running tests" in the team chat first.
 
@@ -247,12 +247,79 @@ Five of us build different parts at the same time. To stop one track depending o
 |---|---|---|---|
 | `getCurrentUser()` | `src/lib/currentUser.ts` | Returns the signed-in user, or `null`. A real magic-link session wins (only if they've finished signing up and aren't suspended); otherwise the dev switcher's pick | Slice 1 (#8). Join-up (#17) removes the switcher part |
 | `requireAdmin()` | `src/lib/currentUser.ts` | For admin pages. Sends a signed-out visitor to `/signin`, shows a member "page not found", and returns the user if they are an admin | Slice 8 (#15) |
-| `scoreUser(userId)` | `src/lib/scoring.ts` | Does nothing yet. Call it after a user finishes onboarding or edits their answers | Slice 3 (#10) fills it in |
+| `scoreUser(userId)` | `src/lib/scoring.ts` | Rescores one user against everyone with a finished profile and keeps their glitch match valid. Call it after a user finishes onboarding or edits their answers, and after an admin suspends them or resets their onboarding so they drop out | Slice 3 (#10), built |
+| `getTopFive(userId)` | `src/lib/matching/` | The user's five best matches, best first, from the stored scores. Suspended and unfinished people are left out | Slice 3 (#10), built |
+| `explainMatch(userAId, userBId)` | `src/lib/matching/` | Why two people match, in plain sentences, with the points each is worth. The first id is "you". `null` if either person has no scores | Slice 3 (#10), built |
+| `ensureGlitchMatch(userId)` | `src/lib/matching/` | The user's stored glitch match, choosing one if they have none yet. Safe to call on every page load | Slice 3 (#10), built |
 | `openConversation(userAId, userBId)` | `src/lib/conversations.ts` | Returns the conversation between two users, creating it if needed. Safe to call twice | Slice 6 (#13) |
 | `closeConversation(conversationId)` | `src/lib/conversations.ts` | Marks a conversation as closed. Safe to call twice | Slice 6 (#13) |
 | `orderUserPair(a, b)` | `src/lib/userPair.ts` | Puts two user ids in the agreed order (lower first) for the `Edge` and `Conversation` tables, which store each pair once | Foundation (#7) |
 
 Each file starts with a comment that says the same in more detail, including what the helper will do once its owner has built it.
+
+## Matching
+
+Slice 3 (#10) turns people's answers into chemistry scores, a top 5 and one surprise "glitch match" each. The page is `/matches`.
+
+**The formula** (from the brief, in `src/lib/matching/score.ts`):
+
+```
+score = (complement x 3) + overlap + tension
+```
+
+| Part | What it counts |
+|---|---|
+| `complement` | How many of A's *Seeking* tags are satisfied by one of B's *Qualities*, plus the same the other way round. A Seeking tag counts once however many Qualities satisfy it. Which Quality satisfies which Seeking tag is the pairing list (see below) |
+| `overlap` | +1 if they picked the same Energy, +1 if they picked the same Vibe Diagnosis |
+| `tension` | +1 if their Hero Stories are different |
+
+Skills, Interests and course never change a score. They are only listed on the page as things two people share. The highest possible score is 27.
+
+**The pairings** (which Quality satisfies which Seeking tag) are data, not code: 23 rows in `prisma/seed-data.ts`, saved by `npx prisma db seed`. Edit that list and then run `npm run rescore:all`, because every score depends on it.
+
+**The rules around it:**
+
+- Only people with a **finished profile who are not suspended** are scored, appear in a top 5, or are anyone's glitch match.
+- The **top 5** is the five highest scores. Ties go to whoever finished their profile first, then the lower user id, so the order is the same on every load.
+- The **glitch match** is a random person who is not you and not in your top 5. It is stored, so a reload never changes it, and it is kept until it stops being valid (they are suspended, or they move into your top 5).
+- Rescoring one person changes **only the rows that involve them**. Nobody else's scores move.
+
+**Helpers other tracks may call** (import from `@/lib/matching`, nothing deeper). They are also in the [Shared helpers](#shared-helpers) table.
+
+| Helper | Use it to |
+|---|---|
+| `scoreUser(userId)` | Recalculate someone's scores. Call it **after** their answers are saved, and after they are suspended or their onboarding is reset. It also lives in `src/lib/scoring.ts` |
+| `getTopFive(userId)` | Get their five best matches, best first |
+| `explainMatch(you, them)` | Get the plain-language reasons for a pair, or `null` if there is no score |
+| `ensureGlitchMatch(userId)` | Get their glitch match, choosing one if they have none |
+
+**Recalculating everyone: `npm run rescore:all`.** Run it after editing the pairings, or after changing the formula. It scores every eligible person in one database transaction, so a failure halfway leaves the old scores untouched, and it prints only counts (never the database address). It is safe to run twice: you get the same rows.
+
+```bash
+npm run rescore:all
+# Rescoring everyone...
+# Done.
+#   People rescored:  29
+#   Edges now stored: 406
+#   Glitch matches:   30
+```
+
+With N eligible people you should see N x (N - 1) / 2 edges, one row per pair. The glitch match count can be one higher than the number of people, because a suspended person may still have an old one that nobody can see.
+
+**You don't need to run it after `npm run seed:fake`, or after the tests.** Both already score the cohort with the real formula.
+
+**Where the code is:**
+
+| File | What it does |
+|---|---|
+| `src/lib/matching/score.ts` | The formula. No database, so it can be checked against the brief by hand |
+| `src/lib/matching/explain.ts` | Turns a pair into the plain sentences on the match cards |
+| `src/lib/matching/eligiblePeople.ts` | Who can be scored, with their tags |
+| `src/lib/matching/rescoreUser.ts` | Rescoring one person or everyone, in a transaction |
+| `src/lib/matching/glitch.ts` | Picking and keeping the glitch match |
+| `src/lib/matching/topFive.ts`, `explainMatch.ts` | `getTopFive` and `explainMatch` |
+| `src/app/matches/` | The `/matches` page and its match card |
+| `scripts/rescore-all.ts` | The `rescore:all` command |
 
 ## Graph and people search
 
@@ -364,6 +431,7 @@ src/
     catalogue.ts       # getCatalogue(): reads categories and tags in order
     currentUser.ts     # getCurrentUser(), requireAdmin()   (shared helpers)
     scoring.ts         # scoreUser()                        (shared helper)
+    matching/          # slice 3: the score formula, top 5, glitch match (see Matching)
     conversations.ts   # openConversation(), closeConversation() (shared helpers)
     userPair.ts        # orderUserPair(): one agreed order for a pair of users
     pretendCohort.ts   # the on/off switch for pretend students and the dev switcher
@@ -376,6 +444,8 @@ prisma/
   seed.ts              # adds any of those rows that are missing
   pretend-cohort.ts    # works out the 32 pretend students (no database)
   seed-fake.ts         # npm run seed:fake: saves them to the dev database
+scripts/
+  rescore-all.ts       # npm run rescore:all: recalculates every chemistry score
 tests/
   unit/                # Vitest tests that need no database (npm test)
   integration/         # Vitest tests against the test database (npm test)

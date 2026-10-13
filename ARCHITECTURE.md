@@ -8,7 +8,7 @@ Update this as the last step whenever `/opsx:archive-change` lands a change that
 
 Collabz is our version of the course brief "Bootcamp Connect". It matches software-course and business-course students by **chemistry**, not CVs. People build a profile by picking tags from fixed lists, the app scores every pair, and everyone sees the whole cohort as a live graph. Two people who both agree to connect get a private conversation.
 
-> **Status (12 Oct 2026):** slice 0, the foundation (#7), slice 4 (#11, the graph, the people list and profile pages) and slice 5 (#12, connection requests) are built and live. The app runs on Vercel, talks to Neon through Prisma, and shows the tag catalogue at `/catalogue`. The foundation added every MVP database table, a placeholder page for every route, a cohort of pretend students and a dev-only way to act as any of them. Slice 4 then added the cohort graph, the people list with its filters and the profile pages. They run on the pretend cohort and on stand-ins for other tracks' work (see below). Slice 5 then made the Connect button real and added the requests page. The other real features (sign-up, onboarding, matching, messages) are not built yet: the tracks are building those in parallel on top of the foundation (slice map: issue #18). The per-capability specs are in `openspec/specs/`. The reasoning behind them is `openspec/changes/archive/2026-10-01-2-mvp-overview/` as amended by `openspec/changes/archive/2026-10-01-4-brief-alignment/`. Where the two disagree, #4 wins.
+> **Status (13 Oct 2026):** slice 0, the foundation (#7), slice 3 (#10, chemistry matching), slice 4 (#11, the graph, the people list and profile pages) and slice 5 (#12, connection requests) are built and live. The app runs on Vercel, talks to Neon through Prisma, and shows the tag catalogue at `/catalogue`. The foundation added every MVP database table, a placeholder page for every route, a cohort of pretend students and a dev-only way to act as any of them. Slice 4 then added the cohort graph, the people list with its filters and the profile pages. They run on the pretend cohort and on stand-ins for other tracks' work (see below). Slice 5 then made the Connect button real and added the requests page, and slice 3 replaced the pretend scores with the real chemistry formula and added `/matches`. The other real features (sign-up, onboarding, messages) are not built yet: the tracks are building those in parallel on top of the foundation (slice map: issue #18). The per-capability specs are in `openspec/specs/`. The reasoning behind them is `openspec/changes/archive/2026-10-01-2-mvp-overview/` as amended by `openspec/changes/archive/2026-10-01-4-brief-alignment/`. Where the two disagree, #4 wins.
 
 ## The pieces
 
@@ -19,10 +19,10 @@ Collabz is our version of the course brief "Bootcamp Connect". It matches softwa
 - **Two Neon branches**: `production` holds the live data and is only used by the production deploy. `dev` is used by everything else: our laptops, preview deploys and the tests.
 - **A seed** (`prisma/seed.ts`): fills the catalogue tables from `prisma/seed-data.ts`. It runs on every deploy and only adds rows that are missing.
 - **A page for every route, and one nav bar** (`src/components/NavBar.tsx`): every address in the route plan already exists as a placeholder saying which slice will build it. Each track replaces its own placeholders and leaves the rest alone.
-- **The pretend cohort** (`npm run seed:fake`, built in `prisma/pretend-cohort.ts`): 32 pretend students on the `dev` database, 30 with finished profiles, scores, glitch matches, requests, conversations and messages. It lets every track build and test before real sign-up exists. It is the same on every machine, because the "random" choices are worked out from each user's id.
+- **The pretend cohort** (`npm run seed:fake`, built in `prisma/pretend-cohort.ts`): 32 pretend students on the `dev` database, 30 with finished profiles, scores, glitch matches, requests, conversations and messages. Since slice 3 the seed scores them with the real formula, so the scores are calculated, not made up. It lets every track build and test before real sign-up exists. It is the same on every machine, because the "random" choices are worked out from each user's id.
 - **The dev switcher** (`src/components/DevUserSwitcher.tsx` and `/api/dev/sign-in-as`): a "Dev sign-in as" list in the nav bar that makes you any pretend student. It stands in for real sign-in until slice 1 lands.
 - **The pretend cohort switch** (`src/lib/pretendCohort.ts`): the cohort and the switcher only exist where `PRETEND_COHORT` is set to `on`, and never on the production deploy, whatever is set there.
-- **Shared helpers** (`src/lib/`): the only way one track reaches another track's feature. `getCurrentUser` and `requireAdmin` (who is using the app, and are they an admin), `scoreUser` (slice 3 fills it in), `openConversation` and `closeConversation`, and `orderUserPair`. Slice 5 added `sendConnectionRequest` and `areConnected` in `src/lib/requests/`.
+- **Shared helpers** (`src/lib/`): the only way one track reaches another track's feature. `getCurrentUser` and `requireAdmin` (who is using the app, and are they an admin), `scoreUser`, `getTopFive`, `explainMatch` and `ensureGlitchMatch` (slice 3, from `src/lib/matching/`), `openConversation` and `closeConversation`, and `orderUserPair`. Slice 5 added `sendConnectionRequest` and `areConnected` in `src/lib/requests/`.
 - **Tests**: Vitest checks the seeds, the database rules and the helpers, and Playwright checks the pages, the nav bar and the switcher in a real browser. Both run against the real `dev` database, not a fake one, and put the catalogue and the pretend cohort back when they finish.
 
 **Built (slice 4, #11):**
@@ -31,6 +31,14 @@ Collabz is our version of the course brief "Bootcamp Connect". It matches softwa
 - **The people list and profile pages** (`/people` and `/people/[alias]`): the list filters by course (skill and interest dropdowns appear once onboarding adds those categories), and each profile shows the bio, tags and "why you match". A "Connect" button appears only for your top 5 and glitch match.
 - **The server decides, the canvas only draws** (`src/lib/cohort/`): who is visible, who is in the top 5, how thick a line is and who may be connected with are all worked out in tested server code (`visiblePeople.ts`, `graphData.ts`, `profile.ts`). The browser code is told "draw this one dashed" and holds no rules, because nothing can test inside a canvas.
 - **Stand-ins for other tracks' work** (`src/lib/cohort/standIns.ts`): five temporary versions of things tracks 2 and 3 will own (top 5, "why you match", the generated bio, the silhouette picture, the onboarding check). They sit in one file so that join-up (#17) is one mechanical job. (A sixth, sending a request, was a stand-in until slice 5 built the real one.)
+
+**Built (slice 3, #10):**
+
+- **The score formula** (`src/lib/matching/score.ts`): `(complement x 3) + overlap + tension`, as a plain function with no database. Complement counts each Seeking tag that the other person's Qualities satisfy, once, in both directions. Skills, Interests and course never change a score.
+- **Pairings are data** (`TagPairing`, seeded from `prisma/seed-data.ts`): which Quality satisfies which Seeking tag. Editing them and running `npm run rescore:all` changes every score without touching code.
+- **`scoreUser` is real** (`rescoreUser.ts`): in one transaction it deletes and rewrites only that user's scores and repairs any glitch match that has become invalid. `rescoreEveryone` does the whole cohort in one transaction and is behind `npm run rescore:all` and the pretend-cohort seed.
+- **Top 5 and glitch match** (`topFive.ts`, `glitch.ts`): the top 5 is ordered by score, then earliest finisher, then lower user id, so it is the same on every load. The glitch match is random, stored, never yourself or in your top 5, and kept until it stops being valid.
+- **`/matches`** (`src/app/matches/`): top 5 cards with plain-sentence reasons, and the glitch match drawn differently as a surprise. Aliases and silhouettes only.
 
 **Built (slice 5, #12):**
 
@@ -62,7 +70,7 @@ The flows below are planned, not built yet.
 
 **Joining:** scan QR → sign up (email, course, accept terms) → magic link → onboarding (7 pick-from-list exercises) → the server scores the new user against everyone and stores the edges → graph.
 
-**Editing answers:** account page → save → the server deletes and recalculates *only that user's* edges. Nobody else's scores change.
+**Editing answers:** account page → save → the server deletes and recalculates *only that user's* edges. Nobody else's scores change. (The recalculation, `scoreUser`, is built. The account page that calls it is not.)
 
 **Seeing a photo:** browser asks the app for a photo → the app checks the viewer is the owner, a connected user or an admin → only then fetches it from private storage.
 
@@ -102,16 +110,17 @@ The flows below are planned, not built yet.
 - **The photo rule is a function, with no photo code** (`areConnected`): slice 7 owns upload and serving, and a block makes the rule false by itself, so slice 9 needs no extra code here.
 - **A member who opens an admin page gets "page not found", not "access denied":** it gives nothing away, and Next.js's "forbidden" page is still experimental.
 
-Full reasoning: `openspec/changes/archive/2026-10-01-2-mvp-overview/design.md` and `openspec/changes/archive/2026-10-01-4-brief-alignment/design.md`. For slice 0: `openspec/changes/archive/2026-10-08-6-tag-catalogue/design.md`. For the foundation: `openspec/changes/archive/2026-10-08-7-foundation/design.md`. For the graph, people list and profile pages: `openspec/changes/archive/2026-10-12-11-graph-search/design.md`. For connection requests: `openspec/changes/archive/2026-10-12-12-connection-requests/design.md`.
+Full reasoning: `openspec/changes/archive/2026-10-01-2-mvp-overview/design.md` and `openspec/changes/archive/2026-10-01-4-brief-alignment/design.md`. For slice 0: `openspec/changes/archive/2026-10-08-6-tag-catalogue/design.md`. For the foundation: `openspec/changes/archive/2026-10-08-7-foundation/design.md`. For the graph, people list and profile pages: `openspec/changes/archive/2026-10-12-11-graph-search/design.md`. For connection requests: `openspec/changes/archive/2026-10-12-12-connection-requests/design.md`. For chemistry matching: `openspec/changes/archive/2026-10-13-10-matching/design.md`.
 
 ## Open questions / known gaps
 
-- Only slice 0, the foundation, slice 4 and slice 5 are built. There are no real users and no real sign-in. The graph, people list, profile pages and requests work on the pretend cohort, and the other pages are placeholders.
-- The five stand-ins in `src/lib/cohort/standIns.ts` are temporary, and their names for track 3 (`getTopFive`, `explainMatch`) were never agreed with anyone, because nobody is assigned to #10. Join-up (#17) swaps them for the real ones and may need to rename them. `sendConnectionRequest` was agreed and is real.
+- Only slice 0, the foundation, slice 3, slice 4 and slice 5 are built. There are no real users and no real sign-in. The graph, people list, profile pages and requests work on the pretend cohort, and the other pages are placeholders.
+- The five stand-ins in `src/lib/cohort/standIns.ts` are temporary, and the real `getTopFive` and `explainMatch` now exist in `src/lib/matching/` under the same names, so join-up (#17) swaps them and the two "finished and not suspended" rules (written twice on purpose) get merged. `sendConnectionRequest` was agreed and is real.
 - The profile page (slice 4's) is still rough in two places: after a decline it still shows Connect, though pressing it is refused with a clear sentence, and a waiting request doesn't say who asked. Join-up (#17) tidies both. The graph and list don't yet hide people who have blocked you, and profiles don't show photos yet. Photos need slice 7, which will call `areConnected`.
 - Requests can't be withdrawn, and there is no email when one arrives. Both were left out on purpose.
 - The pretend cohort, the dev switcher and their switch are temporary. Join-up (#17) deletes them once real sign-in and real profiles exist.
-- `scoreUser` does nothing yet, and the Seeking↔Quality pairings table is empty. Slice 3 fills in both. The pretend students' scores are made-up numbers, not real calculations.
+- The 23 Seeking↔Quality pairings are a draft that was assumed approved so slice 3 could be built. If the team changes them, edit `prisma/seed-data.ts` and run `npm run rescore:all`. Skills and Interests are not scored and are empty until slice 2 adds those categories.
+- The pretend requests and conversations were built from the old invented ranking, so a few may sit between people who are no longer in each other's top 5.
 - Tests empty the tables on the shared `dev` database and refill them at the end. Two people running tests at the same moment can trip each other up, and anything changed by hand on `dev` is lost on the next test run.
 - Still to be recorded on #7: Tom's check of the `User` and sign-in tables, and the team's agreement on who creates migrations.
 - Email-sending service for magic links: not chosen (slice 1).

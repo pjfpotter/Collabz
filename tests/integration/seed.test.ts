@@ -6,7 +6,7 @@ import { afterAll, beforeEach, describe, expect, it } from "vitest";
 
 import { prisma } from "@/lib/db";
 import { seedCatalogue } from "../../prisma/seed";
-import { seedCategories } from "../../prisma/seed-data";
+import { seedCategories, seedPairings } from "../../prisma/seed-data";
 import { emptyDatabase } from "../helpers/database";
 
 describe("seedCatalogue", () => {
@@ -79,6 +79,7 @@ describe("seedCatalogue", () => {
       categoriesCreated: 0,
       tagsCreated: 0,
       coursesCreated: 0,
+      pairingsCreated: 0,
     });
 
     // ...and the tables hold exactly the same ids as before.
@@ -101,6 +102,110 @@ describe("seedCatalogue", () => {
       where: { id: "energy-sea-captain" },
     });
     expect(tag.name).toBe("Giving Lighthouse Keeper Energy");
+  });
+});
+
+// The Seeking <-> Quality pairings (slice 3, #10, spec requirement "Seeking
+// and Quality pairings are stored as data").
+describe("seedCatalogue: Seeking and Quality pairings", () => {
+  beforeEach(async () => {
+    await emptyDatabase(prisma);
+  });
+
+  // Spec scenario: "Pairings are seeded"
+  it("gives every Seeking tag at least one Quality, and every pairing points at real tags", async () => {
+    await seedCatalogue(prisma);
+
+    const seekingTags = await prisma.tag.findMany({ where: { categoryId: "seeking" } });
+    const pairings = await prisma.tagPairing.findMany({
+      include: { seekingTag: true, qualityTag: true },
+    });
+
+    // 12 Seeking tags, and each has a pairing.
+    expect(seekingTags).toHaveLength(12);
+    const pairedSeekingIds = new Set(pairings.map((pairing) => pairing.seekingTagId));
+    for (const tag of seekingTags) {
+      expect(pairedSeekingIds.has(tag.id), `${tag.id} has no pairing`).toBe(true);
+    }
+
+    // The database already refuses a pairing whose tags don't exist (a
+    // foreign key), and the include above would be null otherwise. What it
+    // can't check is the CATEGORY: a Seeking tag must really be a Seeking
+    // tag and a Quality tag a Quality tag, not the two swapped.
+    for (const pairing of pairings) {
+      expect(pairing.seekingTag.categoryId).toBe("seeking");
+      expect(pairing.qualityTag.categoryId).toBe("qualities");
+    }
+
+    // Every Quality satisfies at least one Seeking tag, so no Quality tag is
+    // worth nothing in the score.
+    const qualityTags = await prisma.tag.findMany({ where: { categoryId: "qualities" } });
+    const pairedQualityIds = new Set(pairings.map((pairing) => pairing.qualityTagId));
+    for (const tag of qualityTags) {
+      expect(pairedQualityIds.has(tag.id), `${tag.id} satisfies nothing`).toBe(true);
+    }
+  });
+
+  it("stores exactly the pairs written in seed-data.ts, once each", async () => {
+    await seedCatalogue(prisma);
+
+    const expected = seedPairings.flatMap((pairing) =>
+      pairing.qualityTagIds.map((qualityTagId) => `${pairing.seekingTagId} <- ${qualityTagId}`),
+    );
+    const stored = (await prisma.tagPairing.findMany()).map(
+      (pairing) => `${pairing.seekingTagId} <- ${pairing.qualityTagId}`,
+    );
+
+    expect(stored.sort()).toEqual(expected.sort());
+    // 23 is the agreed list (11 Seeking tags with two Qualities, one with
+    // one). Written out so a pair added or dropped by mistake is noticed.
+    expect(stored).toHaveLength(23);
+  });
+
+  // Spec scenario: "Re-seeding keeps database edits"
+  it("adds back a pairing that was removed, without duplicating the others", async () => {
+    await seedCatalogue(prisma);
+    const before = await prisma.tagPairing.count();
+
+    // Remove one pairing in the database, like an admin editing the list.
+    await prisma.tagPairing.delete({
+      where: {
+        seekingTagId_qualityTagId: {
+          seekingTagId: "seeking-stays-when-hard",
+          qualityTagId: "qualities-stays-calm",
+        },
+      },
+    });
+
+    const secondRun = await seedCatalogue(prisma);
+
+    // Only the missing pair was added, and the table is whole again.
+    expect(secondRun.pairingsCreated).toBe(1);
+    expect(await prisma.tagPairing.count()).toBe(before);
+  });
+
+  it("leaves a pairing an admin added alone", async () => {
+    await seedCatalogue(prisma);
+
+    // A pair that is NOT in the seed list.
+    await prisma.tagPairing.create({
+      data: {
+        seekingTagId: "seeking-makes-it-look-good",
+        qualityTagId: "qualities-goes-deep",
+      },
+    });
+
+    await seedCatalogue(prisma);
+
+    const added = await prisma.tagPairing.findUnique({
+      where: {
+        seekingTagId_qualityTagId: {
+          seekingTagId: "seeking-makes-it-look-good",
+          qualityTagId: "qualities-goes-deep",
+        },
+      },
+    });
+    expect(added).not.toBeNull();
   });
 });
 

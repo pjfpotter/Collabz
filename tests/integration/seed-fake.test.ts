@@ -43,7 +43,9 @@ describe("seedPretendCohort", () => {
     expect(result).toMatchObject({
       usersCreated: 32,
       profilesCreated: 30,
-      edgesCreated: 435,
+      // Real scores, not the cohort builder's invented ones: one per pair of the
+      // 29 finished, unsuspended people (29 x 28 / 2).
+      edgesCreated: 406,
       glitchMatchesCreated: 30,
       connectionRequestsCreated: 14,
       conversationsCreated: 4,

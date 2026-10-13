@@ -14,7 +14,7 @@
 import "dotenv/config";
 
 import type { PrismaClient } from "../src/generated/prisma/client";
-import { seedCategories, seedCourses } from "./seed-data";
+import { seedCategories, seedCourses, seedPairings } from "./seed-data";
 
 // How many new rows each table got. Useful in the log, and in tests (a second
 // run should create 0 of everything).
@@ -22,6 +22,7 @@ export type SeedResult = {
   categoriesCreated: number;
   tagsCreated: number;
   coursesCreated: number;
+  pairingsCreated: number;
 };
 
 export async function seedCatalogue(prisma: PrismaClient): Promise<SeedResult> {
@@ -69,10 +70,32 @@ export async function seedCatalogue(prisma: PrismaClient): Promise<SeedResult> {
     skipDuplicates: true,
   });
 
+  // Seeking <-> Quality pairings (slice 3, #10). They go AFTER the tags,
+  // because a pairing points at two tags and the database would refuse one
+  // whose tags don't exist yet.
+  //
+  // WHY skipDuplicates AND NEVER A DELETE: the pairings are data an admin may
+  // edit (rule B2). If an admin removed a pairing on purpose, a re-seed would
+  // add it back (that is the "add what is missing" promise), but it must
+  // never remove or overwrite one an admin added, so this only ever adds.
+  // Without skipDuplicates a second run would fail on the first pair it
+  // already holds.
+  const pairingRows = seedPairings.flatMap((pairing) =>
+    pairing.qualityTagIds.map((qualityTagId) => ({
+      seekingTagId: pairing.seekingTagId,
+      qualityTagId,
+    })),
+  );
+  const pairings = await prisma.tagPairing.createMany({
+    data: pairingRows,
+    skipDuplicates: true,
+  });
+
   return {
     categoriesCreated: categories.count,
     tagsCreated: tags.count,
     coursesCreated: courses.count,
+    pairingsCreated: pairings.count,
   };
 }
 
@@ -88,8 +111,8 @@ async function main() {
     const result = await seedCatalogue(prisma);
     console.log(
       `Seed done. New rows: ${result.categoriesCreated} categories, ` +
-        `${result.tagsCreated} tags, ${result.coursesCreated} courses ` +
-        `(existing rows are left as they are).`,
+        `${result.tagsCreated} tags, ${result.coursesCreated} courses, ` +
+        `${result.pairingsCreated} pairings (existing rows are left as they are).`,
     );
   } finally {
     // Close the database connection so the command can exit.
