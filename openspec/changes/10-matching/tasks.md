@@ -48,9 +48,10 @@ Checked on 12 Oct 2026 against the merged `master` (task 1.3). Everything in `de
 
 ## 6. The `/matches` page
 
-- [ ] 6.1 Replace `src/app/matches/page.tsx` (Server Component): signed-out to sign-in, unfinished profile to `/onboarding`, otherwise load the top 5, the glitch match (calling `ensureGlitchMatch`) and one explanation each. Verify: with the dev switcher, a pretend user with a finished profile sees five rows and one glitch match, and one without a profile is sent to onboarding
-- [ ] 6.2 Match card component: alias, silhouette, score, reasons, and the glitch match drawn in a different style and labelled as a surprise; no email or photo anywhere. Verify: by hand at phone width in devtools
-- [ ] 6.3 Playwright: a pretend user sees five matches in score order and one glitch match that is not among them; reloading shows the same list; the page text contains no email address. Verify: `npm run test:e2e` passes
+- [x] 6.1 Replace `src/app/matches/page.tsx` (Server Component): signed-out to sign-in, unfinished profile to `/onboarding`, otherwise load the top 5, the glitch match (calling `ensureGlitchMatch`) and one explanation each. Verify: with the dev switcher, a pretend user with a finished profile sees five rows and one glitch match, and one without a profile is sent to onboarding
+- [x] 6.2 Match card component: alias, silhouette, score, reasons, and the glitch match drawn in a different style and labelled as a surprise; no email or photo anywhere. Verify: by hand at phone width in devtools
+  - *Checked on 12 Oct 2026 with a 375px screenshot and an automated no-sideways-scroll test (`matches.spec.ts`), not in devtools by a person. Worth a glance on a real phone at the PR step (7.4).*
+- [x] 6.3 Playwright: a pretend user sees five matches in score order and one glitch match that is not among them; reloading shows the same list; the page text contains no email address. Verify: `npm run test:e2e` passes
 
 ## 7. Real scores for the pretend cohort, docs and wrap-up
 
