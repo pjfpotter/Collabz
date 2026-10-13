@@ -10,7 +10,9 @@
 import { PrismaNeon } from "@prisma/adapter-neon";
 // The client is generated from prisma/schema.prisma by `prisma generate`
 // into src/generated/prisma (Prisma 7 doesn't put it in node_modules).
-import { PrismaClient } from "@/generated/prisma/client";
+// Relative path, not "@/generated/...", because the pretend-cohort seed reaches
+// this file too and a seed script doesn't understand the "@/" shortcut.
+import { PrismaClient } from "../generated/prisma/client";
 
 function createPrismaClient(): PrismaClient {
   // DATABASE_URL is Neon's *pooled* URL. The app makes many short queries from

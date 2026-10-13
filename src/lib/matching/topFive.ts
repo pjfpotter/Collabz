@@ -12,7 +12,10 @@
 // and at most five. Rule 3 means the order never depends on the order the
 // database happened to return rows in.
 
-import { prisma } from "@/lib/db";
+// Relative path, not "@/lib/db", on purpose: prisma/seed-fake.ts scores the
+// pretend cohort through this file, and a seed script and Playwright's test
+// runner don't understand the "@/" shortcut the Next.js app uses.
+import { prisma } from "../db";
 
 import { getEligiblePeople } from "./eligiblePeople";
 

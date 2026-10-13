@@ -56,7 +56,8 @@ Checked on 12 Oct 2026 against the merged `master` (task 1.3). Everything in `de
 ## 7. Real scores for the pretend cohort, docs and wrap-up
 
 - [x] 7.1 `scripts/rescore-all.ts` and the `rescore:all` npm script: calls `scoreUser` for every eligible person and prints only counts, never the database address (design 10). Verify: running it twice on `dev` gives the same edge count and `npm test` still passes
-- [ ] 7.2 Run the existing graph, search and seed-fake tests after the rescore and fix any that assumed the invented scores. Verify: `npm test` and `npm run test:e2e` pass
+- [x] 7.2 Run the existing graph, search and seed-fake tests after the rescore and fix any that assumed the invented scores. Verify: `npm test` and `npm run test:e2e` pass
+  - *Found on 13 Oct 2026: the seed and every test run loaded the cohort builder's invented scores, so the suites never ran on real ones. `seedPretendCohort` now scores everyone with the real formula (`rescoreEveryone`, one transaction) and no longer saves the invented edges, so `seed:fake`, the tests and `rescore:all` all give the same scores. No graph or search test needed changing; the seed test now expects 406 edges, not 435. `npm test` (345 tests) and `npm run test:e2e` (81 tests) pass on real scores.*
 - [ ] 7.3 Add a short "Matching" section to `README.md`: the formula, the helper names other tracks may call, and how to run `rescore:all`. Verify: a teammate follows it on their machine
 - [ ] 7.4 Push, open the PR, and on the preview deploy repeat the success checks from #10 as a pretend user. Verify: all five ticked in the PR description
 - [ ] 7.5 Note the join-up items on #17: replace the two stand-ins in `src/lib/cohort/standIns.ts`, merge the two visibility rules, and swap the inline onboarding check on `/matches` for `redirectIfOnboardingIncomplete()`. Verify: comment posted on #17

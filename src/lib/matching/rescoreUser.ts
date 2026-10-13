@@ -24,8 +24,12 @@
 // WHY IN MEMORY: at 30 to 100 people that is a few thousand rows and takes
 // milliseconds, and the code reads top to bottom. See design decision 4.
 
-import { prisma } from "@/lib/db";
-import { orderUserPair } from "@/lib/userPair";
+// Relative path, not "@/lib/db", on purpose: prisma/seed-fake.ts scores the
+// pretend cohort through this file, and a seed script and Playwright's test
+// runner don't understand the "@/" shortcut the Next.js app uses.
+import { prisma } from "../db";
+import type { PrismaClient } from "../../generated/prisma/client";
+import { orderUserPair } from "../userPair";
 
 import type { DbClient } from "./eligiblePeople";
 import { getEligiblePeople, type EligiblePerson } from "./eligiblePeople";
@@ -38,11 +42,16 @@ import { findTopFiveIds } from "./topFive";
 // could come close to. Twenty is generous but still stops a hung request.
 const TRANSACTION_TIMEOUT_MS = 20_000;
 
+// `client` is the database to work on. Normal callers leave it out and get
+// the app's shared client. The pretend-cohort seed passes the client it was
+// given, so it scores the same database it just filled (the tests' database
+// is chosen by TEST_DATABASE_URL, not by the app's DATABASE_URL).
 export async function rescoreUser(
   userId: string,
   random: RandomSource = Math.random,
+  client: PrismaClient = prisma,
 ): Promise<void> {
-  await prisma.$transaction(
+  await client.$transaction(
     async (transaction) => {
       const people = await getEligiblePeople(transaction);
       const pairings: Pairing[] = await transaction.tagPairing.findMany({
@@ -65,7 +74,7 @@ export async function rescoreUser(
       }
 
       // Steps 4 and 5.
-      await repairGlitchMatches(transaction, people, userId, random);
+      await repairGlitchMatches(transaction, people, [userId], random);
     },
     { timeout: TRANSACTION_TIMEOUT_MS },
   );
@@ -106,11 +115,11 @@ async function writeNewEdges(
 // dozen rows) and rewritten only if it is no longer valid.
 //
 // People who have NO glitch match are left alone, except for the rescored
-// user: a rescore doesn't hand out glitch matches to the whole cohort.
+// user(s): a rescore doesn't hand out glitch matches to the whole cohort.
 async function repairGlitchMatches(
   transaction: DbClient,
   people: EligiblePerson[],
-  rescoredUserId: string,
+  rescoredUserIds: string[],
   random: RandomSource,
 ): Promise<void> {
   const eligibleIds = people.map((person) => person.userId);
@@ -125,7 +134,7 @@ async function repairGlitchMatches(
   // Whose glitch match to look at: everyone who has one, plus the rescored
   // user. An owner who is no longer eligible is skipped: nobody sees their
   // glitch match, and they get a fresh one if they come back.
-  const owners = new Set([...storedByOwner.keys(), rescoredUserId]);
+  const owners = new Set([...storedByOwner.keys(), ...rescoredUserIds]);
 
   for (const ownerId of owners) {
     if (!finishedAtByUserId.has(ownerId)) {
@@ -136,4 +145,54 @@ async function repairGlitchMatches(
     const chosen = chooseGlitchMatch(ownerId, stored, eligibleIds, topFiveIds, random);
     await saveGlitchMatch(transaction, ownerId, stored, chosen);
   }
+}
+
+// RESCORING EVERYONE AT ONCE (used by `npm run rescore:all` and the
+// pretend-cohort seed).
+//
+// Same result as calling rescoreUser() for each person, but in ONE
+// transaction: delete every edge, score every pair once, write them in one
+// go. WHY NOT JUST LOOP OVER rescoreUser: each call is its own round trip to
+// the database, and 30 of them made the seed too slow for its tests.
+//
+// Returns how many people were scored.
+export async function rescoreEveryone(
+  random: RandomSource = Math.random,
+  client: PrismaClient = prisma,
+): Promise<number> {
+  return client.$transaction(
+    async (transaction) => {
+      const people = await getEligiblePeople(transaction);
+      const pairings: Pairing[] = await transaction.tagPairing.findMany({
+        select: { seekingTagId: true, qualityTagId: true },
+      });
+
+      // Everyone's rows go, including anyone no longer eligible (suspended or
+      // unfinished): they must have no scores.
+      await transaction.edge.deleteMany();
+
+      // Each pair once: person i against every person after them in the list.
+      const rows = [];
+      for (let i = 0; i < people.length; i++) {
+        for (let j = i + 1; j < people.length; j++) {
+          rows.push({
+            ...orderUserPair(people[i].userId, people[j].userId),
+            ...calculateScore(people[i].tags, people[j].tags, pairings),
+          });
+        }
+      }
+      if (rows.length > 0) {
+        await transaction.edge.createMany({ data: rows });
+      }
+
+      await repairGlitchMatches(
+        transaction,
+        people,
+        people.map((person) => person.userId),
+        random,
+      );
+      return people.length;
+    },
+    { timeout: TRANSACTION_TIMEOUT_MS },
+  );
 }

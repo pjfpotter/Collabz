@@ -20,7 +20,10 @@
 // returns a number from 0 up to, but not including, 1, like Math.random).
 // Production passes Math.random.
 
-import { prisma } from "@/lib/db";
+// Relative path, not "@/lib/db", on purpose: prisma/seed-fake.ts scores the
+// pretend cohort through this file, and a seed script and Playwright's test
+// runner don't understand the "@/" shortcut the Next.js app uses.
+import { prisma } from "../db";
 
 import { getEligiblePeople, type DbClient } from "./eligiblePeople";
 import { findTopFiveIds } from "./topFive";

@@ -20,6 +20,11 @@
 // if you approved a pretend request by hand to test something, it stays
 // approved after a re-seed.
 //
+// ONE EXCEPTION: chemistry scores. They are worked out from people's tags, so
+// they are not stored from the cohort builder's invented numbers: they are
+// recalculated on every run with the real formula (slice 3, #10). That
+// rewrites the same values each time, so nothing visibly changes.
+//
 // Join-up (#17) deletes this file together with the switcher.
 
 // Loads .env when run on a laptop.
@@ -88,10 +93,10 @@ export async function seedPretendCohort(prisma: PrismaClient): Promise<PretendSe
   // function's own comment for why.
   const profileTagsCreated = await fillCategoriesWithNoPicks(prisma, catalogue);
 
-  const edges = await prisma.edge.createMany({
-    data: cohort.edges,
-    skipDuplicates: true,
-  });
+  // The cohort's invented edges (cohort.edges) are deliberately NOT saved:
+  // the real formula scores everyone below. They are still used in memory to
+  // decide the glitch matches and requests, but never reach the database.
+  const edgeCountBefore = await prisma.edge.count();
   const glitchMatches = await prisma.glitchMatch.createMany({
     data: cohort.glitchMatches,
     skipDuplicates: true,
@@ -117,11 +122,17 @@ export async function seedPretendCohort(prisma: PrismaClient): Promise<PretendSe
     skipDuplicates: true,
   });
 
+  // Score everyone with the real formula, in one transaction (slice 3, #10).
+  // Rescoring rewrites the same rows with the same values and keeps a glitch
+  // match that is still valid, so a second run still creates nothing new.
+  await rescoreEveryEligiblePerson(prisma);
+  const edgesCreated = (await prisma.edge.count()) - edgeCountBefore;
+
   return {
     usersCreated: users.count,
     profilesCreated: profiles.count,
     profileTagsCreated,
-    edgesCreated: edges.count,
+    edgesCreated,
     glitchMatchesCreated: glitchMatches.count,
     connectionRequestsCreated: connectionRequests.count,
     conversationsCreated: conversations.count,
@@ -129,6 +140,18 @@ export async function seedPretendCohort(prisma: PrismaClient): Promise<PretendSe
     blocksCreated: blocks.count,
     reportsCreated: reports.count,
   };
+}
+
+// Scores every finished, non-suspended pretend person with the real formula,
+// against the database we were given (slice 3, #10).
+//
+// WHY THE IMPORT IS INSIDE THE FUNCTION: it pulls in the app's shared
+// database client, which this file otherwise avoids creating (see main()
+// below). Loading it only when scoring is needed keeps that promise for
+// the early "switched off" and "catalogue is empty" exits.
+async function rescoreEveryEligiblePerson(prisma: PrismaClient): Promise<void> {
+  const { rescoreEveryone } = await import("../src/lib/matching/rescoreUser");
+  await rescoreEveryone(Math.random, prisma);
 }
 
 // Reads the part of the catalogue the cohort is built from: categories and

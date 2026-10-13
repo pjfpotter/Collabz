@@ -15,7 +15,10 @@
 // The cost is that the two could drift apart, so a test pins this one, and
 // join-up (#17) can merge them. If you change the rule here, change it there.
 
-import { prisma } from "@/lib/db";
+// Relative path, not "@/lib/db", on purpose: prisma/seed-fake.ts scores the
+// pretend cohort through this file, and a seed script and Playwright's test
+// runner don't understand the "@/" shortcut the Next.js app uses.
+import { prisma } from "../db";
 import type { Prisma, PrismaClient } from "@/generated/prisma/client";
 
 import type { PersonTags } from "./score";

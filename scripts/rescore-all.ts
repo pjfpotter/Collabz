@@ -7,19 +7,14 @@
 //   - Any time the Seeking -> Quality pairings are edited, because every score
 //     depends on them.
 //
-// HOW IT WORKS: it asks for every eligible person (finished profile, not
-// suspended) and calls scoreUser() for each, one after another. scoreUser()
-// is the same shared helper the app uses, so this script can never disagree
-// with the app about what a score is.
+// HOW IT WORKS: rescoreEveryone() (src/lib/matching/rescoreUser.ts) takes
+// every eligible person (finished profile, not suspended), scores every pair
+// with the same formula scoreUser() uses, and writes the lot in ONE
+// transaction. One transaction means a failure halfway leaves the old scores
+// untouched, and it is much faster than 30 separate round trips to Neon.
 //
-// WHY ONE AT A TIME and not all at once: each call is its own database
-// transaction. Running them in parallel could open many connections at the
-// same moment, which Neon's free tier may refuse. A cohort is 30 to 100
-// people, so doing them in a row still takes only seconds.
-//
-// IT IS SAFE TO RUN TWICE: scoreUser() deletes a person's old rows and writes
-// the new ones, so a second run gives the same rows (a glitch match that is
-// still valid is kept, not re-rolled).
+// IT IS SAFE TO RUN TWICE: the old rows are deleted and the same values are
+// written back (a glitch match that is still valid is kept, not re-rolled).
 //
 // SECRETS: it prints counts only. It never prints DATABASE_URL, and on a
 // failure it prints the error's name rather than its message, because
@@ -29,16 +24,11 @@
 import "dotenv/config";
 
 import { prisma } from "../src/lib/db";
-import { getEligiblePeople } from "../src/lib/matching/eligiblePeople";
-import { scoreUser } from "../src/lib/scoring";
+import { rescoreEveryone } from "../src/lib/matching/rescoreUser";
 
 async function main(): Promise<void> {
-  const people = await getEligiblePeople();
-  console.log(`Rescoring ${people.length} eligible people...`);
-
-  for (const person of people) {
-    await scoreUser(person.userId);
-  }
+  console.log("Rescoring everyone...");
+  const peopleScored = await rescoreEveryone();
 
   // Counts after the run, so a person can see it did something sensible.
   // With N eligible people there should be N * (N - 1) / 2 edges: one row per
@@ -47,7 +37,7 @@ async function main(): Promise<void> {
   const glitchMatchCount = await prisma.glitchMatch.count();
 
   console.log("Done.");
-  console.log(`  People rescored:  ${people.length}`);
+  console.log(`  People rescored:  ${peopleScored}`);
   console.log(`  Edges now stored: ${edgeCount}`);
   console.log(`  Glitch matches:   ${glitchMatchCount}`);
 }
