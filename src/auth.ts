@@ -24,6 +24,8 @@ import { PrismaAdapter } from "@auth/prisma-adapter";
 import NextAuth from "next-auth";
 import Resend from "next-auth/providers/resend";
 
+import { sendMagicLinkEmail } from "@/lib/auth/sendMagicLinkEmail";
+import { applyAdminList, mayFinishSignIn } from "@/lib/auth/signInRules";
 import { prisma } from "@/lib/db";
 
 export const { handlers, auth, signIn, signOut } = NextAuth({
@@ -50,6 +52,63 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
   // there's an adapter; we say it out loud so nobody has to know that.
   session: { strategy: "database" },
 
+  // Use our own pages instead of Auth.js's built-in plain ones.
+  // - signIn: where Auth.js sends anyone who needs to sign in.
+  // - error:  where it sends people when a link fails, with ?error=<code>
+  //   (e.g. "Verification" for a used or expired link, "AccessDenied" when
+  //   our signIn callback below refuses a suspended account). /signin turns
+  //   those codes into plain sentences.
+  pages: {
+    signIn: "/signin",
+    error: "/signin",
+  },
+
+  callbacks: {
+    // What auth() hands back about the signed-in person.
+    //
+    // By default Auth.js only includes their name, email and picture. We add
+    // their user id, so getCurrentUser() can load the full, up-to-date User
+    // row with it (src/lib/auth/session.ts).
+    //
+    // Why not put the whole User row on the session instead: auth() passes
+    // the session through JSON, which turns dates (like suspendedAt) into
+    // plain text. Loading the row ourselves keeps them real dates, and means
+    // a suspension is seen the moment it happens.
+    session({ session, user }) {
+      session.user.id = user.id;
+      return session;
+    },
+
+    // Runs twice for a magic link: when the link is REQUESTED (the sign-in
+    // form is sent) and when it is USED (the link is opened). Returning false
+    // refuses, and Auth.js sends the person to /signin?error=AccessDenied.
+    //
+    // We only refuse when the link is used. Why not at the request too: then
+    // anyone could type an email into the form and learn from the answer
+    // whether that account is suspended (design decision 6).
+    async signIn({ user, email }) {
+      const isJustRequestingALink = email?.verificationRequest === true;
+      if (isJustRequestingALink || !user.email) {
+        return true;
+      }
+      return mayFinishSignIn(user.email);
+    },
+  },
+
+  events: {
+    // Auth.js fires this once, right after it creates a new User row (the
+    // first time an email opens a magic link). Emails on ADMIN_EMAILS become
+    // admins here (design decision 5).
+    async createUser({ user }) {
+      if (user.id && user.email) {
+        await applyAdminList(
+          { id: user.id, email: user.email },
+          process.env.ADMIN_EMAILS,
+        );
+      }
+    },
+  },
+
   providers: [
     // Magic links, sent by email through Resend.
     // - The API key is read from AUTH_RESEND_KEY automatically (Auth.js looks
@@ -60,6 +119,15 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
     //   spec relies on ("Magic links are single-use and expire").
     Resend({
       from: process.env.EMAIL_FROM,
+      // Our own email (wording, one retry, and the test inbox for pretend
+      // students): see src/lib/auth/sendMagicLinkEmail.ts.
+      sendVerificationRequest: ({ identifier, url, provider }) =>
+        sendMagicLinkEmail({
+          to: identifier,
+          url,
+          from: provider.from,
+          apiKey: provider.apiKey,
+        }),
     }),
   ],
 });

@@ -56,3 +56,8 @@ next-env.d.ts
 # Output from the archify diagram tool: generated architecture diagrams that
 # can be rebuilt at any time, so they stay on each person's own machine.
 /.archify/
+
+# Slice 1's test inbox: magic links for pretend @collabz.test addresses,
+# written here instead of emailed while the pretend cohort is on. A link
+# signs someone in, so it must never be committed.
+/.magic-links/

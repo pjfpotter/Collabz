@@ -134,9 +134,37 @@ Every page the app will have already exists, so that two tracks can't invent the
 
 **Admin pages** start with `await requireAdmin();`. Keep that as the first line when you replace the placeholder.
 
+## Signing in
+
+Real sign-in (slice 1, #8) uses **magic links**: enter your email on `/signup` or `/signin`, open the link that arrives, and you're signed in. No passwords. [Auth.js](https://authjs.dev) v5 does the work (set up in `src/auth.ts`), and [Resend](https://resend.com) sends the emails.
+
+**Settings in `.env`** (see `.env.example` for comments on each):
+
+| Variable | What it is | Where to get it |
+|---|---|---|
+| `AUTH_SECRET` | Protects sign-in tokens and cookies | Make your own: `npx auth secret` |
+| `AUTH_RESEND_KEY` | Lets us send email through Resend | Resend dashboard → API Keys |
+| `EMAIL_FROM` | Who the email comes from | Until our domain is verified: `Collabz <onboarding@resend.dev>` (Resend then only delivers to the Resend account owner's address) |
+| `ADMIN_EMAILS` | Emails that become admins | Comma-separated. Locally you can leave it empty |
+
+**`ADMIN_EMAILS` only applies when an account is first created.** Adding someone after they've signed up does nothing; an existing admin promotes them instead (or edit their `role` in Neon).
+
+**Test inbox.** While the pretend cohort is on, links for `@collabz.test` addresses (the pretend students) aren't emailed: they're written to `.magic-links/<email>.txt` (gitignored). That's how the Playwright tests sign in for real. To try it by hand: sign in as `pretend-02@collabz.test` on `/signin`, then open the link in `.magic-links/pretend-02@collabz.test.txt`.
+
+In Playwright tests that are *about* signing in, use the helper:
+
+```ts
+import { requestMagicLink } from "../helpers/magicLinkSignIn";
+
+const link = await requestMagicLink(page, "pretend-02@collabz.test");
+await page.goto(link);
+```
+
 ## Dev sign-in
 
-There is no real sign-in until slice 1. Instead, the nav bar has a **"Dev sign-in as"** list of the pretend students. Pick one and press **Switch**, and the whole app treats you as that person until you pick someone else or "Signed out". `getCurrentUser()` returns whoever you picked.
+Alongside real sign-in, the nav bar has a **"Dev sign-in as"** list of the pretend students. Pick one and press **Switch**, and the whole app treats you as that person until you pick someone else or "Signed out". `getCurrentUser()` returns whoever you picked.
+
+**The switcher only applies when you are not really signed in.** A real magic-link session always wins, so while you're signed in for real the switcher shows that person (or nobody selected) and picking a pretend user does nothing. Sign out first. Join-up (#17) removes the switcher.
 
 It only appears where `PRETEND_COHORT="on"` is set (see below), and never on the live site.
 
@@ -194,7 +222,7 @@ Five of us build different parts at the same time. To stop one track depending o
 
 | Helper | File | What it does today | Owner |
 |---|---|---|---|
-| `getCurrentUser()` | `src/lib/currentUser.ts` | Returns the signed-in user, or `null`. For now "signed in" means "picked in the dev switcher" | Slice 1 (#8) swaps in real sign-in |
+| `getCurrentUser()` | `src/lib/currentUser.ts` | Returns the signed-in user, or `null`. A real magic-link session wins (only if they've finished signing up and aren't suspended); otherwise the dev switcher's pick | Slice 1 (#8). Join-up (#17) removes the switcher part |
 | `requireAdmin()` | `src/lib/currentUser.ts` | For admin pages. Sends a signed-out visitor to `/signin`, shows a member "page not found", and returns the user if they are an admin | Slice 8 (#15) |
 | `scoreUser(userId)` | `src/lib/scoring.ts` | Does nothing yet. Call it after a user finishes onboarding or edits their answers | Slice 3 (#10) fills it in |
 | `openConversation(userAId, userBId)` | `src/lib/conversations.ts` | Returns the conversation between two users, creating it if needed. Safe to call twice | Slice 6 (#13) |
