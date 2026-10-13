@@ -55,7 +55,7 @@ Checked on 12 Oct 2026 against the merged `master` (task 1.3). Everything in `de
 
 ## 7. Real scores for the pretend cohort, docs and wrap-up
 
-- [ ] 7.1 `scripts/rescore-all.ts` and the `rescore:all` npm script: calls `scoreUser` for every eligible person and prints only counts, never the database address (design 10). Verify: running it twice on `dev` gives the same edge count and `npm test` still passes
+- [x] 7.1 `scripts/rescore-all.ts` and the `rescore:all` npm script: calls `scoreUser` for every eligible person and prints only counts, never the database address (design 10). Verify: running it twice on `dev` gives the same edge count and `npm test` still passes
 - [ ] 7.2 Run the existing graph, search and seed-fake tests after the rescore and fix any that assumed the invented scores. Verify: `npm test` and `npm run test:e2e` pass
 - [ ] 7.3 Add a short "Matching" section to `README.md`: the formula, the helper names other tracks may call, and how to run `rescore:all`. Verify: a teammate follows it on their machine
 - [ ] 7.4 Push, open the PR, and on the preview deploy repeat the success checks from #10 as a pretend user. Verify: all five ticked in the PR description
