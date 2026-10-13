@@ -109,6 +109,8 @@ Every page that needs a signed-in user asks `getCurrentUser()`. We don't add a `
 - *Why:* the Next.js guide says Proxy should only read cookies, never the database. With database sessions, the cookie alone can't say whether the person is suspended or unfinished, so a Proxy check would be a second, weaker copy of the real one.
 
 ### 8. Sending the email: Resend, with a test inbox for `@collabz.test`
+> **Changed on 13 Oct 2026:** we now send through Gmail, not Resend (decision 13). The wording, the one retry and the test inbox below all still apply. Only the service doing the sending changed.
+
 `sendMagicLinkEmail({ to, url })` is passed to Auth.js as the Resend provider's `sendVerificationRequest`.
 - It sends a short plain email ("Tap to sign in to Collabz. This link works once and expires in 24 hours.") from `EMAIL_FROM` through Resend's HTTP API with `fetch`. *Why `fetch` and not Resend's own package:* it is one request, and Auth.js's Resend provider works the same way. One fewer dependency.
 - **If Resend answers "too many requests" (429), it waits a second and tries once more.** *Why:* Resend limits how many emails we can send per second, and a whole room tapping "Sign up" in the same minute is exactly that pattern.
@@ -137,7 +139,20 @@ Every page that needs a signed-in user asks `getCurrentUser()`. We don't add a `
 - **Playwright:** full sign-up with a `@collabz.test` address, reading the link from `.magic-links/`; sign-up without ticking the terms sends nothing; sign out and back in; a suspended pretend user opening a magic link is refused with the message; an address on a test `ADMIN_EMAILS` can open `/admin`; a used link doesn't work twice.
 - The foundation's `emptyDatabase()` already empties Auth.js's tables between runs.
 
+### 13. Send through Gmail for now; keep Resend ready to switch back (13 Oct 2026)
+**Why the change:** without a verified domain, Resend's shared sender (`onboarding@resend.dev`) only delivers to the Resend account owner, so students couldn't sign up. We have no domain, and none could be arranged in time. Tom chose Gmail: free, and it delivers to anyone with no domain.
+- **How:** Auth.js's **Nodemailer** provider (`next-auth/providers/nodemailer`) sends through Gmail's mail server (`smtp.gmail.com`, port 465) using a **dedicated Gmail account** and a Gmail **app password** (`GMAIL_USER`, `GMAIL_APP_PASSWORD`). `EMAIL_FROM` is that same Gmail address with a display name, because Gmail replaces any other sender address with the account's own.
+- **What stays the same:** our own wording, the test inbox for `@collabz.test`, and one retry. Gmail signals "try again later" with SMTP codes in the 400s (for example 421 or 454) rather than Resend's 429, so the retry now also covers those.
+- **`nodemailer` pinned to 8.0.11:** our pinned Auth.js accepts nodemailer 7 or 8 only. The current release is 10.
+- **Resend is kept, switched off:** the Resend provider block in `src/auth.ts` is commented out with steps to switch back, and `sendViaResend()` stays as a working, tested function. *Why not comment out the sending code too:* commented-out code can't be tested and quietly stops matching the rest of the app. Switching back means uncommenting one block, swapping the other out, and setting `AUTH_RESEND_KEY` and a verified `EMAIL_FROM`.
+- **The callback address changes** from `/api/auth/callback/resend` to `/api/auth/callback/nodemailer`. Nothing in our code or tests depends on that address.
+- **Use a dedicated account, not someone's personal Gmail:** the app password can send email as that account, so it should be an account that only Collabz uses, and students see that address as the sender.
+- *Alternatives considered:* a cheap domain with Resend (more reliable delivery, but costs money and needs DNS set up this week); showing the link on screen instead of emailing it (rejected: anyone could sign in as anyone).
+
 ## Risks / Trade-offs
+
+- **[Gmail's sending limits]** → A free Gmail account can send to roughly 500 recipients a day, plenty for a room. Google may briefly block an account that suddenly sends a burst. Mitigation: the one retry, and send a few test emails from the account in the days before the live test so it isn't brand new on the day.
+- **[Gmail-sent links land in spam]** → Less predictable than a verified domain. Success check 5 (Gmail, Outlook, iCloud) is still run before the live test. If spam is a problem, switch back to Resend with a domain (decision 13).
 
 - **[Auth.js v5 is a beta, and the adapter wasn't written for Prisma 7's generated client]** → Pinned version; task 1.1 proves sign-in works with our client before anything else is built, and we stop to re-decide if it doesn't.
 - **[Magic links land in spam]** → Send from our own domain with the DNS records Resend asks for (SPF, DKIM). Success check 5 tests Gmail, Outlook and iCloud before the live test.

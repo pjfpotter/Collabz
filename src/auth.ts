@@ -22,11 +22,21 @@
 
 import { PrismaAdapter } from "@auth/prisma-adapter";
 import NextAuth from "next-auth";
-import Resend from "next-auth/providers/resend";
+import Nodemailer from "next-auth/providers/nodemailer";
+// Switched off (see "To switch back to Resend" below):
+// import Resend from "next-auth/providers/resend";
+// import { sendViaResend } from "@/lib/auth/sendMagicLinkEmail";
 
-import { sendMagicLinkEmail } from "@/lib/auth/sendMagicLinkEmail";
+import { gmailServer, sendViaGmail } from "@/lib/auth/sendMagicLinkEmail";
 import { applyAdminList, mayFinishSignIn } from "@/lib/auth/signInRules";
 import { prisma } from "@/lib/db";
+
+// The Gmail account magic links are sent from (design decision 13).
+// Read once here and handed to the provider below.
+const gmailAccount = {
+  user: process.env.GMAIL_USER,
+  appPassword: process.env.GMAIL_APP_PASSWORD,
+};
 
 export const { handlers, auth, signIn, signOut } = NextAuth({
   // The adapter is how Auth.js reads and writes our database: it stores users
@@ -110,24 +120,55 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
   },
 
   providers: [
-    // Magic links, sent by email through Resend.
-    // - The API key is read from AUTH_RESEND_KEY automatically (Auth.js looks
-    //   for AUTH_<PROVIDER>_KEY), so it never appears in the code.
-    // - `from` is the sender address, e.g. "Collabz <login@ourdomain>".
-    //   It must be on a domain verified in Resend, or Resend refuses to send.
+    // IN USE: magic links sent through a dedicated Gmail account (design
+    // decision 13, 13 Oct 2026). Free, and needs no domain of our own.
+    // - Auth.js's "Nodemailer" provider sends email through any mail server;
+    //   we point it at Gmail's (see gmailServer()).
+    // - GMAIL_USER is the account; GMAIL_APP_PASSWORD is an "app password"
+    //   Google makes for it, NOT the account's normal password.
+    // - EMAIL_FROM is that same Gmail address with a display name, e.g.
+    //   "Collabz <collabz.signin@gmail.com>". Gmail replaces any other
+    //   sender address with the account's own.
     // - Links expire after 24 hours, Auth.js's default, which the user-auth
     //   spec relies on ("Magic links are single-use and expire").
-    Resend({
+    Nodemailer({
+      server: gmailServer(gmailAccount),
       from: process.env.EMAIL_FROM,
       // Our own email (wording, one retry, and the test inbox for pretend
       // students): see src/lib/auth/sendMagicLinkEmail.ts.
       sendVerificationRequest: ({ identifier, url, provider }) =>
-        sendMagicLinkEmail({
-          to: identifier,
-          url,
-          from: provider.from,
-          apiKey: provider.apiKey,
-        }),
+        sendViaGmail({ to: identifier, url, from: provider.from }, gmailAccount),
     }),
+
+    // SWITCHED OFF: sending through Resend (design decisions 8 and 13).
+    // Resend delivers more reliably than Gmail, but without a verified domain
+    // of our own it only delivers to the Resend account owner, so students
+    // couldn't sign up. Kept here to switch back to once we have a domain.
+    //
+    // To switch back to Resend:
+    //   1. Verify our domain in Resend (Resend dashboard -> Domains).
+    //   2. Set AUTH_RESEND_KEY, and set EMAIL_FROM to an address on that
+    //      domain, locally and in Vercel.
+    //   3. Uncomment the block below, and the two Resend import lines at the
+    //      top of this file.
+    //   4. Delete (or comment out) the Nodemailer({...}) block above, and its
+    //      import and the gmailAccount lines.
+    //   5. Change EMAIL_PROVIDER_ID below from "nodemailer" to "resend".
+    //   6. Run npm test and npm run test:e2e.
+    // sendViaResend() itself is kept working and tested meanwhile.
+    //
+    // Resend({
+    //   // The API key is read from AUTH_RESEND_KEY automatically (Auth.js
+    //   // looks for AUTH_<PROVIDER>_KEY), so it never appears in the code.
+    //   from: process.env.EMAIL_FROM,
+    //   sendVerificationRequest: ({ identifier, url, provider }) =>
+    //     sendViaResend({ to: identifier, url, from: provider.from }, provider.apiKey),
+    // }),
   ],
 });
+
+// The name of the email provider above, which signIn() needs, e.g.
+// signIn(EMAIL_PROVIDER_ID, { email }). It is also the last part of the
+// magic link's address: /api/auth/callback/nodemailer.
+// One constant, so switching provider is one change here (see step 5 above).
+export const EMAIL_PROVIDER_ID = "nodemailer";

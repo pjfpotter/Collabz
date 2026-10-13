@@ -8,15 +8,15 @@
 //
 // Owner: slice 1 (#8).
 
-import { signIn } from "@/auth";
+import { EMAIL_PROVIDER_ID, signIn } from "@/auth";
 
 // - email: where to send the link (spaces around it are removed).
 // - redirectTo: the page the person lands on after opening the link. For
 //   sign-up it carries their course and terms (design decision 3).
 //
-// Returns "sent" or "failed". "failed" means Auth.js or Resend refused, e.g.
-// Resend is down or the sender address isn't allowed. The person can simply
-// try again, so we don't explain the technical reason to them.
+// Returns "sent" or "failed". "failed" means Auth.js or the email service
+// refused, e.g. Gmail is busy or its password is wrong. The person can
+// simply try again, so we don't explain the technical reason to them.
 export async function sendMagicLink(
   email: string,
   redirectTo: string,
@@ -24,7 +24,9 @@ export async function sendMagicLink(
   // `redirect: false` asks Auth.js NOT to move the browser to its own
   // "check your email" page. Instead it hands back the address it would have
   // gone to, and the form shows our own message in place.
-  const nextAddress = await signIn("resend", {
+  // EMAIL_PROVIDER_ID names whichever email provider src/auth.ts uses
+  // (Gmail for now, design decision 13).
+  const nextAddress = await signIn(EMAIL_PROVIDER_ID, {
     email: email.trim(),
     redirectTo,
     redirect: false,

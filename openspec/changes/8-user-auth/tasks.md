@@ -53,10 +53,20 @@ Checked on 13 Oct 2026 by Tom, locally against Neon `dev`, with `next-auth@5.0.0
 - [ ] 5.3 **(human)** The team reads both pages and comments on the PR (Patrick at least). Verify: a comment from a teammate on the PR approves the wording
 - [x] 5.4 Add to `tests/e2e/signup.spec.ts`: signed out, `/terms` and `/privacy` open and show their headings, and both links on the sign-up form work. Verify: `npm run test:e2e` passes
 
+## 7. Send through Gmail instead of Resend (13 Oct 2026, design 13)
+
+Added when Tom chose Gmail because we have no domain for Resend. Do this group before group 6.
+
+- [x] 7.1 Update `proposal.md`, `design.md` (decision 13) and this file for the switch, before changing code (CLAUDE.md). Verify: `openspec validate 8-user-auth --strict` passes
+- [x] 7.2 Install `nodemailer@8.0.11` and `@types/nodemailer` at exact versions (our pinned Auth.js accepts nodemailer 7 or 8). Verify: `npm install` finishes without peer-dependency errors
+- [x] 7.3 In `src/lib/auth/sendMagicLinkEmail.ts`, add `sendViaGmail()` (one retry on a temporary SMTP failure, codes 400-499) beside the existing Resend sending, now `sendViaResend()`, both sharing the wording and the test inbox. Unit test Gmail with a fake mail transport: a pretend address goes to the test inbox; a real one is sent once; a 421 is retried once; a 550 isn't retried; the error never contains the link. Keep the Resend tests passing. Verify: `npm test` passes
+- [x] 7.4 In `src/auth.ts`, switch to Auth.js's Nodemailer provider with Gmail's server and the two Gmail variables, and comment out the Resend provider block with step-by-step instructions to switch back. Change `signIn("resend", …)` to the new provider id. Verify: `npx tsc --noEmit` passes and `npm run test:e2e` passes (the sign-in and sign-up tests use the test inbox, so they don't need real Gmail)
+- [x] 7.5 Update `.env.example` (the Gmail variables, with how to get an app password; `AUTH_RESEND_KEY` marked as "only if switching back") and the README's "Signing in" section. Verify: every variable name matches the code
+
 ## 6. Email, QR code and deploy
 
-- [ ] 6.1 **(human)** **Blocks the live test (see 5.1): `onboarding@resend.dev` only delivers to the Resend account owner, so we need a domain: one a teammate owns, a cheap new one, or one course staff can lend.** Create the Resend account, add our domain, add Resend's DNS records (SPF, DKIM) with whoever controls the domain, and wait until Resend shows it as verified. Note Resend's current free-tier daily and per-second limits in this task. Verify: Resend's dashboard shows the domain verified, and the limits are written here
-- [ ] 6.2 **(human)** Add `AUTH_SECRET`, `AUTH_RESEND_KEY`, `EMAIL_FROM` and `ADMIN_EMAILS` to Vercel → Preview and Vercel → Production (Production's `ADMIN_EMAILS` holds Patrick's and Tom's real emails), and check `PRETEND_COHORT` is still **not** set on Production. Verify: Vercel's environment settings show all four in both, and `PRETEND_COHORT` only under Preview
+- [ ] 6.1 **(human)** Create a dedicated Gmail account for Collabz, turn on 2-Step Verification, and create an app password (design 13). Put `GMAIL_USER`, `GMAIL_APP_PASSWORD` and `EMAIL_FROM` in your local `.env`, and sign in once locally with your own email. Verify: the magic link arrives from the new Gmail address and signs you in. (Was: verify a domain in Resend. Replaced on 13 Oct 2026; see 5.1 and design 13.)
+- [ ] 6.2 **(human)** Add `AUTH_SECRET`, `GMAIL_USER`, `GMAIL_APP_PASSWORD`, `EMAIL_FROM` and `ADMIN_EMAILS` to Vercel → Preview and Vercel → Production (Production's `ADMIN_EMAILS` holds Patrick's and Tom's real emails), and check `PRETEND_COHORT` is still **not** set on Production. Verify: Vercel's environment settings show all five in both, and `PRETEND_COHORT` only under Preview
 - [ ] 6.3 Add `qrcode` as a dev dependency, `scripts/make-qr-code.ts`, and an `npm run qr -- <url>` script writing `public/qr-code.png`, with a README line on how to make it (design 11). Verify: running it on the production URL produces an image that a phone camera opens at that URL
 - [ ] 6.4 Push and open the PR (flagging the `getCurrentUser()` and `NavBar.tsx` changes to Patrick). On the preview URL, sign up with a real email and finish onboarding's first screen. Verify: #8's success checks 2 and 3 are ticked in the PR description
 - [ ] 6.5 **(human)** Send magic links to Gmail, Outlook and iCloud addresses from the preview. Verify: each arrives in the inbox (not spam) within a minute; #8's success check 5 is ticked
@@ -66,5 +76,5 @@ Checked on 13 Oct 2026 by Tom, locally against Neon `dev`, with `next-auth@5.0.0
 
 - Ask Patrick to change the `pretend-cohort` spec's switcher lines from "until slice 1 (#8) replaces it" to "until join-up (#17)" in #7 before #7 is archived (proposal, Impact).
 - Add `approval.md` (team sign-off) to this folder before apply starts, as WORKFLOW.md stage 4 requires.
-- After merge and deploy: `/opsx:archive`, updating `ARCHITECTURE.md` (Auth.js, Resend and the sign-in flow are new pieces of the system).
+- After merge and deploy: `/opsx:archive`, updating `ARCHITECTURE.md` (Auth.js, Gmail sending with Resend kept ready, and the sign-in flow are new pieces of the system).
 - Join-up (#17): remove the switcher path from `getCurrentUser()`, and the `.magic-links/` test inbox if no test needs it any more.

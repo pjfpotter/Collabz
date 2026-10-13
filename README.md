@@ -136,16 +136,31 @@ Every page the app will have already exists, so that two tracks can't invent the
 
 ## Signing in
 
-Real sign-in (slice 1, #8) uses **magic links**: enter your email on `/signup` or `/signin`, open the link that arrives, and you're signed in. No passwords. [Auth.js](https://authjs.dev) v5 does the work (set up in `src/auth.ts`), and [Resend](https://resend.com) sends the emails.
+Real sign-in (slice 1, #8) uses **magic links**: enter your email on `/signup` or `/signin`, open the link that arrives, and you're signed in. No passwords. [Auth.js](https://authjs.dev) v5 does the work (set up in `src/auth.ts`), and the emails are sent **through a dedicated Gmail account**, which is free and needs no domain of our own.
 
 **Settings in `.env`** (see `.env.example` for comments on each):
 
 | Variable | What it is | Where to get it |
 |---|---|---|
 | `AUTH_SECRET` | Protects sign-in tokens and cookies | Make your own: `npx auth secret` |
-| `AUTH_RESEND_KEY` | Lets us send email through Resend | Resend dashboard → API Keys |
-| `EMAIL_FROM` | Who the email comes from | Until our domain is verified: `Collabz <onboarding@resend.dev>` (Resend then only delivers to the Resend account owner's address) |
+| `GMAIL_USER` | The Gmail account the emails come from | The team's Collabz Gmail address |
+| `GMAIL_APP_PASSWORD` | Lets the app send as that account | A Gmail app password (below). **Not** the account's normal password |
+| `EMAIL_FROM` | Who the email says it's from | The same address with a name: `Collabz <the-address@gmail.com>` |
 | `ADMIN_EMAILS` | Emails that become admins | Comma-separated. Locally you can leave it empty |
+
+You only need the Gmail settings to send *real* emails. The tests, and signing in as a pretend student, use the test inbox below instead.
+
+**Getting a Gmail app password.** An app password is a 16-letter password Google makes for one app, which can be cancelled any time without changing the account's own password.
+1. Sign in to the Collabz Gmail account.
+2. Turn on 2-Step Verification: [myaccount.google.com/security](https://myaccount.google.com/security). Google only offers app passwords once it is on.
+3. Go to [myaccount.google.com/apppasswords](https://myaccount.google.com/apppasswords), name it "Collabz", and create it.
+4. Copy the 16 letters (without the spaces) into `GMAIL_APP_PASSWORD`. Google only shows it once.
+
+Treat it like a password: never commit it or paste it into chat. If it leaks, delete it on the same page and make a new one.
+
+**Limits.** A free Gmail account can send to roughly 500 people a day, plenty for the live test. Send a few test emails from it in the days before, so it isn't brand new on the day.
+
+**Switching back to Resend.** Resend delivers more reliably, but only to anyone once we have a verified domain. Its set-up is kept in `src/auth.ts`, commented out, with the steps to switch back ("To switch back to Resend"). It then needs `AUTH_RESEND_KEY` (see `.env.example`).
 
 **`ADMIN_EMAILS` only applies when an account is first created.** Adding someone after they've signed up does nothing; an existing admin promotes them instead (or edit their `role` in Neon).
 
