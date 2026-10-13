@@ -103,7 +103,9 @@ describe("shared helpers", () => {
   });
 
   describe("scoreUser", () => {
-    it("finishes without changing anything (until slice 3 fills it in)", async () => {
+    // These two users have no profile, so they are not eligible to be scored.
+    // The real scoring is covered in tests/integration/scoreUser.test.ts.
+    it("changes nothing for people who have no finished profile", async () => {
       const before = await countRowsInEveryTable(prisma);
 
       await expect(scoreUser(annaId)).resolves.toBeUndefined();
