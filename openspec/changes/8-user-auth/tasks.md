@@ -4,11 +4,22 @@
 
 Groups build on each other in order: prove Auth.js works with our database (1), the small decision functions (2), sign-in and sign-out (3), sign-up and the finish step (4), the legal pages (5), then email, QR code and deploy (6). Each group lands its own tests and README notes. Steps marked **(human)** need a browser login, a DNS change or a team conversation, so Tom does them.
 
+## Auth.js check (task 1.3)
+
+Checked on 13 Oct 2026 by Tom, locally against Neon `dev`, with `next-auth@5.0.0-beta.32` and `@auth/prisma-adapter@2.11.3`, sending through Resend's test sender (`onboarding@resend.dev`) to Tom's own address.
+
+- The magic link arrived in Gmail's inbox (not spam) and signed Tom in.
+- A `User` row was created with only an email: a `cuid` id from our database, role `MEMBER`, `emailVerified` set, `courseId` and `acceptedTermsAt` empty. Auth.js never sends `name` or `image` for email sign-in (read in `@auth/core`'s callback code), so the foundation's `User` table fits as it is.
+- One `Session` row, expiring 30 days later (Auth.js's default).
+- The `VerificationToken` was deleted once used, so the link works only once.
+- **No `Account` row.** Expected: Auth.js only stores accounts for providers like Google. Magic-link users have none, so nothing in slice 1 should rely on `Account`.
+- **No cast was needed:** TypeScript accepts our generated client in `PrismaAdapter(prisma)`.
+
 ## 1. Prove Auth.js v5 works with our Prisma 7 client
 
-- [ ] 1.1 Install `next-auth@5.0.0-beta.32` and `@auth/prisma-adapter` at exact versions (no `^`), with a comment in the PR on why they're pinned (design 1). Verify: `npm install` finishes without peer-dependency errors and `package.json` shows both exact versions
-- [ ] 1.2 Add `src/auth.ts` with the Prisma adapter given our shared `prisma` from `src/lib/db.ts`, database sessions, and the Resend provider using Auth.js's default email for now; add `src/app/api/auth/[...nextauth]/route.ts`; add `AUTH_SECRET`, `AUTH_RESEND_KEY`, `EMAIL_FROM` and `ADMIN_EMAILS` to `.env.example` with a comment each. Every non-obvious line gets a "why" comment, including any cast needed because the adapter expects `@prisma/client` (design 1, 2). Verify: `npx tsc --noEmit` passes
-- [ ] 1.3 **(human)** Sign in once locally with a real email through Resend's test sender, and check the `User`, `Session` and `Account` rows in Neon. In particular, check that creating the user doesn't fail because Auth.js passes `name` or `image`, which our `User` table leaves out on purpose (design Context). Record the result under an "Auth.js check" note at the top of this file (what worked, any cast or difference from the foundation's tables). Verify: the note exists; if the adapter does not work with our tables, **stop**, and raise it on #8 and #7 before going further
+- [x] 1.1 Install `next-auth@5.0.0-beta.32` and `@auth/prisma-adapter` at exact versions (no `^`), with a comment in the PR on why they're pinned (design 1). Verify: `npm install` finishes without peer-dependency errors and `package.json` shows both exact versions
+- [x] 1.2 Add `src/auth.ts` with the Prisma adapter given our shared `prisma` from `src/lib/db.ts`, database sessions, and the Resend provider using Auth.js's default email for now; add `src/app/api/auth/[...nextauth]/route.ts`; add `AUTH_SECRET`, `AUTH_RESEND_KEY`, `EMAIL_FROM` and `ADMIN_EMAILS` to `.env.example` with a comment each. Every non-obvious line gets a "why" comment, including any cast needed because the adapter expects `@prisma/client` (design 1, 2). Verify: `npx tsc --noEmit` passes
+- [x] 1.3 **(human)** Sign in once locally with a real email through Resend's test sender, and check the `User`, `Session` and `Account` rows in Neon. In particular, check that creating the user doesn't fail because Auth.js passes `name` or `image`, which our `User` table leaves out on purpose (design Context). Record the result under an "Auth.js check" note at the top of this file (what worked, any cast or difference from the foundation's tables). Verify: the note exists; if the adapter does not work with our tables, **stop**, and raise it on #8 and #7 before going further
 
 ## 2. Small decision functions (no pages yet)
 
