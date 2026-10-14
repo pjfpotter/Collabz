@@ -9,7 +9,7 @@ Names used, so the tasks stay short:
 
 ## 1. Before building
 
-- [ ] 1.1 **(human)** Assign yourself to #13 (`gh issue edit 13 --add-assignee @me`) and comment on #13 and #16 that a closed conversation never reopens, so a block closes it for good. Verify: both comments exist and #13 shows an assignee
+- [x] 1.1 **(human)** Assign yourself to #13 (`gh issue edit 13 --add-assignee @me`) and comment on #13 and #16 that a closed conversation never reopens, so a block closes it for good. Verify: both comments exist and #13 shows an assignee
 - [x] 1.2 Read the Next.js 16 guides in `node_modules/next/dist/docs/` for dynamic route segments in pages and route handlers (`params` is a Promise) and `router.refresh()`, and note any difference from design decision 5 in this file's "Notes" section. Verify: the notes exist, or say "nothing differs"
 
 ## 2. The shared helpers
