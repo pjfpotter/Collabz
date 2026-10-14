@@ -13,9 +13,9 @@ Before starting: `git merge origin/master` into `feature/14-account` if slice 1'
 
 ## 2. The photo routes
 
-- [ ] 2.1 Add `src/lib/account/photos.ts` with `setProfilePhoto(userId, bytes)` (check → store new → save key → delete old) and `removeProfilePhoto(userId)` (clear key → delete file), each with a header comment, and `removeProfilePhoto` marked as the shared helper for slices 8 and 9 (design 4). Integration test: upload saves a key and the file; replacing deletes the old file; removing clears the key and deletes the file; a refused file changes nothing. Verify: `npm test` passes
-- [ ] 2.2 Add `POST` and `DELETE` in `src/app/api/account/photo/route.ts` for the signed-in user (no user → 401; no finished profile → 409; refused file → 400 with the reason). Verify: `npx tsc --noEmit` passes
-- [ ] 2.3 Add `GET` in `src/app/api/account/photo/[userId]/route.ts`: `canSeePhoto` and a stored photo → the bytes with the right content type and `Cache-Control: private, no-store`; anything else → 404 (design 3). Verify: `npx tsc --noEmit` passes (browser checks in 3.4 and 5.3)
+- [x] 2.1 Add `src/lib/account/photos.ts` with `setProfilePhoto(userId, bytes)` (check → store new → save key → delete old) and `removeProfilePhoto(userId)` (clear key → delete file), each with a header comment, and `removeProfilePhoto` marked as the shared helper for slices 8 and 9 (design 4). Integration test: upload saves a key and the file; replacing deletes the old file; removing clears the key and deletes the file; a refused file changes nothing. Verify: `npm test` passes
+- [x] 2.2 Add `POST` and `DELETE` in `src/app/api/account/photo/route.ts` for the signed-in user (no user → 401; no finished profile → 409; refused file → 400 with the reason). Verify: `npx tsc --noEmit` passes
+- [x] 2.3 Add `GET` in `src/app/api/account/photo/[userId]/route.ts`: `canSeePhoto` and a stored photo → the bytes with the right content type and `Cache-Control: private, no-store`; anything else → 404 (design 3). Verify: `npx tsc --noEmit` passes (browser checks in 3.4 and 5.3)
 
 ## 3. The account page: profile, course, photo, sign out
 
