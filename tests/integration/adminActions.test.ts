@@ -46,6 +46,7 @@ import {
   setTagRetiredAction,
   updateTagDescriptionAction,
 } from "@/app/admin/categories/actions";
+import { suspendUserAction, unsuspendUserAction } from "@/app/admin/users/actions";
 import {
   addCourseAction,
   moveCourseAction,
@@ -80,6 +81,7 @@ async function snapshot() {
       orderBy: [{ seekingTagId: "asc" }, { qualityTagId: "asc" }],
     }),
     edges: await prisma.edge.findMany(),
+    users: await prisma.user.findMany({ orderBy: { id: "asc" } }),
   };
 }
 
@@ -87,6 +89,8 @@ beforeEach(async () => {
   signedInAs.userId = null;
   await emptyDatabase(prisma);
   await seedCatalogue(prisma);
+  // Someone the suspend actions could act on.
+  await prisma.user.create({ data: { id: "test-victim", email: "victim@example.com" } });
 });
 
 afterAll(async () => {
@@ -122,6 +126,8 @@ const allAdminActions: [string, (f: FormData) => Promise<void>, Record<string, s
     { id: "seeking-makes-it-real", paired: "qualities-knows-someone" },
   ],
   ["rescore everyone", rescoreEveryoneAction, {}],
+  ["suspend user", suspendUserAction, { id: "test-victim" }],
+  ["unsuspend user", unsuspendUserAction, { id: "test-victim" }],
 ];
 
 describe("admin actions refuse anyone who isn't an admin", () => {
@@ -157,5 +163,25 @@ describe("admin actions refuse anyone who isn't an admin", () => {
 
     const course = await prisma.course.findUniqueOrThrow({ where: { id: "software" } });
     expect(course.name).toBe("Software Engineering");
+  });
+
+  it("lets an admin suspend someone else but never themselves", async () => {
+    const admin = await prisma.user.create({
+      data: {
+        email: "admin2@example.com",
+        role: "ADMIN",
+        courseId: "software",
+        acceptedTermsAt: new Date(),
+      },
+    });
+    signedInAs.userId = admin.id;
+
+    await callAction(suspendUserAction, { id: "test-victim" });
+    await callAction(suspendUserAction, { id: admin.id });
+
+    const victim = await prisma.user.findUniqueOrThrow({ where: { id: "test-victim" } });
+    const self = await prisma.user.findUniqueOrThrow({ where: { id: admin.id } });
+    expect(victim.suspendedAt).not.toBeNull();
+    expect(self.suspendedAt).toBeNull();
   });
 });
