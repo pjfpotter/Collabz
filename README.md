@@ -134,9 +134,60 @@ Every page the app will have already exists, so that two tracks can't invent the
 
 **Admin pages** start with `await requireAdmin();`. Keep that as the first line when you replace the placeholder.
 
+## Signing in
+
+Real sign-in (slice 1, #8) uses **magic links**: enter your email on `/signup` or `/signin`, open the link that arrives, and you're signed in. No passwords. [Auth.js](https://authjs.dev) v5 does the work (set up in `src/auth.ts`), and the emails are sent **through a dedicated Gmail account**, which is free and needs no domain of our own.
+
+**Settings in `.env`** (see `.env.example` for comments on each):
+
+| Variable | What it is | Where to get it |
+|---|---|---|
+| `AUTH_SECRET` | Protects sign-in tokens and cookies | Make your own: `npx auth secret` |
+| `GMAIL_USER` | The Gmail account the emails come from | The team's Collabz Gmail address |
+| `GMAIL_APP_PASSWORD` | Lets the app send as that account | A Gmail app password (below). **Not** the account's normal password |
+| `EMAIL_FROM` | Who the email says it's from | The same address with a name: `Collabz <the-address@gmail.com>` |
+| `ADMIN_EMAILS` | Emails that become admins | Comma-separated. Locally you can leave it empty |
+
+You only need the Gmail settings to send *real* emails. The tests, and signing in as a pretend student, use the test inbox below instead.
+
+**Getting a Gmail app password.** An app password is a 16-letter password Google makes for one app, which can be cancelled any time without changing the account's own password.
+1. Sign in to the Collabz Gmail account.
+2. Turn on 2-Step Verification: [myaccount.google.com/security](https://myaccount.google.com/security). Google only offers app passwords once it is on.
+3. Go to [myaccount.google.com/apppasswords](https://myaccount.google.com/apppasswords), name it "Collabz", and create it.
+4. Copy the 16 letters (without the spaces) into `GMAIL_APP_PASSWORD`. Google only shows it once.
+
+Treat it like a password: never commit it or paste it into chat. If it leaks, delete it on the same page and make a new one.
+
+**Limits.** A free Gmail account can send to roughly 500 people a day, plenty for the live test. Send a few test emails from it in the days before, so it isn't brand new on the day.
+
+**Switching back to Resend.** Resend delivers more reliably, but only to anyone once we have a verified domain. Its set-up is kept in `src/auth.ts`, commented out, with the steps to switch back ("To switch back to Resend"). It then needs `AUTH_RESEND_KEY` (see `.env.example`).
+
+**`ADMIN_EMAILS` only applies when an account is first created.** Adding someone after they've signed up does nothing; an existing admin promotes them instead (or edit their `role` in Neon).
+
+**QR code for the live test.** Students sign up by scanning a QR code that points at the live sign-up page. Make it with the real production address:
+
+```bash
+npm run qr -- https://<production address>/signup
+```
+
+It writes `public/qr-code.png`, which the site then serves at `/qr-code.png`, ready to print. Scan it with a phone before printing, to check it opens the right page.
+
+**Test inbox.** While the pretend cohort is on, links for `@collabz.test` addresses (the pretend students) aren't emailed: they're written to `.magic-links/<email>.txt` (gitignored). That's how the Playwright tests sign in for real. To try it by hand: sign in as `pretend-02@collabz.test` on `/signin`, then open the link in `.magic-links/pretend-02@collabz.test.txt`.
+
+In Playwright tests that are *about* signing in, use the helper:
+
+```ts
+import { requestMagicLink } from "../helpers/magicLinkSignIn";
+
+const link = await requestMagicLink(page, "pretend-02@collabz.test");
+await page.goto(link);
+```
+
 ## Dev sign-in
 
-There is no real sign-in until slice 1. Instead, the nav bar has a **"Dev sign-in as"** list of the pretend students. Pick one and press **Switch**, and the whole app treats you as that person until you pick someone else or "Signed out". `getCurrentUser()` returns whoever you picked.
+Alongside real sign-in, the nav bar has a **"Dev sign-in as"** list of the pretend students. Pick one and press **Switch**, and the whole app treats you as that person until you pick someone else or "Signed out". `getCurrentUser()` returns whoever you picked.
+
+**The switcher only applies when you are not really signed in.** A real magic-link session always wins, so while you're signed in for real the switcher shows that person (or nobody selected) and picking a pretend user does nothing. Sign out first. Join-up (#17) removes the switcher.
 
 It only appears where `PRETEND_COHORT="on"` is set (see below), and never on the live site.
 
@@ -194,7 +245,7 @@ Five of us build different parts at the same time. To stop one track depending o
 
 | Helper | File | What it does today | Owner |
 |---|---|---|---|
-| `getCurrentUser()` | `src/lib/currentUser.ts` | Returns the signed-in user, or `null`. For now "signed in" means "picked in the dev switcher" | Slice 1 (#8) swaps in real sign-in |
+| `getCurrentUser()` | `src/lib/currentUser.ts` | Returns the signed-in user, or `null`. A real magic-link session wins (only if they've finished signing up and aren't suspended); otherwise the dev switcher's pick | Slice 1 (#8). Join-up (#17) removes the switcher part |
 | `requireAdmin()` | `src/lib/currentUser.ts` | For admin pages. Sends a signed-out visitor to `/signin`, shows a member "page not found", and returns the user if they are an admin | Slice 8 (#15) |
 | `scoreUser(userId)` | `src/lib/scoring.ts` | Rescores one user against everyone with a finished profile and keeps their glitch match valid. Call it after a user finishes onboarding or edits their answers, and after an admin suspends them or resets their onboarding so they drop out | Slice 3 (#10), built |
 | `getTopFive(userId)` | `src/lib/matching/` | The user's five best matches, best first, from the stored scores. Suspended and unfinished people are left out | Slice 3 (#10), built |

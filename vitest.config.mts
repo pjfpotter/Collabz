@@ -52,5 +52,18 @@ export default defineConfig({
     // especially the first one after Neon has been idle and wakes up.
     testTimeout: 30_000,
     hookTimeout: 30_000,
+
+    // Slice 1 (#8): let Vitest load Auth.js (`next-auth`).
+    // next-auth imports "next/server" without the ".js" ending. Next.js
+    // copes with that, but Node's own loader doesn't, so any test that
+    // (even indirectly) imports getCurrentUser() failed with "Cannot find
+    // module .../next/server". "inline" makes Vitest process next-auth
+    // itself, the same way it processes our code, and that fills in the
+    // ending.
+    server: {
+      deps: {
+        inline: ["next-auth"],
+      },
+    },
   },
 });

@@ -16,6 +16,8 @@
 import Link from "next/link";
 
 import { DevUserSwitcher } from "@/components/DevUserSwitcher";
+// Slice 1 (#8): "Signed in as … / Sign out", or "Not signed in".
+import { SignedInStatus } from "@/components/SignedInStatus";
 // Slice 5 (#12): the number of requests waiting for you, beside the Requests link.
 import { WaitingRequestsCount } from "@/components/WaitingRequestsCount";
 
@@ -69,6 +71,11 @@ export function NavBar() {
           </Link>
         ))}
       </nav>
+
+      {/* Slice 1 (#8): the real sign-in state, with a Sign out button. */}
+      <div className="mt-2">
+        <SignedInStatus />
+      </div>
 
       {/* Draws nothing where the pretend cohort is off (e.g. the live site). */}
       <div className="mt-2">

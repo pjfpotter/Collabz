@@ -8,6 +8,8 @@ import { cookies } from "next/headers";
 import { notFound, redirect } from "next/navigation";
 
 import type { User } from "@/generated/prisma/client";
+import { pickCurrentUser } from "@/lib/auth/accountState";
+import { getSessionUser } from "@/lib/auth/session";
 import { prisma } from "@/lib/db";
 import {
   DEV_USER_COOKIE,
@@ -41,27 +43,44 @@ export async function findPretendUser(userId: string): Promise<User | null> {
 
 // Returns the signed-in user, or null if nobody is signed in.
 //
-// NOW: "signed in" means "picked in the dev switcher". The switcher stores
-// the chosen pretend user's id in a cookie, and this reads it back. Where the
-// pretend cohort is off (including production) it always returns null, so
-// until slice 1 lands nobody can be signed in on the live site.
+// NOW (slice 1, #8): "signed in" means, in this order:
+// 1. A real magic-link session (Auth.js). The person is returned only if
+//    they've finished signing up (course chosen, terms accepted) and aren't
+//    suspended. Otherwise this returns null: they can't use the app yet.
+// 2. No real session: the person picked in the dev "sign in as…" switcher,
+//    where the pretend cohort is on (never on production).
+// 3. Otherwise: null.
+// The decision itself is pickCurrentUser() in src/lib/auth/accountState.ts,
+// where every case is tested.
 //
-// LATER: slice 1 (#8) replaces the inside with Auth.js's real session. The
-// name, and what it returns, stay the same.
+// LATER: join-up (#17) removes step 2 along with the switcher. The name, and
+// what it returns, stay the same.
 //
 // It returns the whole User row and nothing more. If you need the person's
-// profile, load it yourself with their id. (Slice 1 has to be able to swap
-// the inside without knowing what each caller wanted on top.)
+// profile, load it yourself with their id. (The inside must be swappable
+// without knowing what each caller wanted on top.)
 //
-// It does NOT hide suspended users: "suspended users can't sign in" is
-// slice 1's and slice 8's rule. Until then, being able to act as the
+// Suspended REAL users get null (user-auth spec: "Suspended users can't sign
+// in"). Suspended PRETEND users are still returned, because acting as the
 // suspended pretend user is how track 4 tests that they vanish from the graph.
 //
 // Can only be called while handling a request (in a page, a layout or an API
 // route), because that is the only time there are cookies to read.
 //
-// Owner: foundation (#7) now, slice 1 (#8) afterwards.
+// Owner: slice 1 (#8). (Was the foundation's, #7.)
 export async function getCurrentUser(): Promise<User | null> {
+  const sessionUser = await getSessionUser();
+
+  // Only look at the switcher when nobody has really signed in: a real
+  // session always wins, so its cookie wouldn't change the answer.
+  const pretendUser = sessionUser ? null : await findSwitcherUser();
+
+  return pickCurrentUser({ sessionUser, pretendUser });
+}
+
+// The pretend user picked in the dev switcher, or null.
+// (This was the whole of getCurrentUser() before slice 1.)
+async function findSwitcherUser(): Promise<User | null> {
   // Checked before touching the cookie, so that where the cohort is off we
   // don't even read it.
   if (!isPretendCohortEnabled()) {
