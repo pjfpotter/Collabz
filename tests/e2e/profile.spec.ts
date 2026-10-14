@@ -102,7 +102,7 @@ test.describe("signed in as a member with a finished profile", () => {
     await firstLink.click();
 
     await expect(page.getByRole("heading", { level: 1, name: alias! })).toBeVisible();
-    await expect(page.locator("svg[data-silhouette]").first()).toBeVisible();
+    await expect(page.locator("img[data-silhouette]").first()).toBeVisible();
     await expect(page.getByTestId("profile-bio")).not.toBeEmpty();
     // Scoped to the page's main area: the dev sign-in dropdown in the nav bar
     // also has "Software" and "Business" written in it.

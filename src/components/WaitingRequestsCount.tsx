@@ -37,10 +37,15 @@ export async function WaitingRequestsCount() {
   }
 
   return (
-    <span className="ml-1" data-testid="waiting-count">
-      ({count}
-      {/* Only for screen readers: "(2" and ")" alone don't say what it is. */}
-      <span className="sr-only"> waiting</span>)
+    // A small pill with the number, in the primary colour. data-testid
+    // stays so the tests can find it.
+    <span
+      className="ml-1.5 inline-flex h-5 min-w-5 items-center justify-center rounded-full bg-primary px-1.5 text-xs font-bold text-on-primary"
+      data-testid="waiting-count"
+    >
+      {count}
+      {/* Only for screen readers: "3" alone doesn't say what it is. */}
+      <span className="sr-only"> waiting</span>
     </span>
   );
 }

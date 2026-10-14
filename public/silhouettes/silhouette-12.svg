@@ -1,0 +1,11 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64">
+<title>Wide hat</title>
+<style>
+  /* --b: the body, --d: the one detail colour, --a: small marks on the detail.
+     Light values first, then dark when the device prefers dark. An image can't
+     read the page's CSS, so the colours travel inside the file. */
+  svg { --b: #1a1f16; --d: #2a6414; --a: #f6f3ea; }
+  @media (prefers-color-scheme: dark) { svg { --b: #efebdd; --d: #a8f27c; --a: #0d100c; } }
+</style>
+<path d="M9 64 C9 48 19 41 32 41 C45 41 55 48 55 64Z" style="fill:var(--b)"/><circle cx="32" cy="29" r="10.5" style="fill:var(--b)"/><path d="M23 21 C23 9 41 9 41 21Z" style="fill:var(--d)"/><ellipse cx="32" cy="21" rx="19" ry="4.2" style="fill:var(--d)"/>
+</svg>

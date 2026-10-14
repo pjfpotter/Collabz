@@ -27,7 +27,7 @@ export async function SignedInStatus() {
 
   if (!sessionUser) {
     return (
-      <p className="text-sm" data-testid="signed-in-status">
+      <p className="text-sm text-muted" data-testid="signed-in-status">
         Not signed in
       </p>
     );
@@ -44,15 +44,17 @@ export async function SignedInStatus() {
   return (
     <form
       action={signOutAndGoHome}
-      className="flex flex-wrap items-center gap-2 text-sm"
+      className="flex flex-wrap items-center gap-2 text-sm text-muted"
       data-testid="signed-in-status"
     >
       <span>
-        Signed in as <strong>{sessionUser.email}</strong>
+        Signed in as <strong className="text-foreground">{sessionUser.email}</strong>
       </span>
+      {/* min-h-11 is the 44px tap target; the border is line-strong because
+          control borders need 3:1 against the page. */}
       <button
         type="submit"
-        className="rounded border border-current/40 px-2 py-1"
+        className="min-h-11 rounded-control border border-line-strong px-3 font-medium text-foreground hover:bg-surface-2 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary-text"
       >
         Sign out
       </button>
