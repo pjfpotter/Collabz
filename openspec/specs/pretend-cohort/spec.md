@@ -89,7 +89,7 @@ Every pretend user SHALL have an email address on a reserved test domain that ca
 ### Requirement: Sign in as any pretend user
 Where the pretend cohort is switched on, every page SHALL offer a control listing the pretend users, showing each one's alias, course and whether they are an admin, suspended or not yet onboarded. Choosing one SHALL make the app treat the visitor as that user until they choose another or choose to sign out. The control SHALL show who the visitor is currently signed in as.
 
-**Brief:** Supporting · **MVP:** In until slice 1 (#8) replaces it · **Thursday:** Out
+**Brief:** Supporting · **MVP:** In until join-up (#17) · **Thursday:** Out
 
 #### Scenario: Become a pretend user
 - **WHEN** a visitor picks a pretend user from the control
@@ -110,7 +110,7 @@ Where the pretend cohort is switched on, every page SHALL offer a control listin
 ### Requirement: The switcher does not exist where the pretend cohort is off
 Where the pretend cohort is not switched on, and always on the production deployment, the control SHALL NOT be shown, a request to sign in as a user SHALL be refused, and a previously saved choice SHALL be ignored, so nobody is treated as signed in through the switcher.
 
-**Brief:** Supporting (protects real students' data) · **MVP:** In until slice 1 (#8) replaces it · **Thursday:** Out
+**Brief:** Supporting (protects real students' data) · **MVP:** In until join-up (#17) · **Thursday:** Out
 
 #### Scenario: Not shown on production
 - **WHEN** anyone opens any page on the production URL
