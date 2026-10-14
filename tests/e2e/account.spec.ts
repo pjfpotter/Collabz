@@ -150,3 +150,90 @@ test("the account page fits a phone screen", async ({ page }) => {
   }));
   expect(scrollWidth).toBeLessThanOrEqual(innerWidth);
 });
+
+// ---------------------------------------------------------------------------
+// Editing answers (task 4.4). Uses a different pretend user from the tests
+// above, so changing their answers can't affect those tests.
+// ---------------------------------------------------------------------------
+
+const editor = "pretend-user-03";
+
+test("swapping a Seeking tag updates the profile and bio, and keeps the alias (spec: Edit a Seeking tag)", async ({
+  page,
+}) => {
+  await signInAs(page, editor);
+  await page.goto("/account");
+  const aliasBefore = await page.getByTestId("account-alias").textContent();
+
+  await page.getByRole("link", { name: "Edit Seeking" }).click();
+  await expect(page).toHaveURL("/account/edit/seeking");
+
+  // Unpick everything they had, then pick the first tag they didn't have.
+  const picked = page.locator('button[aria-pressed="true"]');
+  const wasPicked = await picked.allTextContents();
+  while ((await picked.count()) > 0) {
+    await picked.first().click();
+  }
+  const newTag = page.locator('button[aria-pressed="false"]:not([disabled])').filter({
+    hasNotText: wasPicked[0],
+  }).first();
+  const newTagName = (await newTag.locator("span").first().textContent())!.trim();
+  await newTag.click();
+  await page.getByRole("button", { name: "Save", exact: true }).click();
+
+  // Back on the account page with the new pick, in the list and the bio.
+  await expect(page).toHaveURL("/account");
+  await expect(page.getByTestId("account-picks")).toContainText(newTagName);
+  const lowerFirst = newTagName.charAt(0).toLowerCase() + newTagName.slice(1);
+  await expect(page.getByTestId("account-bio")).toContainText(`Looking for: ${lowerFirst}`);
+  await expect(page.getByTestId("account-alias")).toHaveText(aliasBefore!);
+});
+
+test("at the limit, no fifth Quality can be picked (spec: Pick limit kept)", async ({ page }) => {
+  // pretend-user-02 has four Qualities, the most allowed.
+  await signInAs(page, member);
+  await page.goto("/account/edit/qualities");
+
+  await expect(page.locator('button[aria-pressed="true"]')).toHaveCount(4);
+  await expect(page.getByTestId("pick-limit")).toContainText("You can pick up to 4");
+  // Every tag they haven't picked is disabled.
+  const unpicked = page.locator('button[aria-pressed="false"]');
+  const count = await unpicked.count();
+  expect(count).toBeGreaterThan(0);
+  for (let index = 0; index < count; index++) {
+    await expect(unpicked.nth(index)).toBeDisabled();
+  }
+});
+
+test("with nothing picked, Save stays disabled", async ({ page }) => {
+  await signInAs(page, member);
+  await page.goto("/account/edit/qualities");
+
+  const picked = page.locator('button[aria-pressed="true"]');
+  while ((await picked.count()) > 0) {
+    await picked.first().click();
+  }
+
+  await expect(page.getByRole("button", { name: "Save", exact: true })).toBeDisabled();
+  await expect(page.getByTestId("pick-limit")).toContainText("Pick between 1 and 4");
+});
+
+// Rule B1: every answer is picked from a list.
+test("the edit screen has no text boxes, and fits a phone screen", async ({ page }) => {
+  await signInAs(page, member);
+  await page.setViewportSize({ width: 375, height: 800 });
+  await page.goto("/account/edit/qualities");
+
+  await expect(page.locator('main input[type="text"], main textarea')).toHaveCount(0);
+  const { scrollWidth, innerWidth } = await page.evaluate(() => ({
+    scrollWidth: document.documentElement.scrollWidth,
+    innerWidth: window.innerWidth,
+  }));
+  expect(scrollWidth).toBeLessThanOrEqual(innerWidth);
+});
+
+test("an unknown category is 'page not found'", async ({ page }) => {
+  await signInAs(page, member);
+  const response = await page.goto("/account/edit/not-a-category");
+  expect(response?.status()).toBe(404);
+});

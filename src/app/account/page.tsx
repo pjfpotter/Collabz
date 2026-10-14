@@ -12,7 +12,10 @@
 import Link from "next/link";
 import { redirect } from "next/navigation";
 
-import { getAccountProfile } from "@/lib/account/accountProfile";
+import { getAccountProfile, type CategoryPicks } from "@/lib/account/accountProfile";
+// Stand-ins for slice 2's bio and silhouettes: see src/lib/account/standIns.ts.
+import { SilhouettePlaceholder } from "@/lib/account/SilhouettePlaceholder";
+import { bioStandIn } from "@/lib/account/standIns";
 import { getActiveCourses } from "@/lib/auth/courses";
 import { getCurrentUser } from "@/lib/currentUser";
 
@@ -56,18 +59,40 @@ export default async function AccountPage() {
             <h2 id="profile-heading" className="text-xl font-semibold">
               Your profile
             </h2>
-            <p className="mt-2 text-lg" data-testid="account-alias">
-              {account.profile.alias}
+            <div className="mt-3 flex items-center gap-4">
+              <SilhouettePlaceholder silhouette={account.profile.silhouette} />
+              <div>
+                <p className="text-lg" data-testid="account-alias">
+                  {account.profile.alias}
+                </p>
+                <Link href="/account/edit/silhouette" className="text-sm underline underline-offset-4">
+                  Change silhouette
+                </Link>
+              </div>
+            </div>
+            {/* Built from the picks each time it's shown, never stored. */}
+            <p className="mt-4" data-testid="account-bio">
+              {bioStandIn(namesByCategory(account.profile.picks))}
             </p>
             <dl className="mt-3 divide-y divide-current/20" data-testid="account-picks">
               {account.profile.picks.map((group) => (
-                <div key={group.categoryId} className="py-2">
-                  <dt className="font-semibold">{group.categoryName}</dt>
-                  <dd className="text-zinc-700 dark:text-zinc-300">
-                    {group.tags
-                      .map((tag) => (tag.retired ? `${tag.name} (no longer offered)` : tag.name))
-                      .join(", ")}
-                  </dd>
+                <div key={group.categoryId} className="flex items-start justify-between gap-3 py-2">
+                  <div>
+                    <dt className="font-semibold">{group.categoryName}</dt>
+                    <dd className="text-zinc-700 dark:text-zinc-300">
+                      {group.tags
+                        .map((tag) => (tag.retired ? `${tag.name} (no longer offered)` : tag.name))
+                        .join(", ")}
+                    </dd>
+                  </div>
+                  <Link
+                    href={`/account/edit/${group.categoryId}`}
+                    className="shrink-0 text-sm underline underline-offset-4"
+                    // Says WHICH thing is edited, for screen readers.
+                    aria-label={`Edit ${group.categoryName}`}
+                  >
+                    Edit
+                  </Link>
                 </div>
               ))}
             </dl>
@@ -100,6 +125,13 @@ export default async function AccountPage() {
         </button>
       </form>
     </main>
+  );
+}
+
+// The shape the bio wants: category id -> names of the picked tags.
+function namesByCategory(picks: CategoryPicks[]): Record<string, string[]> {
+  return Object.fromEntries(
+    picks.map((group) => [group.categoryId, group.tags.map((tag) => tag.name)]),
   );
 }
 
