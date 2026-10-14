@@ -1,11 +1,11 @@
-// /admin - PLACEHOLDER (foundation #7).
-// Owner: slice 8, issue #15 (track 2). Replace this file with the real page.
+// /admin - the admin area's home (slice 8, #15).
 //
-// Slice 8 owns /admin and everything under it EXCEPT /admin/reports, which
-// belongs to slice 9 (the moderation queue).
+// Admins only. The sections themselves are linked from the menu.
+// /admin/reports belongs to slice 9 (#16).
 
-import { PlaceholderPage } from "@/components/PlaceholderPage";
 import { requireAdmin } from "@/lib/currentUser";
+
+import { AdminMenu } from "./AdminMenu";
 
 export const metadata = {
   title: "Admin · Collabz",
@@ -14,16 +14,35 @@ export const metadata = {
 export default async function AdminPage() {
   // Admins only. For anyone else this line stops the page right here: a
   // signed-out visitor is sent to /signin and a member sees "page not found"
-  // (see requireAdmin in src/lib/currentUser.ts). KEEP this call as the
-  // first line when you replace the placeholder.
+  // (see requireAdmin in src/lib/currentUser.ts). It stays the FIRST line.
   await requireAdmin();
 
   return (
-    <PlaceholderPage
-      title="Admin"
-      slice={8}
-      issue={15}
-      willShow="Manage categories, tags, courses and users."
-    />
+    <main className="mx-auto w-full max-w-md px-4 py-12">
+      <AdminMenu />
+
+      <h1 className="mt-6 text-3xl font-semibold">Admin</h1>
+
+      <p className="mt-4 text-lg">
+        Keep the lists up to date without editing the database by hand.
+      </p>
+
+      <ul className="mt-6 list-disc space-y-2 pl-5">
+        <li>
+          <strong>Categories &amp; tags:</strong> rename, reorder or retire them.
+        </li>
+        <li>
+          <strong>Courses:</strong> add, rename, reorder or retire them.
+        </li>
+        <li>
+          <strong>Users:</strong> suspend someone or remove their photo.
+        </li>
+      </ul>
+
+      <p className="mt-6 text-sm">
+        Nothing is ever deleted. Retiring something hides it from new choices, and
+        everyone who already has it keeps it.
+      </p>
+    </main>
   );
 }

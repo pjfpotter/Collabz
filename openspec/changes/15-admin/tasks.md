@@ -6,11 +6,11 @@ Groups build on each other in order: the small logic functions with tests (1, 2,
 
 ## 1. Courses and the admin shell
 
-- [ ] 1.1 Add `src/lib/admin/slugify.ts` (name → readable id, e.g. "Sea Captain" → `sea-captain`) with unit tests in `tests/unit/`: capitals, spaces, punctuation, accents, empty result is rejected (design 3). Verify: `npm test` passes
-- [ ] 1.2 Add `src/lib/admin/courses.ts`: `addCourse`, `renameCourse`, `moveCourse`, `setCourseRetired`, each returning problems in plain English (empty name, name already used, nothing to move). Add integration tests in `tests/integration/adminCourses.test.ts`: add gets the next order and a slug id; rename keeps id and users; retire hides it from `getActiveCourses()` while a user already on it keeps it; un-retire brings it back; moving swaps order with the neighbour (design 3, 4, 5). Verify: `npm test` passes
-- [ ] 1.3 Replace the `/admin` placeholder with a real page: a menu (Categories & tags, Courses, Users, and a link to `/admin/reports`) in `src/app/admin/AdminMenu.tsx`, keeping `await requireAdmin()` as the first line. Verify: `npm run dev`; as the pretend admin the page shows the menu, as a pretend member it shows "page not found", signed out it goes to `/signin`
+- [x] 1.1 Add `src/lib/admin/slugify.ts` (name → readable id, e.g. "Sea Captain" → `sea-captain`) with unit tests in `tests/unit/`: capitals, spaces, punctuation, accents, empty result is rejected (design 3). Verify: `npm test` passes
+- [x] 1.2 Add `src/lib/admin/courses.ts`: `addCourse`, `renameCourse`, `moveCourse`, `setCourseRetired`, each returning problems in plain English (empty name, name already used, nothing to move). Add integration tests in `tests/integration/adminCourses.test.ts`: add gets the next order and a slug id; rename keeps id and users; retire hides it from `getActiveCourses()` while a user already on it keeps it; un-retire brings it back; moving swaps order with the neighbour (design 3, 4, 5). Verify: `npm test` passes
+- [x] 1.3 Replace the `/admin` placeholder with a real page: a menu (Categories & tags, Courses, Users, and a link to `/admin/reports`) in `src/app/admin/AdminMenu.tsx`, keeping `await requireAdmin()` as the first line. Verify: `npm run dev`; as the pretend admin the page shows the menu, as a pretend member it shows "page not found", signed out it goes to `/signin`
 - [ ] 1.4 Add `/admin/courses` with Server Actions that call `requireAdmin()` first and then the functions from 1.2, then `revalidatePath`. Verify: in the browser, add, rename, move and retire a course; the `/signup` course list follows each change
-- [ ] 1.5 Add `tests/integration/adminActions.test.ts` proving the guard: with the current user set to a member, then to nobody, each course action is refused and changes nothing (design 1). Verify: `npm test` passes
+- [x] 1.5 Add `tests/integration/adminActions.test.ts` proving the guard: with the current user set to a member, then to nobody, each course action is refused and changes nothing (design 1). Verify: `npm test` passes
 
 ## 2. Categories and tags
 
