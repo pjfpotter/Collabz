@@ -12,7 +12,10 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
 
-import { SilhouetteStandIn, requireFinishedProfile } from "@/lib/cohort/standIns";
+import { noticeClasses, textLinkClasses } from "@/components/formStyles";
+import { StateMessage } from "@/components/StateMessage";
+import { SilhouetteStandIn } from "@/lib/cohort/SilhouetteStandIn";
+import { requireFinishedProfile } from "@/lib/cohort/standIns";
 import { getConversation } from "@/lib/messages/getConversation";
 import { formatMessageTime } from "@/lib/messages/formatMessageTime";
 
@@ -42,38 +45,52 @@ export default async function ConversationPage({
   return (
     <main className="mx-auto w-full max-w-2xl px-4 py-8">
       <p className="text-sm">
-        <Link href="/messages" className="underline underline-offset-4">
+        <Link href="/messages" className={textLinkClasses}>
           All conversations
         </Link>
       </p>
 
       <div className="mt-4 flex items-center gap-3">
         <SilhouetteStandIn silhouette={conversation.silhouette} size={48} />
-        <h1 className="text-2xl font-semibold">
-          <Link
-            href={`/people/${conversation.address}`}
-            className="underline underline-offset-4"
-          >
+        <h1 className="text-3xl leading-tight [overflow-wrap:anywhere]">
+          <Link href={`/people/${conversation.address}`} className="hover:underline">
             {conversation.alias}
           </Link>
         </h1>
       </div>
 
       {conversation.messages.length === 0 ? (
-        <p className="mt-8" data-testid="no-messages">
-          No messages yet. Say hello.
-        </p>
+        <div className="mt-8" data-testid="no-messages">
+          <StateMessage title="No messages yet. Say hello." />
+        </div>
       ) : (
         <ol className="mt-8 space-y-4" data-testid="message-list">
           {conversation.messages.map((message) => (
-            <li key={message.id} data-testid="message">
-              <p className="text-sm text-zinc-600 dark:text-zinc-400">
-                <span className="font-semibold">
+            // Your own messages sit on the right in the brand colour and
+            // theirs on the left in a quiet card, so who said what can be
+            // told at a glance. The sender's name is still written above
+            // each one, so it never relies on side or colour alone.
+            <li
+              key={message.id}
+              data-testid="message"
+              className={message.mine ? "flex flex-col items-end" : "flex flex-col items-start"}
+            >
+              <p className="text-sm text-muted">
+                <span className="font-semibold text-foreground">
                   {message.mine ? "You" : message.senderAlias}
                 </span>{" "}
                 · {formatMessageTime(message.createdAt)}
               </p>
-              <p className="whitespace-pre-wrap break-words">{message.body}</p>
+              <p
+                className={
+                  "mt-1 max-w-[85%] whitespace-pre-wrap break-words rounded-card px-4 py-2 " +
+                  (message.mine
+                    ? "bg-primary text-on-primary"
+                    : "border border-line bg-surface text-foreground")
+                }
+              >
+                {message.body}
+              </p>
             </li>
           ))}
         </ol>
@@ -81,7 +98,7 @@ export default async function ConversationPage({
 
       <div className="mt-8">
         {conversation.closed ? (
-          <p data-testid="closed-notice">
+          <p className={noticeClasses} data-testid="closed-notice">
             This conversation is closed, so no new messages can be sent in it.
           </p>
         ) : (

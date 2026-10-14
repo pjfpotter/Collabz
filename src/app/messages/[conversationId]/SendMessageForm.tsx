@@ -17,6 +17,7 @@ import { useRouter } from "next/navigation";
 import { useState, type FormEvent } from "react";
 
 import { MESSAGE_MAX_LENGTH } from "@/lib/messages/messages";
+import { inputClasses, primaryButtonClasses } from "@/components/formStyles";
 
 type SendMessageFormProps = {
   conversationId: string;
@@ -79,28 +80,28 @@ export function SendMessageForm({ conversationId }: SendMessageFormProps) {
         maxLength={MESSAGE_MAX_LENGTH}
         rows={4}
         disabled={busy}
-        className="mt-1 w-full rounded border border-current/40 bg-transparent p-2"
+        className={`mt-1 py-2 ${inputClasses}`}
       />
-      <p className="text-sm" data-testid="characters-remaining">
+      <p className="mt-1 text-sm text-muted" data-testid="characters-remaining">
         {remaining} characters left
       </p>
 
       <button
         type="submit"
         disabled={busy}
-        className="mt-2 rounded border border-current px-4 py-2 font-semibold disabled:opacity-50"
+        className={`mt-2 ${primaryButtonClasses}`}
       >
         Send
       </button>
 
-      <p className="mt-2 text-sm">
+      <p className="mt-2 text-sm text-muted">
         New messages from the other person appear when you refresh this page.
       </p>
 
       {/* role="status" makes a screen reader read the answer out when it
           appears. */}
       {state.step === "refused" && (
-        <p className="mt-2 text-sm" role="status" data-testid="send-message">
+        <p className="mt-2 text-sm font-medium text-danger" role="status" data-testid="send-message">
           {state.message}
         </p>
       )}

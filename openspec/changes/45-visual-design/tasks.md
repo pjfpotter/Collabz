@@ -74,8 +74,10 @@ Verify at 375px and 1280px, in light and dark, for every group that changes what
 
 ## 8. Requests and messages
 
-- [ ] 8.1 Restyle `/requests` (waiting and decided lists, status pills, `RequestActions`). Verify: `tests/e2e/requests.spec.ts` passes
-- [ ] 8.2 Restyle `/messages` and `/messages/[conversationId]` (thread, message bubbles, closed-conversation state, 1000-character limit hint). Verify: `tests/e2e/messages.spec.ts` passes; the message box stays visible above the phone keyboard
+- [x] 8.1 Restyle `/requests` (waiting and decided lists, status pills, `RequestActions`). Verify: `tests/e2e/requests.spec.ts` passes
+  - Checked 14 Oct 2026: `/requests` uses `PersonRow`, `StateMessage`, `StatusPill` (Waiting, Connected, Declined) and the shared button styles; all wording and test ids are unchanged, and no course is shown because this page's data has never carried one. Looked at at 375px in light and dark as a pretend user with a waiting request and a sent one. `requests.spec.ts` passes (15 across requests and messages).
+- [x] 8.2 Restyle `/messages` and `/messages/[conversationId]` (thread, message bubbles, closed-conversation state, 1000-character limit hint). Verify: `tests/e2e/messages.spec.ts` passes; the message box stays visible above the phone keyboard
+  - Checked 14 Oct 2026: `/messages` and the thread use `PersonRow`, `StateMessage`, the shared form styles and message bubbles (yours on the right in the brand fill, theirs on the left in a card, with the sender's name and time still written above each). Looked at at 375px in light and dark. `messages.spec.ts` passes. Not seen by eye: the closed-conversation notice and the refused-send message (covered by the tests). The 1000-character limit and "characters left" line are unchanged.
 
 ## 9. Account, admin and the plain pages
 

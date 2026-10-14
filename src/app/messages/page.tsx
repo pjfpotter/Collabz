@@ -8,7 +8,11 @@
 
 import Link from "next/link";
 
-import { SilhouetteStandIn, requireFinishedProfile } from "@/lib/cohort/standIns";
+import { textLinkClasses } from "@/components/formStyles";
+import { PersonRow } from "@/components/PersonRow";
+import { StateMessage } from "@/components/StateMessage";
+import { StatusPill } from "@/components/StatusPill";
+import { requireFinishedProfile } from "@/lib/cohort/standIns";
 import { formatMessageTime } from "@/lib/messages/formatMessageTime";
 import {
   listConversations,
@@ -28,25 +32,27 @@ export default async function MessagesPage() {
 
   return (
     <main className="mx-auto w-full max-w-2xl px-4 py-8">
-      <h1 className="text-3xl font-semibold">Messages</h1>
-      <p className="mt-2 text-zinc-600 dark:text-zinc-400">
+      <h1 className="text-4xl">Messages</h1>
+      <p className="mt-2 text-muted">
         Private conversations with the people you have connected with.
       </p>
 
       {conversations.length === 0 ? (
-        <p className="mt-8" data-testid="no-conversations">
-          You have no conversations yet. Find someone on the{" "}
-          <Link href="/graph" className="underline underline-offset-4">
-            graph
-          </Link>{" "}
-          and ask to connect, or check your{" "}
-          <Link href="/requests" className="underline underline-offset-4">
-            requests
-          </Link>
-          .
-        </p>
+        <div className="mt-8" data-testid="no-conversations">
+          <StateMessage title="You have no conversations yet.">
+            Find someone on the{" "}
+            <Link href="/graph" className={textLinkClasses}>
+              graph
+            </Link>{" "}
+            and ask to connect, or check your{" "}
+            <Link href="/requests" className={textLinkClasses}>
+              requests
+            </Link>
+            .
+          </StateMessage>
+        </div>
       ) : (
-        <ul className="mt-8 divide-y divide-current/20" data-testid="conversation-list">
+        <ul className="mt-8 divide-y divide-line" data-testid="conversation-list">
           {conversations.map((conversation) => (
             <li key={conversation.conversationId} className="py-4">
               <ConversationRow conversation={conversation} />
@@ -61,36 +67,30 @@ export default async function MessagesPage() {
 // One conversation in the list.
 function ConversationRow({ conversation }: { conversation: ConversationSummary }) {
   return (
-    <div className="flex items-start gap-3">
-      <SilhouetteStandIn silhouette={conversation.silhouette} size={48} />
-
-      <div className="min-w-0 flex-1">
-        <p>
-          <Link
-            href={`/messages/${conversation.conversationId}`}
-            className="font-semibold underline underline-offset-4"
-          >
-            {conversation.alias}
-          </Link>
-          {conversation.closed && (
-            <span className="ml-2 text-sm" data-testid="closed-marker">
-              (closed)
-            </span>
-          )}
+    <PersonRow
+      alias={conversation.alias}
+      silhouette={conversation.silhouette}
+      courseId={null}
+      courseName={null}
+      href={`/messages/${conversation.conversationId}`}
+    >
+      {conversation.closed && (
+        <p className="mt-1">
+          <StatusPill status="declined">
+            <span data-testid="closed-marker">(closed)</span>
+          </StatusPill>
         </p>
+      )}
 
-        {conversation.latestPreview !== null && conversation.latestAt !== null ? (
-          <>
-            {/* truncate keeps a long preview on one line on a phone. */}
-            <p className="truncate text-sm">{conversation.latestPreview}</p>
-            <p className="text-sm text-zinc-600 dark:text-zinc-400">
-              {formatMessageTime(conversation.latestAt)}
-            </p>
-          </>
-        ) : (
-          <p className="text-sm">No messages yet.</p>
-        )}
-      </div>
-    </div>
+      {conversation.latestPreview !== null && conversation.latestAt !== null ? (
+        <>
+          {/* truncate keeps a long preview on one line on a phone. */}
+          <p className="mt-1 truncate text-sm">{conversation.latestPreview}</p>
+          <p className="text-sm text-muted">{formatMessageTime(conversation.latestAt)}</p>
+        </>
+      ) : (
+        <p className="mt-1 text-sm text-muted">No messages yet.</p>
+      )}
+    </PersonRow>
   );
 }
