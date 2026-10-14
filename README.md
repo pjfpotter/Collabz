@@ -122,7 +122,7 @@ Every page the app will have already exists, so that two tracks can't invent the
 | `/matches` | 3 | #10 | 3 |
 | `/graph`, `/people`, `/people/[alias]` | 4 | #11 | 4 |
 | `/requests` | 5 | #12 | 5 |
-| `/messages` | 6 | #13 | 5 |
+| `/messages`, `/messages/[conversationId]` | 6 | #13 | 5 |
 | `/account` | 7 | #14 | 1 |
 | `/admin` (and anything under it except reports) | 8 | #15 | 2 |
 | `/admin/reports` | 9 | #16 | 3 |
@@ -411,6 +411,38 @@ Track 5 (slice 5, issue #12) lets someone ask a match to connect, and the other 
 **Two things on the profile page are still rough** (it is slice 4's, so they are tidied at join-up, #17): after a decline it still shows the Connect button, though pressing it answers that a new request can't be sent, and a waiting request says "a request is waiting between you two" without saying who asked. The server always answers correctly; only the wording on that page is behind.
 
 The words people see (every refusal and success sentence) are in `messages.ts`, so the code, the tests and the pages can't drift apart.
+
+## Messaging
+
+Slice 6 (#13). Two people who have agreed to connect can talk in a private conversation, so nobody has to swap personal contact details.
+
+**What the pages show.** `/messages` lists your conversations, newest activity first: the other person's alias and silhouette, the start of the latest message and its time, and "(closed)" on a closed one. Opening one shows the messages oldest first, each with who sent it ("You" for your own) and the time (London time), and a box to send a new one. Signed out you are sent to `/signin`.
+
+**The rules, in plain words:**
+
+- **Only the two people in a conversation can read or write in it**, and the server checks that every time, not only the page. Someone else's conversation, or a made-up address, shows "page not found" (and the route answers 404), so an address can't be probed.
+- **Messages are limited to 1000 characters**, and an empty or spaces-only message is refused. The form's counter is a courtesy; the server is the real check.
+- **A closed conversation can still be read but takes no new messages, and it never reopens.** A block closes it for good (slice 9 calls `closeConversation()`), and `openConversation()` keeps returning a closed one as it is.
+- **Sending is refused if the two are no longer connected** (an approved request and no block), or if the other person is suspended. The refusal is one vague sentence on purpose, so it can't be used to learn who blocked whom.
+- **New messages appear when you refresh the page.** Real-time chat and unread markers are "MVP Later" and are not built.
+
+**Routes this track owns:**
+
+| Route | What it does |
+|---|---|
+| `/messages` | **Built.** Your conversations, newest first. Signed out you are sent to `/signin` |
+| `/messages/[conversationId]` | **Built.** One conversation, its messages and the send form. "Page not found" if it isn't yours |
+| `POST /api/messages/[conversationId]` | **Built.** Sends a message in one of your conversations. Send `{ "body": "the text" }`. 401 signed out, 404 no such conversation or not yours, 409 closed or no longer connected, 422 empty or longer than 1000 characters |
+
+**Helpers** (in `src/lib/messages/`):
+
+| Helper | File | What it does |
+|---|---|---|
+| `sendMessage(senderId, conversationId, body)` | `sendMessage.ts` | Stores a message, or refuses with a `reason` and a sentence the form can show as it is. All the sending rules live here: only the two people, not closed, still connected, not empty, at most 1000 characters |
+| `listConversations(userId)` | `listConversations.ts` | The conversations this person is in, newest activity first: the other person's alias, address and silhouette, the start of the latest message with its time, and whether it is closed. Never an email or a user id |
+| `getConversation(userId, conversationId)` | `getConversation.ts` | One conversation for its page: the other person and the messages, oldest first, with the viewer's own marked. `null` when it isn't theirs or doesn't exist (the same answer for both). A closed conversation can still be read |
+
+The words people see (every refusal sentence) and the 1000 limit are in `messages.ts`, so the code, the tests and the form can't drift apart.
 
 ## Project structure
 
