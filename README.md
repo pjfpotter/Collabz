@@ -253,6 +253,7 @@ Five of us build different parts at the same time. To stop one track depending o
 | `ensureGlitchMatch(userId)` | `src/lib/matching/` | The user's stored glitch match, choosing one if they have none yet. Safe to call on every page load | Slice 3 (#10), built |
 | `openConversation(userAId, userBId)` | `src/lib/conversations.ts` | Returns the conversation between two users, creating it if needed. Safe to call twice | Slice 6 (#13) |
 | `closeConversation(conversationId)` | `src/lib/conversations.ts` | Marks a conversation as closed. Safe to call twice | Slice 6 (#13) |
+| `removeProfilePhoto(userId)` | `src/lib/account/photos.ts` | Removes someone's photo: clears `Profile.photoKey`, then deletes the file from storage. Safe to call when there's no photo. For the admin "remove photo" actions | Slice 7 (#14), built. Slices 8 (#15) and 9 (#16) call it |
 | `orderUserPair(a, b)` | `src/lib/userPair.ts` | Puts two user ids in the agreed order (lower first) for the `Edge` and `Conversation` tables, which store each pair once | Foundation (#7) |
 
 Each file starts with a comment that says the same in more detail, including what the helper will do once its owner has built it.
@@ -444,6 +445,53 @@ Slice 6 (#13). Two people who have agreed to connect can talk in a private conve
 
 The words people see (every refusal sentence) and the 1000 limit are in `messages.ts`, so the code, the tests and the form can't drift apart.
 
+## Account and photos
+
+Slice 7 (#14). Students manage their own account at `/account`: their course, their answers and an optional photo.
+
+**What `/account` shows.** Your email (only you see it), your course with a way to change it, Sign out, and, once you have a finished profile, your alias, silhouette, generated bio and picks (each category with an "Edit" link) and your photo. Without a profile yet (every real user until slice 2 is built) it shows course and Sign out, and points you to onboarding. Signed out you are sent to `/signin`.
+
+**The rules, in plain words:**
+
+- **Changing course** only offers courses that aren't retired, and doesn't rescore anyone: course isn't part of the score.
+- **Editing answers** is one category at a time at `/account/edit/[category]` (also `/account/edit/silhouette`), with the same limits as onboarding. Saving replaces that category's picks in one go, then calls `scoreUser()`. Your alias, requests and conversations don't change. Your glitch match doesn't either, unless the edit moves it into your top 5, when slice 3's rules give you a new one. A tag that was retired after you picked it stays until you remove it, but can't be picked again.
+- **Photos** are JPEG, PNG or WebP, up to 4 MB, checked by the file's actual bytes (a renamed PDF is refused). Only you, people you're connected with (an approved request and no block), and admins can see yours. Everyone else, including someone with the direct link, gets "not found", the same answer as for no photo at all. Replacing or removing a photo deletes the old file.
+- **Photos never appear on the graph, in search or in scoring.** Connected people see them on your profile page (`/people/[alias]`).
+
+**Where photos are kept.** On Vercel, in a **private** Vercel Blob store: the files have no public address, so every view goes through `/api/account/photo/[userId]`, which checks who is asking. That needs `BLOB_READ_WRITE_TOKEN`, which Vercel adds by itself once a Blob store is connected to the project (Storage → Blob). **Locally and in the tests there's no token, and photos go to `.photo-store/`** (gitignored) instead, so nobody needs a Vercel account to work on this. A Vercel deployment without the token refuses to store photos, with a message saying so.
+
+**Routes this track owns:**
+
+| Route | What it does |
+|---|---|
+| `/account` | **Built.** Your account, as above |
+| `/account/edit/[category]` | **Built.** Change one category's picks (or `silhouette`). "Page not found" for an unknown category |
+| `POST /api/account/photo` | **Built.** Upload or replace your own photo (form field `photo`). 401 signed out, 409 no finished profile, 400 not a JPEG/PNG/WebP up to 4 MB |
+| `DELETE /api/account/photo` | **Built.** Remove your own photo |
+| `GET /api/account/photo/[userId]` | **Built.** The photo, for the owner, connected people and admins only. 404 for everyone and everything else. Never cached |
+
+**Helpers** (in `src/lib/account/`):
+
+| Helper | File | What it does |
+|---|---|---|
+| `canSeePhoto(viewer, ownerId)` | `photoRules.ts` | The rule for who may see a photo: the owner, an admin, or someone connected (`areConnected`, slice 5) |
+| `checkPhotoFile(bytes)` | `photoRules.ts` | Whether a file is a JPEG, PNG or WebP up to 4 MB, by its first bytes |
+| `setProfilePhoto` / `removeProfilePhoto` / `readProfilePhoto` | `photos.ts` | The only code that changes `Profile.photoKey` or the files. Replacing stores the new file before deleting the old one, so a profile never points at a missing photo |
+| `saveCategoryEdit(userId, categoryId, picks)` | `editAnswers.ts` | Checks and saves one category's picks, then rescores |
+| `changeCourse(userId, courseId)` | `course.ts` | Saves an active course |
+
+To show someone's photo on another page, use `<ProfilePhoto alias={...} viewer={...} />` from `src/components/ProfilePhoto.tsx`. It draws nothing for anyone not allowed to see it.
+
+**Stand-ins for slice 2.** Slice 2 (onboarding, #9) isn't built, so editing uses temporary versions of its pieces, following slice 2's approved design. They are all in one place, marked **STAND-IN**, and join-up (#17), or whoever builds slice 2, swaps them:
+
+| Stand-in | File | What replaces it |
+|---|---|---|
+| `checkEditedPicks()` (the answer rules) | `src/lib/account/standIns.ts` | slice 2's `validateOnboardingAnswers()` |
+| `bioStandIn()` (the bio) | `src/lib/account/standIns.ts` | slice 2's `generateBio()` |
+| `SILHOUETTE_IDS` (the 12 ids) | `src/lib/account/standIns.ts` | slice 2's `silhouettes.ts` |
+| `SilhouettePlaceholder` (a numbered circle) | `src/lib/account/SilhouettePlaceholder.tsx` | slice 2's silhouette pictures |
+| `PickStepStandIn` (the pick screen) | `src/app/account/edit/PickStepStandIn.tsx` | slice 2's `PickStep` |
+
 ## Project structure
 
 ```
@@ -468,6 +516,7 @@ src/
     userPair.ts        # orderUserPair(): one agreed order for a pair of users
     pretendCohort.ts   # the on/off switch for pretend students and the dev switcher
     cohort/            # slice 4: who is visible, alias addresses, and the stand-ins
+    account/           # slice 7: photos (storage, rules), course, editing answers, and its stand-ins
   generated/prisma/    # Prisma's generated client (not committed)
 prisma/
   schema.prisma        # the database tables. Flag changes first (see CLAUDE.md)

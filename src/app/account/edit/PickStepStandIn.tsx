@@ -1,0 +1,125 @@
+"use client";
+// ===========================================================================
+// STAND-IN FOR SLICE 2's PickStep (#9 design decision 2). REPLACE WHEN
+// SLICE 2 LANDS. Listed with the other stand-ins in
+// src/lib/account/standIns.ts.
+// ===========================================================================
+//
+// One category's choices as big tap-friendly buttons, the way slice 2's
+// onboarding will show them:
+//   - each tag is a button that toggles on and off (aria-pressed tells a
+//     screen reader whether it's picked),
+//   - in a pick-exactly-one category, picking a new tag replaces the old one,
+//   - once the limit is reached, the other tags are disabled and a line says
+//     "You can pick up to N",
+//   - Save stays disabled until the minimum is met.
+// There is no text box anywhere: every answer is picked from a list (B1).
+//
+// A retired tag the person still has is shown as picked and can be removed,
+// but once removed it's disabled, so it can't be picked again.
+//
+// The server checks everything again (checkEditedPicks); these limits in the
+// browser are only there to guide.
+//
+// Owner: slice 7 (#14), until slice 2 replaces it.
+
+import Link from "next/link";
+import { useActionState, useState } from "react";
+
+import { limitMessage, type EditableCategory } from "@/lib/account/standIns";
+
+import { saveEdit, type EditFormState } from "./actions";
+
+type PickStepStandInProps = {
+  category: EditableCategory;
+  alreadyPicked: string[];
+};
+
+const startingState: EditFormState = { problem: null };
+
+export function PickStepStandIn({ category, alreadyPicked }: PickStepStandInProps) {
+  const [picked, setPicked] = useState<string[]>(alreadyPicked);
+  const [state, formAction, pending] = useActionState(saveEdit, startingState);
+
+  const pickOnlyOne = category.pickMax === 1;
+  const atLimit = picked.length >= category.pickMax;
+  const enough = picked.length >= category.pickMin;
+
+  function toggle(tagId: string) {
+    if (picked.includes(tagId)) {
+      setPicked(picked.filter((id) => id !== tagId));
+    } else if (pickOnlyOne) {
+      setPicked([tagId]);
+    } else if (!atLimit) {
+      setPicked([...picked, tagId]);
+    }
+  }
+
+  return (
+    <form action={formAction} className="mt-6">
+      {/* What the server receives: the category, and one "picks" field per
+          picked tag. */}
+      <input type="hidden" name="categoryId" value={category.id} />
+      {picked.map((tagId) => (
+        <input key={tagId} type="hidden" name="picks" value={tagId} />
+      ))}
+
+      <p className="text-sm text-zinc-600 dark:text-zinc-400" data-testid="pick-limit">
+        {limitMessage(category)}
+        {!pickOnlyOne && atLimit && ` You can pick up to ${category.pickMax}.`}
+      </p>
+
+      <ul className="mt-4 flex flex-col gap-2">
+        {category.tags.map((tag) => {
+          const isPicked = picked.includes(tag.id);
+          // Can't add more once at the limit (unless it's pick-one, where
+          // tapping swaps), and can't re-pick a retired tag.
+          const disabled =
+            !isPicked && ((atLimit && !pickOnlyOne) || tag.retired);
+          return (
+            <li key={tag.id}>
+              <button
+                type="button"
+                aria-pressed={isPicked}
+                disabled={disabled}
+                onClick={() => toggle(tag.id)}
+                className={`w-full rounded border px-4 py-3 text-left disabled:opacity-40 ${
+                  isPicked ? "border-current border-2 font-semibold" : "border-current/30"
+                }`}
+              >
+                <span className="block">
+                  {tag.name}
+                  {tag.retired && " (no longer offered)"}
+                </span>
+                {tag.description && (
+                  <span className="mt-1 block text-sm font-normal text-zinc-600 dark:text-zinc-400">
+                    {tag.description}
+                  </span>
+                )}
+              </button>
+            </li>
+          );
+        })}
+      </ul>
+
+      {state.problem && (
+        <p role="alert" className="mt-4 text-sm text-red-700 dark:text-red-400" data-testid="edit-problem">
+          {state.problem}
+        </p>
+      )}
+
+      <div className="mt-6 flex flex-wrap items-center gap-3">
+        <button
+          type="submit"
+          disabled={!enough || pending}
+          className="rounded border border-current px-4 py-2 font-semibold disabled:opacity-50"
+        >
+          {pending ? "Saving…" : "Save"}
+        </button>
+        <Link href="/account" className="underline underline-offset-4">
+          Cancel
+        </Link>
+      </div>
+    </form>
+  );
+}
