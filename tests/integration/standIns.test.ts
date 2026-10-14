@@ -194,22 +194,7 @@ describe("explainMatch", () => {
   });
 
   it("lists the skills and interests both people picked, and only those", async () => {
-    // The Skills and Interests categories arrive with slice 2 (#9), so this
-    // test adds small ones of its own. emptyDatabase() removes them again.
-    await prisma.category.create({
-      data: { id: "skills", name: "Skills", pickMin: 1, pickMax: 4, order: 6 },
-    });
-    await prisma.category.create({
-      data: { id: "interests", name: "Interests", pickMin: 1, pickMax: 4, order: 7 },
-    });
-    await prisma.tag.createMany({
-      data: [
-        { id: "skills-data", name: "Data", description: "", order: 1, categoryId: "skills" },
-        { id: "skills-design", name: "Design", description: "", order: 2, categoryId: "skills" },
-        { id: "interests-climate", name: "Climate", description: "", order: 1, categoryId: "interests" },
-        { id: "interests-music", name: "Music", description: "", order: 2, categoryId: "interests" },
-      ],
-    });
+    // Uses the Skills and Interests tags slice 2 (#9) seeds.
     // Both picked Data and Climate. Only anna picked Design, only ben Music.
     // Both also picked the same Energy, which must NOT be listed: it is part
     // of the score, not "for information".

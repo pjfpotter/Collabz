@@ -12,24 +12,6 @@ import { seedCatalogue } from "../../prisma/seed";
 import { emptyDatabase } from "../helpers/database";
 import { createPerson, createScore } from "../helpers/people";
 
-// Adds small Skills and Interests categories. They arrive for real with
-// slice 2 (#9). emptyDatabase() removes them again.
-async function addSkillsAndInterests() {
-  await prisma.category.createMany({
-    data: [
-      { id: "skills", name: "Skills", pickMin: 1, pickMax: 4, order: 6 },
-      { id: "interests", name: "Interests", pickMin: 1, pickMax: 4, order: 7 },
-    ],
-  });
-  await prisma.tag.createMany({
-    data: [
-      { id: "skills-data", name: "Data", description: "", order: 1, categoryId: "skills" },
-      { id: "skills-design", name: "Design", description: "", order: 2, categoryId: "skills" },
-      { id: "interests-climate", name: "Climate", description: "", order: 1, categoryId: "interests" },
-    ],
-  });
-}
-
 beforeEach(async () => {
   await emptyDatabase(prisma);
   await seedCatalogue(prisma);
@@ -42,34 +24,29 @@ afterAll(async () => {
 });
 
 describe("getFilterOptions", () => {
-  it("offers both courses, and no skills or interests before slice 2 adds them", async () => {
+  it("offers both courses, and every seeded skill and interest", async () => {
     const options = await getFilterOptions();
 
     expect(options.courses.map((course) => course.name)).toEqual(["Software", "Business"]);
-    expect(options.skills).toEqual([]);
-    expect(options.interests).toEqual([]);
-  });
-
-  it("offers the skill and interest tags once those categories exist", async () => {
-    await addSkillsAndInterests();
-
-    const options = await getFilterOptions();
-
-    expect(options.skills).toEqual([
+    // Slice 2 (#9) seeds Skills and Interests, 12 tags each, in seed order.
+    expect(options.skills).toHaveLength(12);
+    expect(options.skills.slice(0, 3)).toEqual([
+      { id: "skills-front-end", name: "Front-end" },
+      { id: "skills-back-end", name: "Back-end" },
       { id: "skills-data", name: "Data" },
-      { id: "skills-design", name: "Design" },
     ]);
-    expect(options.interests).toEqual([{ id: "interests-climate", name: "Climate" }]);
+    expect(options.interests).toHaveLength(12);
+    expect(options.interests[0]).toEqual({ id: "interests-climate", name: "Climate" });
   });
 
   it("leaves out a retired tag and a retired course", async () => {
-    await addSkillsAndInterests();
     await prisma.tag.update({ where: { id: "skills-design" }, data: { retiredAt: new Date() } });
     await prisma.course.update({ where: { id: "business" }, data: { retiredAt: new Date() } });
 
     const options = await getFilterOptions();
 
-    expect(options.skills.map((skill) => skill.name)).toEqual(["Data"]);
+    expect(options.skills.map((skill) => skill.name)).not.toContain("Design");
+    expect(options.skills).toHaveLength(11);
     expect(options.courses.map((course) => course.name)).toEqual(["Software"]);
   });
 });
@@ -142,7 +119,6 @@ describe("getPeopleForViewer", () => {
   });
 
   it("gives each person's skills and interests by name", async () => {
-    await addSkillsAndInterests();
     const viewer = await createPerson(prisma, "viewer");
     await createPerson(prisma, "anna", {
       tagIds: ["skills-design", "skills-data", "interests-climate", "energy-mad-inventor"],

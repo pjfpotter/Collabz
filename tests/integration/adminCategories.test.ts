@@ -32,14 +32,14 @@ describe("addCategory", () => {
     expect(category.name).toBe("Hobbies");
     expect(category.pickMin).toBe(1);
     expect(category.pickMax).toBe(4);
-    // The seed has 5 categories (orders 1 to 5), so the new one is 6th.
-    expect(category.order).toBe(6);
+    // The seed has 7 categories (orders 1 to 7), so the new one is 8th.
+    expect(category.order).toBe(8);
   });
 
   it("refuses an empty name and a name that is already used", async () => {
     expect(await addCategory("  ")).toHaveLength(1);
     expect(await addCategory("Energy")).toHaveLength(1);
-    expect(await prisma.category.count()).toBe(5);
+    expect(await prisma.category.count()).toBe(7);
   });
 });
 
@@ -86,7 +86,8 @@ describe("setCategoryRetired", () => {
 
 describe("moveCategory", () => {
   it("swaps places with the neighbour", async () => {
-    // Seeded order: hero-story, energy, vibe-diagnosis, qualities, seeking.
+    // Seeded order: hero-story, energy, vibe-diagnosis, qualities, seeking,
+    // skills, interests.
     expect(await moveCategory("energy", "up")).toEqual([]);
 
     const catalogue = await getCatalogue();
@@ -98,6 +99,6 @@ describe("moveCategory", () => {
 
   it("says so when there is nowhere to move", async () => {
     expect(await moveCategory("hero-story", "up")).toHaveLength(1);
-    expect(await moveCategory("seeking", "down")).toHaveLength(1);
+    expect(await moveCategory("interests", "down")).toHaveLength(1);
   });
 });

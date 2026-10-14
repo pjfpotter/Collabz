@@ -82,24 +82,10 @@ describe("explainMatch", () => {
   });
 
   it("lists shared Skills and Interests, and they do not change the score", async () => {
-    // Skills and Interests arrive with slice 2, so this test creates them.
-    await prisma.category.create({
-      data: { id: "skills", name: "Skills", pickMin: 0, pickMax: 4, order: 90 },
-    });
-    await prisma.category.create({
-      data: { id: "interests", name: "Interests", pickMin: 0, pickMax: 4, order: 91 },
-    });
+    // Skills and Interests are seeded (slice 2, #9). This test adds one
+    // skill of its own, "Coding", so its expected names stay as they were.
     await prisma.tag.create({
-      data: { id: "skills-coding", categoryId: "skills", name: "Coding", description: "", order: 1 },
-    });
-    await prisma.tag.create({
-      data: {
-        id: "interests-music",
-        categoryId: "interests",
-        name: "Music",
-        description: "",
-        order: 1,
-      },
+      data: { id: "skills-coding", categoryId: "skills", name: "Coding", description: "", order: 99 },
     });
     const { anna, ben } = await makeAnnaAndBen();
 

@@ -118,7 +118,7 @@ Every page the app will have already exists, so that two tracks can't invent the
 |---|---|---|---|
 | `/`, `/catalogue` | 0 | #6 | built |
 | `/signup`, `/signin` | 1 | #8 | 1 |
-| `/onboarding` | 2 | #9 | 2 |
+| `/onboarding`, `/onboarding/done` | 2 | #9 | built |
 | `/matches` | 3 | #10 | 3 |
 | `/graph`, `/people`, `/people/[alias]` | 4 | #11 | 4 |
 | `/requests` | 5 | #12 | 5 |
@@ -254,9 +254,32 @@ Five of us build different parts at the same time. To stop one track depending o
 | `openConversation(userAId, userBId)` | `src/lib/conversations.ts` | Returns the conversation between two users, creating it if needed. Safe to call twice | Slice 6 (#13) |
 | `closeConversation(conversationId)` | `src/lib/conversations.ts` | Marks a conversation as closed. Safe to call twice | Slice 6 (#13) |
 | `removeProfilePhoto(userId)` | `src/lib/account/photos.ts` | Removes someone's photo: clears `Profile.photoKey`, then deletes the file from storage. Safe to call when there's no photo. For the admin "remove photo" actions | Slice 7 (#14), built. Slices 8 (#15) and 9 (#16) call it |
+| `redirectIfOnboardingIncomplete()` | `src/lib/profile/onboardingRedirect.ts` | For pages that need a finished profile. Sends a signed-out visitor to `/signin` and someone who hasn't finished onboarding to `/onboarding`; otherwise returns the user | Slice 2 (#9), built |
+| `generateBio(tagsByCategory)`, `generateBioLines(...)` | `src/lib/profile/bio.ts` | A person's bio, built from the names of the tags they picked. Never stored | Slice 2 (#9), built |
+| `ProfileCard`, `Silhouette` | `src/components/` | The public profile card (alias, silhouette, bio, skills, interests: never an email or photo) and one silhouette picture | Slice 2 (#9), built |
 | `orderUserPair(a, b)` | `src/lib/userPair.ts` | Puts two user ids in the agreed order (lower first) for the `Edge` and `Conversation` tables, which store each pair once | Foundation (#7) |
 
 Each file starts with a comment that says the same in more detail, including what the helper will do once its owner has built it.
+
+## Onboarding
+
+Slice 2 (#9). A new user builds their whole profile by picking from lists, with no typing anywhere.
+
+**Routes.**
+- `/onboarding`: one step per screen. One step per catalogue category, in the catalogue's order (Hero Story, Energy, Vibe Diagnosis, Qualities, Seeking, Skills, Interests), then a silhouette, then a summary with **Finish**. The pick limits come from each category's `pickMin` and `pickMax`. Signed out you are sent to `/signin`; with a finished profile, to `/onboarding/done`.
+- `/onboarding/done`: your finished profile, shown as the `ProfileCard` other people will see.
+- `POST /api/onboarding`: saves everything at once, in one transaction, then calls `scoreUser()`. It checks every limit again on the server and answers 400 (with the step to fix), 401 or 409 (already finished).
+
+**What gets made.**
+- **Alias:** "The" + the Vibe Diagnosis tag's alias word + the Energy tag's alias word, e.g. *The Feral Sea Captain*. If it's taken, *The Feral Sea Captain II*, then *III*. Set once, never changed. The words are in `Tag.aliasWord`, seeded for the 24 Energy and Vibe tags. A tag without one gets "Mysterious" or "Collaborator".
+- **Silhouette:** one of 12 pictures in `public/silhouettes/`. The list is in `src/lib/profile/silhouettes.ts`.
+- **Bio:** built each time it's shown from the picked tag names (`generateBio`). Never stored.
+
+**The seed** now adds the Skills and Interests categories (12 tags each, pick 1 to 4) and fills in empty alias words. It never overwrites a word that is already set.
+
+**To try it:** `npm run dev`, pick `31` or `32` in the "Dev sign-in as" list (signed up, no profile), press Switch and open `/onboarding`.
+
+**Stand-ins still to swap at join-up (#17).** Slices 4 and 7 were built before this one and use temporary copies of these pieces (`src/lib/cohort/standIns.ts`, `src/lib/account/standIns.ts`). Each stand-in names the real function or component that replaces it.
 
 ## Matching
 

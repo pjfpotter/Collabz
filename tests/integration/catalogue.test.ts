@@ -34,6 +34,8 @@ describe("getCatalogue", () => {
       "Vibe Diagnosis",
       "Qualities",
       "Seeking",
+      "Skills",
+      "Interests",
     ]);
 
     // Each category's tags come back in the same order as the seed data.
@@ -95,6 +97,8 @@ describe("getCatalogue", () => {
       "Energy",
       "Qualities",
       "Seeking",
+      "Skills",
+      "Interests",
     ]);
   });
 });

@@ -133,15 +133,16 @@ describe("seedPretendCohort", () => {
     await seedPretendCohort(prisma);
     const picksBefore = await prisma.profileTag.count();
 
-    // What slice 2 (#9) will do later: add a Skills category.
+    // What an admin might do later: add a category. (This test used to add
+    // Skills, until slice 2, #9, seeded it.)
     await prisma.category.create({
-      data: { id: "skills", name: "Skills", pickMin: 1, pickMax: 4, order: 6 },
+      data: { id: "hobbies", name: "Hobbies", pickMin: 1, pickMax: 4, order: 8 },
     });
     await prisma.tag.createMany({
-      data: ["Front-end", "Back-end", "Data", "Design", "Marketing", "Finance"].map(
+      data: ["Climbing", "Baking", "Chess", "Gaming", "Knitting", "Running"].map(
         (name, index) => ({
-          id: `skills-${name.toLowerCase()}`,
-          categoryId: "skills",
+          id: `hobbies-${name.toLowerCase()}`,
+          categoryId: "hobbies",
           name,
           description: `${name} (test tag)`,
           order: index + 1,
@@ -151,22 +152,22 @@ describe("seedPretendCohort", () => {
 
     const result = await seedPretendCohort(prisma);
 
-    // Every one of the 30 profiles now has 1 to 4 skills...
+    // Every one of the 30 profiles now has 1 to 4 hobbies...
     const profiles = await prisma.profile.findMany({
       include: { tags: { include: { tag: true } } },
     });
     for (const profile of profiles) {
-      const skills = profile.tags.filter(
-        (profileTag) => profileTag.tag.categoryId === "skills",
+      const hobbies = profile.tags.filter(
+        (profileTag) => profileTag.tag.categoryId === "hobbies",
       );
-      expect(skills.length).toBeGreaterThanOrEqual(1);
-      expect(skills.length).toBeLessThanOrEqual(4);
+      expect(hobbies.length).toBeGreaterThanOrEqual(1);
+      expect(hobbies.length).toBeLessThanOrEqual(4);
     }
-    // ...and those new skills are the ONLY picks that were added: nobody
+    // ...and those new hobbies are the ONLY picks that were added: nobody
     // gained an extra Energy or Quality along the way.
     expect(await prisma.profileTag.count()).toBe(picksBefore + result.profileTagsCreated);
     expect(
-      await prisma.profileTag.count({ where: { tag: { categoryId: "skills" } } }),
+      await prisma.profileTag.count({ where: { tag: { categoryId: "hobbies" } } }),
     ).toBe(result.profileTagsCreated);
   });
 
