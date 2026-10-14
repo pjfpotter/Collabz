@@ -51,7 +51,7 @@ See `proposal.md` for why. What exists already, checked on 14 Oct 2026:
 - **Last admin suspends someone's way into an empty admin list** → can't suspend yourself; admins are also set from `ADMIN_EMAILS` at deploy time.
 - **Retired category with active tags confuses the list** → the screen shows "retired" on the category and greys its tags, and says tags are hidden while it is retired.
 - **Rescoring everyone is slow on a big cohort** → fine for a bootcamp (tens of people); the button is a human action, never automatic.
-- **Remove photo can't be built until #14 (PR #40) merges** → it is the last task in group 3 and group 5's photo button; if #14 isn't merged by then, the rest of users ships first and the photo action waits. The exact import path of `removeProfilePhoto` is confirmed against #14's merged code, not assumed.
+- **Remove photo can't be built until #14 (PR #40) merges** → it is its own last group (7), so the rest of the admin area ships first; the exact import path of `removeProfilePhoto` is confirmed against #14's merged code, not assumed.
 
 ## Open Questions
 

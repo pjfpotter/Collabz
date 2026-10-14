@@ -21,7 +21,8 @@ Groups build on each other in order: the small logic functions with tests (1, 2,
 
 ## 3. Users
 
-- [ ] 3.1 Add `src/lib/admin/users.ts`: `listUsers()`, `suspendUser(adminId, userId)`, `unsuspendUser(userId)`, `removePhoto(userId)`. Suspend refuses your own id; suspend and unsuspend call `scoreUser()` after saving; `removePhoto` is a thin wrapper that calls `removeProfilePhoto(userId)` from slice 7 (#14), which clears `photoKey` and deletes the stored file (design 7, 8). **`removePhoto` needs #14 merged: if it isn't, build the rest of this task and stop to ask about it.** Integration tests: suspended user gets no `Edge` rows and is missing from `getVisiblePeople()`; unsuspended is back; self-suspend changes nothing; remove photo leaves alias and tags, and calls `removeProfilePhoto` once with that user's id (replace it with a fake in the test, so no real storage is touched). Verify: `npm test` passes
+- [x] 3.1 Add `src/lib/admin/users.ts`: `listUsers()`, `suspendUser(adminId, userId)`, `unsuspendUser(userId)`. Suspend refuses your own id; suspend and unsuspend call `scoreUser()` after saving (design 8). Integration tests: suspended user gets no `Edge` rows and is missing from `getVisiblePeople()`; unsuspended is back; self-suspend changes nothing; the list shows email, course, role, alias, suspension and photo. Verify: `npm test` passes
+  - Remove photo is NOT in this task: it needs slice 7's `removeProfilePhoto`, which isn't merged. It is task 7.1 (decided 14 Oct 2026).
 
 ## 4. Category and tag screens
 
@@ -31,12 +32,20 @@ Groups build on each other in order: the small logic functions with tests (1, 2,
 
 ## 5. Users screen
 
-- [ ] 5.1 Add `/admin/users`: a table of users (email, course, role, alias if any, suspended or not) with Suspend/Unsuspend and Remove photo forms per row, no suspend button on your own row, Server Actions each calling `requireAdmin()` first. Verify: suspend a pretend user, then in the switcher as a pretend member see they are gone from `/graph` and `/people`; unsuspend and see them return
+- [ ] 5.1 Add `/admin/users`: a table of users (email, course, role, alias if any, suspended or not) with Suspend/Unsuspend forms per row (the Remove photo button is task 7.2), no suspend button on your own row, Server Actions each calling `requireAdmin()` first. Verify: suspend a pretend user, then in the switcher as a pretend member see they are gone from `/graph` and `/people`; unsuspend and see them return
 
 ## 6. End-to-end checks and docs
 
 - [ ] 6.1 Add `tests/e2e/admin.spec.ts` for the issue's success checks: a member and a signed-out visitor can't open `/admin`, `/admin/categories`, `/admin/courses` or `/admin/users`; an admin renames a tag and `/catalogue` shows it; a retired tag isn't listed but a profile still shows it; a suspended pretend user vanishes from the graph. Verify: `npm run test:e2e` passes
 - [ ] 6.2 Check that the sign-in refusal for a suspended real user still works with a user suspended from this screen (the existing `signin.spec.ts` case covers it). Verify: `npm run test:e2e` passes unchanged
-- [ ] 6.3 Add an "Admin screens" section to `README.md`: what each screen does, that nothing is deleted, that "Rescore everyone" is needed after pairing changes, and that removing a photo also deletes the stored file (through slice 7's `removeProfilePhoto`). Verify: every path and button name in the README matches the code
-- [ ] 6.4 **(human)** Tell #14 (account page, PR #40) that admin "remove photo" calls its `removeProfilePhoto(userId)`, so its name and signature should not change without a word. Post on #17: check onboarding doesn't offer retired tags and sign-up doesn't offer retired courses. Verify: both comments exist
+- [ ] 6.3 Add an "Admin screens" section to `README.md`: what each screen does, that nothing is deleted, that "Rescore everyone" is needed after pairing changes. (The photo-removal line is added in 7.3.) Verify: every path and button name in the README matches the code
+- [ ] 6.4 **(human)** Tell #14 (account page, PR #40) that admin "remove photo" will call its `removeProfilePhoto(userId)`, so its name and signature should not change without a word. Post on #17: check onboarding doesn't offer retired tags and sign-up doesn't offer retired courses. Verify: both comments exist
 - [ ] 6.5 Run the four success checks from #15 on the deployed preview and record the result under a "Checked" note at the top of this file. Verify: the note exists
+
+## 7. Remove photo (waits for #14 / PR #40 to merge)
+
+Split out of groups 3 and 5 on 14 Oct 2026, so the rest of the admin area isn't held up by the account slice. Start this group only once `removeProfilePhoto` is on `master`; confirm its real import path first.
+
+- [ ] 7.1 Add `removePhoto(userId)` to `src/lib/admin/users.ts`, a thin wrapper that calls `removeProfilePhoto(userId)` from slice 7 (design 7), refusing a user that doesn't exist. Integration test with `removeProfilePhoto` replaced by a fake: it is called once with that user's id, and the user's alias and tags are unchanged. Verify: `npm test` passes
+- [ ] 7.2 Add the "Remove photo" form to `/admin/users` (shown only for users with a photo) and its Server Action, calling `requireAdmin()` first, and add it to the guard test in `tests/integration/adminActions.test.ts`. Verify: as a member or signed out the action changes nothing; as the admin, a pretend user's photo is removed
+- [ ] 7.3 Add the photo-removal line to the README's "Admin screens" section (removing a photo also deletes the stored file), and extend `tests/e2e/admin.spec.ts` if a photo can be set up in the pretend cohort. Verify: `npm run test:e2e` passes and the README matches the code
