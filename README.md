@@ -361,6 +361,24 @@ Track 5 (slice 5, issue #12) lets someone ask a match to connect, and the other 
 
 The words people see (every refusal and success sentence) are in `messages.ts`, so the code, the tests and the pages can't drift apart.
 
+## Messaging
+
+Slice 6 (#13). This section grows as the pages are built; for now it lists what sending a message is made of.
+
+**Routes this track owns:**
+
+| Route | What it does |
+|---|---|
+| `POST /api/messages/[conversationId]` | **Built.** Sends a message in one of your conversations. Send `{ "body": "the text" }`. 401 signed out, 404 no such conversation or not yours, 409 closed or no longer connected, 422 empty or longer than 1000 characters |
+
+**Helpers** (in `src/lib/messages/`):
+
+| Helper | File | What it does |
+|---|---|---|
+| `sendMessage(senderId, conversationId, body)` | `sendMessage.ts` | Stores a message, or refuses with a `reason` and a sentence the form can show as it is. All the sending rules live here: only the two people, not closed, still connected, not empty, at most 1000 characters |
+
+The words people see (every refusal sentence) and the 1000 limit are in `messages.ts`, so the code, the tests and the form can't drift apart.
+
 ## Project structure
 
 ```

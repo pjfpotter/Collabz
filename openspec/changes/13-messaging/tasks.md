@@ -18,10 +18,10 @@ Names used, so the tasks stay short:
 
 ## 3. Sending a message
 
-- [ ] 3.1 Add `src/lib/messages/messages.ts` with `MESSAGE_MAX_LENGTH = 1000`, the refusal reasons and one plain sentence for each. Verify: `npx tsc --noEmit` passes
-- [ ] 3.2 Add `src/lib/messages/sendMessage.ts` with `sendMessage(userId, conversationId, body)` doing the checks of design decision 3 in order and inserting the row only if all pass. Integration test each outcome: sent between two connected people; refused for a stranger's conversation (same `not-found` as a made-up id), a closed conversation, two people with no approved request, an approved-then-blocked pair, a suspended other person, an empty body, a spaces-only body, and a 1001-character body; exactly 1000 characters is accepted. Every refusal test also checks that no row was added. Verify: `npm test` passes
-- [ ] 3.3 Add `src/app/api/messages/[conversationId]/route.ts` (POST) with the answers in design decision 5 (401, 404, 409, 422, 200 `{ ok, message }`) and a header comment saying why 404 and not 403. Integration test each answer, signed in through the same `getCurrentUser` stand-in the slice 5 route tests use, including a body that isn't valid JSON. Verify: `npm test` passes
-- [ ] 3.4 README: add `POST /api/messages/[conversationId]` to the routes table and `sendMessage` to the helpers table, owner slice 6 (#13). Verify: both appear
+- [x] 3.1 Add `src/lib/messages/messages.ts` with `MESSAGE_MAX_LENGTH = 1000`, the refusal reasons and one plain sentence for each. Verify: `npx tsc --noEmit` passes
+- [x] 3.2 Add `src/lib/messages/sendMessage.ts` with `sendMessage(userId, conversationId, body)` doing the checks of design decision 3 in order and inserting the row only if all pass. Integration test each outcome: sent between two connected people; refused for a stranger's conversation (same `not-found` as a made-up id), a closed conversation, two people with no approved request, an approved-then-blocked pair, a suspended other person, an empty body, a spaces-only body, and a 1001-character body; exactly 1000 characters is accepted. Every refusal test also checks that no row was added. Verify: `npm test` passes
+- [x] 3.3 Add `src/app/api/messages/[conversationId]/route.ts` (POST) with the answers in design decision 5 (401, 404, 409, 422, 200 `{ ok, message }`) and a header comment saying why 404 and not 403. Integration test each answer, signed in through the same `getCurrentUser` stand-in the slice 5 route tests use, including a body that isn't valid JSON. Verify: `npm test` passes
+- [x] 3.4 README: add `POST /api/messages/[conversationId]` to the routes table and `sendMessage` to the helpers table, owner slice 6 (#13). Verify: both appear
 
 ## 4. Reading conversations
 
