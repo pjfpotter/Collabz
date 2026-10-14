@@ -6,10 +6,10 @@ Before starting: `git merge origin/master` into `feature/14-account` if slice 1'
 
 ## 1. Photo storage and photo rules (no pages yet)
 
-- [ ] 1.1 Install `@vercel/blob@2.8.1` at an exact version. Add `BLOB_READ_WRITE_TOKEN` to `.env.example` (comment: only needed on Vercel; locally photos go to `.photo-store/`), and `/.photo-store/` to `.gitignore` (design 1). Verify: `npm install` finishes without peer-dependency errors
-- [ ] 1.2 Add `src/lib/account/photoStore.ts`: the `put`/`get`/`delete` interface, the Vercel Blob version (`access: "private"`), the folder version, and the rule choosing between them (token set → Blob; no token and not production → folder; production without token → clear error). Unit test the folder version (put then get returns the same bytes; delete then get returns nothing; get of a missing key returns nothing) and the choosing rule. Verify: `npm test` passes
-- [ ] 1.3 Add `checkPhotoFile(bytes)` in `src/lib/account/photoRules.ts` and unit test it: JPEG, PNG and WebP recognised by their first bytes; a PDF renamed `.jpg` refused; exactly 4 MB allowed; 4 MB + 1 byte refused; an empty file refused (design 2). Verify: `npm test` passes
-- [ ] 1.4 Add `canSeePhoto(viewer, ownerId)` to `photoRules.ts` and integration test it with the pretend cohort: the owner, an admin and a connected user may; a user with only a pending request, a stranger, nobody signed in, and a connected pair after a block may not (design 3). Verify: `npm test` passes
+- [x] 1.1 Install `@vercel/blob@2.8.1` at an exact version. Add `BLOB_READ_WRITE_TOKEN` to `.env.example` (comment: only needed on Vercel; locally photos go to `.photo-store/`), and `/.photo-store/` to `.gitignore` (design 1). Verify: `npm install` finishes without peer-dependency errors
+- [x] 1.2 Add `src/lib/account/photoStore.ts`: the `put`/`get`/`delete` interface, the Vercel Blob version (`access: "private"`), the folder version, and the rule choosing between them (token set → Blob; no token and not production → folder; production without token → clear error). Unit test the folder version (put then get returns the same bytes; delete then get returns nothing; get of a missing key returns nothing) and the choosing rule. Verify: `npm test` passes
+- [x] 1.3 Add `checkPhotoFile(bytes)` in `src/lib/account/photoRules.ts` and unit test it: JPEG, PNG and WebP recognised by their first bytes; a PDF renamed `.jpg` refused; exactly 4 MB allowed; 4 MB + 1 byte refused; an empty file refused (design 2). Verify: `npm test` passes
+- [x] 1.4 Add `canSeePhoto(viewer, ownerId)` to `photoRules.ts` and integration test it with the pretend cohort: the owner, an admin and a connected user may; a user with only a pending request, a stranger, nobody signed in, and a connected pair after a block may not (design 3). Verify: `npm test` passes
 
 ## 2. The photo routes
 
