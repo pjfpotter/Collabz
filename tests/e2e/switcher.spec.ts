@@ -150,7 +150,12 @@ test.describe("admin pages", () => {
 
     await page.goto("/admin");
     await expect(page.getByRole("heading", { level: 1, name: "Admin" })).toBeVisible();
-    await expect(page.getByText("Slice 8 (issue #15) will build it.")).toBeVisible();
+    // Slice 8 (#15) has replaced the placeholder with the real admin home,
+    // which has a menu of its sections. (Reports is still slice 9's.)
+    await expect(page.getByText("This page is a placeholder.")).toHaveCount(0);
+    await expect(
+      page.getByRole("navigation", { name: "Admin sections" }).getByRole("link", { name: "Courses" }),
+    ).toBeVisible();
 
     await page.goto("/admin/reports");
     await expect(page.getByRole("heading", { level: 1, name: "Reports" })).toBeVisible();

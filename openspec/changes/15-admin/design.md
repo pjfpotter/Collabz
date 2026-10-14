@@ -35,11 +35,11 @@ See `proposal.md` for why. What exists already, checked on 14 Oct 2026:
 
 6. **Pairings are rows in `TagPairing`, edited from the tag's own screen.** The add-tag form shows, for a Seeking tag, the list of active Quality tags (and the reverse), as tick boxes; at least one must be ticked. Existing pairings are edited the same way. Which categories are "Seeking" and "Qualities" is read from `CATEGORY_IDS` in `src/lib/matching/eligiblePeople.ts`, not re-hardcoded. Adding Seeking/Quality tags and their pairing happens in **one transaction**, so a tag is never stored unpaired.
 
-7. **Remove photo clears `Profile.photoKey` only.** Photo storage isn't built (it's slice 7, #14), so there is nothing to delete yet. With `photoKey` empty the photo is no longer served, which is what the admin spec needs. When #14 lands, its storage-delete helper should be called from `removePhoto()`; this is noted in a code comment and on #14. *Alternative:* build a storage helper here. Rejected: it's another track's design.
+7. **Remove photo calls slice 7's `removeProfilePhoto(userId)`.** The account slice (#14, PR #40) exports it "for slices 8 and 9": it clears `Profile.photoKey` and then deletes the stored file (private Vercel Blob). Calling it means there is one place that knows how photos are stored, and an admin removal really deletes the file. `removePhoto()` in `src/lib/admin/users.ts` is a thin wrapper that calls it. *#14 merged on 14 Oct 2026,* so this is built as designed (group 7). *Alternative:* clear `photoKey` here and leave the file. Rejected: it would leave a private photo in storage that nobody can reach or delete. *Alternative:* build our own storage delete. Rejected: it's another track's design.
 
 8. **Suspend/unsuspend sets `suspendedAt` then calls `scoreUser()`.** Order matters: save first, rescore after, so a scoring problem can't undo the suspension (same rule as `scoreUser`'s header comment). The refusal to suspend yourself is checked in the function, not just by hiding the button.
 
-9. **"Rescore everyone" loops over `getEligiblePeople()` calling `scoreUser()`** for each, one at a time. At 30–100 people that is seconds. *Alternative:* a new bulk rescoring function inside `matching`. Rejected: that is slice 3's code, and the helper contract says call, don't reach in. The button reports how many people were rescored.
+9. **"Rescore everyone" calls slice 3's existing `rescoreEveryone()`**, which we export from `@/lib/matching` (one added line, agreed 14 Oct 2026). It recalculates everyone in ONE transaction and returns how many people were scored, so the button can say so. *Changed from the first plan,* which was to loop `scoreUser()` per person: that makes a database round trip per person, which slice 3's own notes call too slow even for 30 people, and could pass Vercel's function time limit. `src/lib/admin/rescoreEveryone.ts` is a thin wrapper so the admin code has one named place for it.
 
 10. **Plain forms, no client-side state.** Each row has its own small `<form>` posting to a Server Action, and the page refreshes with `revalidatePath`. After a catalogue change we revalidate `/catalogue` too, so a rename shows straight away (success check 2).
 
@@ -51,7 +51,7 @@ See `proposal.md` for why. What exists already, checked on 14 Oct 2026:
 - **Last admin suspends someone's way into an empty admin list** → can't suspend yourself; admins are also set from `ADMIN_EMAILS` at deploy time.
 - **Retired category with active tags confuses the list** → the screen shows "retired" on the category and greys its tags, and says tags are hidden while it is retired.
 - **Rescoring everyone is slow on a big cohort** → fine for a bootcamp (tens of people); the button is a human action, never automatic.
-- **Photo stays in storage until #14 lands** → it can't be reached because `photoKey` is empty; noted at join-up.
+- **Remove photo depends on slice 7's `removeProfilePhoto` keeping its name and signature** → built in group 7 against the merged code (`@/lib/account/photos`), and a note was posted on #14 asking to be told before it changes.
 
 ## Open Questions
 

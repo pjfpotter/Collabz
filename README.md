@@ -445,6 +445,37 @@ Slice 6 (#13). Two people who have agreed to connect can talk in a private conve
 
 The words people see (every refusal sentence) and the 1000 limit are in `messages.ts`, so the code, the tests and the form can't drift apart.
 
+## Admin screens
+
+Slice 8 (#15). Admins (Patrick and Tom) keep the lists up to date, and suspend people, without editing the database by hand. Everything here is admin-only: a signed-out visitor is sent to `/signin` and a member sees "page not found". The check is made on the server, on every page **and** on every action, so posting to an action directly is refused too.
+
+**What the screens do:**
+
+| Route | What it does |
+|---|---|
+| `/admin` | The admin home, with a menu to the sections below (and a link to `/admin/reports`, which is slice 9's) |
+| `/admin/categories` | Categories and tags: add, rename, reorder, retire and un-retire. Edit a tag's description. Seeking and Quality tags also have their pairings and a **Rescore everyone** button |
+| `/admin/courses` | Courses: add, rename, reorder, retire and un-retire. Shows how many people are on each |
+| `/admin/users` | Everyone, with their course, role and alias. **Suspend** and **Unsuspend** (not on your own row), and **Remove photo** for anyone who has one |
+
+**The rules, in plain words:**
+
+- **Nothing is ever deleted.** A category, tag or course is *retired*: it is no longer offered in onboarding, on `/catalogue` or on the sign-up form, but everyone who already has it keeps it, and so do their stored scores. Un-retiring brings it back.
+- **A new item gets a readable id made from its name** (a tag in Energy called "Night Owl" gets `energy-night-owl`). **Renaming never changes the id or any score.**
+- **A new Seeking or Quality tag must be paired** with at least one tag on the other side, in the same step, so it can never exist unpaired. Editing a tag's pairings keeps any pair with a retired tag.
+- **Changing a pairing does not change anyone's score by itself.** After changing pairings, press **Rescore everyone** to recalculate every finished, active person (it uses slice 3's `rescoreEveryone()`). It tells you how many people were rescored.
+- **Suspending someone is reversible.** They can't sign in, they vanish from the graph and search, they have no scores and are nobody's top 5 or glitch match. Unsuspending brings them back. You can't suspend yourself, so the last admin can't lock everyone out.
+- **Removing a photo also deletes the stored file.** The button calls slice 7's `removeProfilePhoto()`, which clears the profile's photo and then deletes the file from private storage (Vercel Blob on a deployment, a folder on a laptop). The rest of the profile is untouched.
+- **Not built yet:** dashboard stats, and viewing a profile and resetting onboarding (all MVP Later).
+
+**Where the code is:**
+
+| What | Where |
+|---|---|
+| The pages and their Server Actions | `src/app/admin/` (`categories/`, `courses/`, `users/`; each `actions.ts` starts every action with `requireAdmin()`) |
+| The rules, one small function per change | `src/lib/admin/` (`categories.ts`, `tags.ts`, `pairings.ts`, `courses.ts`, `users.ts`, `rescoreEveryone.ts`, `slugify.ts`, `reorder.ts`) |
+| Tests | `tests/integration/admin*.test.ts` (rules, and `adminActions.test.ts` for the "refused even when called directly" check), `tests/unit/slugify.test.ts`, `tests/e2e/admin.spec.ts` |
+
 ## Account and photos
 
 Slice 7 (#14). Students manage their own account at `/account`: their course, their answers and an optional photo.
