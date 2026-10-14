@@ -30,6 +30,8 @@ Groups build on each other in order: the small logic functions with tests (1, 2,
 - [ ] 4.2 Add the category add/rename/move/retire forms to the same page. Verify: retire a category and it disappears from `/catalogue`; un-retire it and its tags return
 - [ ] 4.3 Add the pairing editor per Seeking/Quality tag and the "Rescore everyone" button, which shows how many people were rescored and a note that pairing changes don't change scores until it's pressed. Verify: in the browser add a pairing, press the button, and see the count
 
+- Group 4 status (14 Oct 2026): 4.1 to 4.3 are built; the guard test covers every category, tag, pairing and rescore action, and the page renders for an admin (200), a member (404) and a signed-out visitor (redirect). The browser click-throughs those tasks name have **not** been done, so the boxes stay unticked until someone has pressed the buttons.
+
 ## 5. Users screen
 
 - [ ] 5.1 Add `/admin/users`: a table of users (email, course, role, alias if any, suspended or not) with Suspend/Unsuspend forms per row (the Remove photo button is task 7.2), no suspend button on your own row, Server Actions each calling `requireAdmin()` first. Verify: suspend a pretend user, then in the switcher as a pretend member see they are gone from `/graph` and `/people`; unsuspend and see them return

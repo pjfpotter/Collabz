@@ -250,6 +250,34 @@ describe("setTagPairings", () => {
     ).toBe(otherRowsBefore);
   });
 
+  it("keeps an existing pairing with a retired tag, but refuses a new one", async () => {
+    // knows-someone is paired with makes-money-happen in the seed. Retire it.
+    await prisma.tag.update({
+      where: { id: "qualities-knows-someone" },
+      data: { retiredAt: new Date() },
+    });
+
+    // Saving the editor with it still ticked keeps the pair.
+    expect(
+      await setTagPairings("seeking-makes-money-happen", [
+        "qualities-knows-someone",
+        "qualities-builds-with-hands",
+      ]),
+    ).toEqual([]);
+    const kept = await prisma.tagPairing.findMany({
+      where: { seekingTagId: "seeking-makes-money-happen" },
+    });
+    expect(kept.map((row) => row.qualityTagId).sort()).toEqual([
+      "qualities-builds-with-hands",
+      "qualities-knows-someone",
+    ]);
+
+    // But pairing a DIFFERENT tag with the retired one is a new pair: refused.
+    expect(
+      await setTagPairings("seeking-makes-it-real", ["qualities-knows-someone"]),
+    ).toHaveLength(1);
+  });
+
   it("accepts a tag ticked twice", async () => {
     expect(
       await setTagPairings("seeking-makes-it-real", [

@@ -34,6 +34,19 @@ vi.mock("next/headers", () => ({
 vi.mock("next/cache", () => ({ revalidatePath: () => {} }));
 
 import {
+  addCategoryAction,
+  addTagAction,
+  moveCategoryAction,
+  moveTagAction,
+  renameCategoryAction,
+  renameTagAction,
+  rescoreEveryoneAction,
+  setCategoryRetiredAction,
+  setTagPairingsAction,
+  setTagRetiredAction,
+  updateTagDescriptionAction,
+} from "@/app/admin/categories/actions";
+import {
   addCourseAction,
   moveCourseAction,
   renameCourseAction,
@@ -57,8 +70,17 @@ async function callAction(
   }
 }
 
-async function courseSnapshot() {
-  return prisma.course.findMany({ orderBy: { id: "asc" } });
+// Everything the actions below could change, in one comparable value.
+async function snapshot() {
+  return {
+    courses: await prisma.course.findMany({ orderBy: { id: "asc" } }),
+    categories: await prisma.category.findMany({ orderBy: { id: "asc" } }),
+    tags: await prisma.tag.findMany({ orderBy: { id: "asc" } }),
+    pairings: await prisma.tagPairing.findMany({
+      orderBy: [{ seekingTagId: "asc" }, { qualityTagId: "asc" }],
+    }),
+    edges: await prisma.edge.findMany(),
+  };
 }
 
 beforeEach(async () => {
@@ -72,29 +94,52 @@ afterAll(async () => {
 });
 
 // Each call below would change something if it were allowed through.
-const allCourseActions: [string, (f: FormData) => Promise<void>, Record<string, string>][] = [
+const allAdminActions: [string, (f: FormData) => Promise<void>, Record<string, string>][] = [
   ["add", addCourseAction, { name: "Data Science" }],
   ["rename", renameCourseAction, { id: "software", name: "Hacked" }],
   ["move", moveCourseAction, { id: "business", direction: "up" }],
   ["retire", setCourseRetiredAction, { id: "software", retired: "true" }],
+  ["add category", addCategoryAction, { name: "Hobbies" }],
+  ["rename category", renameCategoryAction, { id: "energy", name: "Hacked" }],
+  ["move category", moveCategoryAction, { id: "energy", direction: "up" }],
+  ["retire category", setCategoryRetiredAction, { id: "energy", retired: "true" }],
+  [
+    "add tag",
+    addTagAction,
+    { categoryId: "energy", name: "Night Owl", description: "After midnight." },
+  ],
+  ["rename tag", renameTagAction, { id: "energy-sea-captain", name: "Hacked" }],
+  [
+    "describe tag",
+    updateTagDescriptionAction,
+    { id: "energy-sea-captain", description: "Hacked." },
+  ],
+  ["move tag", moveTagAction, { id: "energy-sea-captain", direction: "up" }],
+  ["retire tag", setTagRetiredAction, { id: "energy-sea-captain", retired: "true" }],
+  [
+    "set pairings",
+    setTagPairingsAction,
+    { id: "seeking-makes-it-real", paired: "qualities-knows-someone" },
+  ],
+  ["rescore everyone", rescoreEveryoneAction, {}],
 ];
 
-describe("course actions refuse anyone who isn't an admin", () => {
-  it.each(allCourseActions)("%s: refused for a signed-out visitor", async (_name, action, fields) => {
-    const before = await courseSnapshot();
+describe("admin actions refuse anyone who isn't an admin", () => {
+  it.each(allAdminActions)("%s: refused for a signed-out visitor", async (_name, action, fields) => {
+    const before = await snapshot();
     await callAction(action, fields);
-    expect(await courseSnapshot()).toEqual(before);
+    expect(await snapshot()).toEqual(before);
   });
 
-  it.each(allCourseActions)("%s: refused for a member", async (_name, action, fields) => {
+  it.each(allAdminActions)("%s: refused for a member", async (_name, action, fields) => {
     const member = await prisma.user.create({
       data: { email: "member@example.com", role: "MEMBER" },
     });
     signedInAs.userId = member.id;
 
-    const before = await courseSnapshot();
+    const before = await snapshot();
     await callAction(action, fields);
-    expect(await courseSnapshot()).toEqual(before);
+    expect(await snapshot()).toEqual(before);
   });
 
   it("does the change for an admin (so the refusals above mean something)", async () => {

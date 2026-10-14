@@ -35,18 +35,27 @@ export function pairingRows(
 // Checks that every id in `otherTagIds` is a real, active tag in the category
 // on the OPPOSITE side from `categoryId`. Returns problems, empty when fine.
 //
-// Why "active": offering a retired tag as a new pair would be pairing it for
+// Why "active": offering a retired tag as a NEW pair would be pairing it for
 // nobody (it can't be picked), so it's refused.
+//
+// `keepRetiredIds` are retired tags that are ALREADY paired with this tag.
+// They are allowed through, so editing a tag's pairings can't silently drop a
+// pair that people who picked the retired tag still count in their scores.
 export async function findOtherSideTagProblems(
   categoryId: string,
   otherTagIds: string[],
+  keepRetiredIds: string[] = [],
 ): Promise<string[]> {
   const otherCategoryId =
     categoryId === CATEGORY_IDS.seeking ? CATEGORY_IDS.qualities : CATEGORY_IDS.seeking;
   const otherSideName = otherCategoryId === CATEGORY_IDS.qualities ? "Quality" : "Seeking";
 
   const found = await prisma.tag.findMany({
-    where: { id: { in: otherTagIds }, categoryId: otherCategoryId, retiredAt: null },
+    where: {
+      id: { in: otherTagIds },
+      categoryId: otherCategoryId,
+      OR: [{ retiredAt: null }, { id: { in: keepRetiredIds } }],
+    },
     select: { id: true },
   });
 
@@ -77,12 +86,25 @@ export async function setTagPairings(tagId: string, otherTagIds: string[]): Prom
     return ["Please pick at least one tag it pairs with."];
   }
 
-  const problems = await findOtherSideTagProblems(tag.categoryId, otherTagIds);
+  const isSeeking = tag.categoryId === CATEGORY_IDS.seeking;
+  // Pairings this tag has now, on its own side. Retired partners among them
+  // may stay (see findOtherSideTagProblems).
+  const current = await prisma.tagPairing.findMany({
+    where: isSeeking ? { seekingTagId: tagId } : { qualityTagId: tagId },
+  });
+  const currentPartnerIds = current.map((row) =>
+    isSeeking ? row.qualityTagId : row.seekingTagId,
+  );
+
+  const problems = await findOtherSideTagProblems(
+    tag.categoryId,
+    otherTagIds,
+    currentPartnerIds,
+  );
   if (problems.length > 0) {
     return problems;
   }
 
-  const isSeeking = tag.categoryId === CATEGORY_IDS.seeking;
   // Remove this tag's old rows (on its own side), then write the new ones.
   const ownSide = isSeeking ? { seekingTagId: tagId } : { qualityTagId: tagId };
 
