@@ -61,3 +61,8 @@ next-env.d.ts
 # written here instead of emailed while the pretend cohort is on. A link
 # signs someone in, so it must never be committed.
 /.magic-links/
+
+# Slice 7's local photo storage: where profile photos go when there's no
+# Vercel Blob token (local dev and the tests). They're people's photos, so
+# they must never be committed.
+/.photo-store/
