@@ -26,11 +26,11 @@ Groups build on each other in order: the small logic functions with tests (1, 2,
 
 ## 4. Category and tag screens
 
-- [ ] 4.1 Add `/admin/categories`: every category (retired ones greyed, with the note that their tags are hidden), its tags with rename, description, move up/down and retire/un-retire forms, and an "add tag" form. The add-tag form shows the pairing tick boxes only for Seeking and Quality tags. Server Actions call `requireAdmin()` first and revalidate `/admin/categories`, `/catalogue` (design 10). Verify: in the browser, rename a tag then open `/catalogue` and see the new name in the same place
+- [x] 4.1 Add `/admin/categories`: every category (retired ones greyed, with the note that their tags are hidden), its tags with rename, description, move up/down and retire/un-retire forms, and an "add tag" form. The add-tag form shows the pairing tick boxes only for Seeking and Quality tags. Server Actions call `requireAdmin()` first and revalidate `/admin/categories`, `/catalogue` (design 10). Verify: in the browser, rename a tag then open `/catalogue` and see the new name in the same place
 - [ ] 4.2 Add the category add/rename/move/retire forms to the same page. Verify: retire a category and it disappears from `/catalogue`; un-retire it and its tags return
 - [ ] 4.3 Add the pairing editor per Seeking/Quality tag and the "Rescore everyone" button, which shows how many people were rescored and a note that pairing changes don't change scores until it's pressed. Verify: in the browser add a pairing, press the button, and see the count
 
-- Group 4 status (14 Oct 2026): 4.1 to 4.3 are built; the guard test covers every category, tag, pairing and rescore action, and the page renders for an admin (200), a member (404) and a signed-out visitor (redirect). The browser click-throughs those tasks name have **not** been done, so the boxes stay unticked until someone has pressed the buttons.
+- Group 4 status (14 Oct 2026): 4.1 is verified in a browser by `tests/e2e/admin.spec.ts` (rename a tag, `/catalogue` shows it). 4.2 and 4.3 are built; the guard test covers every category, tag, pairing and rescore action, and the page renders for an admin (200), a member (404) and a signed-out visitor (redirect). The browser click-throughs for 4.2 (retire a category, un-retire it) and 4.3 (add a pairing, press Rescore everyone) have **not** been done, so those boxes stay unticked until someone has pressed the buttons.
 
 ## 5. Users screen
 
@@ -40,9 +40,11 @@ Groups build on each other in order: the small logic functions with tests (1, 2,
 
 - [ ] 6.1 Add `tests/e2e/admin.spec.ts` for the issue's success checks: a member and a signed-out visitor can't open `/admin`, `/admin/categories`, `/admin/courses` or `/admin/users`; an admin renames a tag and `/catalogue` shows it; a retired tag isn't listed but a profile still shows it; a suspended pretend user vanishes from the graph. Verify: `npm run test:e2e` passes
 - [ ] 6.2 Check that the sign-in refusal for a suspended real user still works with a user suspended from this screen (the existing `signin.spec.ts` case covers it). Verify: `npm run test:e2e` passes unchanged
-- [ ] 6.3 Add an "Admin screens" section to `README.md`: what each screen does, that nothing is deleted, that "Rescore everyone" is needed after pairing changes. (The photo-removal line is added in 7.3.) Verify: every path and button name in the README matches the code
+- [x] 6.3 Add an "Admin screens" section to `README.md`: what each screen does, that nothing is deleted, that "Rescore everyone" is needed after pairing changes. (The photo-removal line is added in 7.3.) Verify: every path and button name in the README matches the code
 - [ ] 6.4 **(human)** Tell #14 (account page, PR #40) that admin "remove photo" will call its `removeProfilePhoto(userId)`, so its name and signature should not change without a word. Post on #17: check onboarding doesn't offer retired tags and sign-up doesn't offer retired courses. Verify: both comments exist
 - [ ] 6.5 Run the four success checks from #15 on the deployed preview and record the result under a "Checked" note at the top of this file. Verify: the note exists
+
+- Group 6 status (14 Oct 2026): `tests/e2e/admin.spec.ts` is written and passed 7 of 7 on its own run. The WHOLE e2e suite has not passed yet: a full run was disturbed by another writer on the shared test database (foreign-key errors in unrelated specs, no process of ours running). 6.1 and 6.2 stay unticked until `npm run test:e2e` passes in full. 6.3 is done. 6.4 and 6.5 are human tasks. The e2e spec also exercises 5.1's suspend and unsuspend through `/people`; 5.1 names `/graph` too, which is not checked in a browser, so it stays unticked.
 
 ## 7. Remove photo (waits for #14 / PR #40 to merge)
 
