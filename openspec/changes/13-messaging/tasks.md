@@ -14,7 +14,7 @@ Names used, so the tasks stay short:
 
 ## 2. The shared helpers
 
-- [ ] 2.1 In `src/lib/conversations.ts`, update the header comments of `openConversation` and `closeConversation` to say the rules are now decided (closed stays closed; sending is refused by `sendMessage`), keeping both names and signatures. Add integration tests in `tests/integration/conversations.test.ts`: opening twice gives one conversation; opening for a closed pair returns it still closed; closing twice keeps the first closing time. Verify: `npm test` passes and `tests/integration/sharedHelpers.test.ts` still passes unchanged
+- [x] 2.1 In `src/lib/conversations.ts`, update the header comments of `openConversation` and `closeConversation` to say the rules are now decided (closed stays closed; sending is refused by `sendMessage`), keeping both names and signatures. Add integration tests in `tests/integration/conversations.test.ts`: opening twice gives one conversation; opening for a closed pair returns it still closed; closing twice keeps the first closing time. Verify: `npm test` passes and `tests/integration/sharedHelpers.test.ts` still passes unchanged
 
 ## 3. Sending a message
 
