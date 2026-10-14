@@ -30,9 +30,12 @@ Verify at 375px and 1280px, in light and dark, for every group that changes what
 
 ## 3. Navigation and the always-there strip
 
-- [ ] 3.1 Restyle `NavBar` on the tokens, keeping every link it has now (design 7): display wordmark, 44px tap targets, visible focus ring, Requests count badge hidden at zero, wrapping so nothing scrolls sideways. Verify: at 375px every link is reachable and tappable and the page doesn't scroll sideways; the links are the same set as before
-- [ ] 3.2 Restyle `SignedInStatus` ("Signed in as … Sign out") and the `DevUserSwitcher` as the dashed orange dev strip, still dev-only. Verify: signed in as a pretend user the status shows on every page; the strip is absent when `PRETEND_COHORT` is off
-- [ ] 3.3 Update any e2e test that relied on the old nav (`tests/e2e/navigation.spec.ts`, `switcher.spec.ts`) and add the 375px no-sideways-scroll check to `navigation.spec.ts`. Verify: `npm run test:e2e` passes
+- [x] 3.1 Restyle `NavBar` on the tokens, keeping every link it has now (design 7): display wordmark, 44px tap targets, visible focus ring, Requests count badge hidden at zero, wrapping so nothing scrolls sideways. Verify: at 375px every link is reachable and tappable and the page doesn't scroll sideways; the links are the same set as before
+  - Checked 14 Oct 2026: every link the bar had before is still there, in the same order (`navigation.spec.ts` compares the full list). The Requests count is now a small primary-coloured pill. Looked at in Chrome at 375px and 1280px: the links wrap, nothing scrolls sideways, and each link is at least 44px high and wide. The wordmark is "Collab" plus an italic "z" inside one span so its accessible name stays "Collabz" (flex items would have read "Collab z").
+- [x] 3.2 Restyle `SignedInStatus` ("Signed in as … Sign out") and the `DevUserSwitcher` as the dashed orange dev strip, still dev-only. Verify: signed in as a pretend user the status shows on every page; the strip is absent when `PRETEND_COHORT` is off
+  - Checked 14 Oct 2026: the dev switcher is a dashed orange strip above the bar with a DEV tag; it still draws nothing where the pretend cohort is off, and its form and route are untouched. Found and fixed while testing: the longest pretend alias made the select 56px wider than a phone, so the form now shrinks to the screen. Not seen in dark mode (headless Chrome could not switch scheme); all colours are tokens.
+- [x] 3.3 Update any e2e test that relied on the old nav (`tests/e2e/navigation.spec.ts`, `switcher.spec.ts`) and add the 375px no-sideways-scroll check to `navigation.spec.ts`. Verify: `npm run test:e2e` passes
+  - Checked 14 Oct 2026: `navigation.spec.ts` (19, including a new 44px tap-target test beside the existing 375px no-sideways-scroll one), `switcher.spec.ts`, `requests.spec.ts`, `signin.spec.ts` and `signup.spec.ts` pass. The two requests assertions that matched the old `(1 waiting)` text now match the pill's number.
 
 ## 4. Cards, chips, pills and states
 

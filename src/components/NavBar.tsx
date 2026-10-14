@@ -44,43 +44,69 @@ const navLinks = [
 
 export function NavBar() {
   return (
-    <header className="border-b border-current/20 px-4 py-3">
-      {/* aria-label names this set of links for screen readers. */}
-      <nav
-        aria-label="Main"
-        // flex-wrap is what makes this work on a phone: when the links don't
-        // fit on one line they carry on underneath, instead of pushing the
-        // page wider than the screen. gap-x/gap-y space them out in both
-        // directions, and py-1 gives each link a taller area to tap.
-        className="flex flex-wrap items-center gap-x-4 gap-y-1"
-      >
-        <Link href="/" className="py-1 text-lg font-semibold">
-          Collabz
-        </Link>
+    // bg-surface and border-line are the design tokens (globals.css), so the
+    // bar follows the light and dark theme by itself.
+    <header className="border-b border-line bg-surface">
+      {/* The dev strip comes FIRST, above the real bar, so nobody mistakes it
+          for product UI. It draws nothing where the pretend cohort is off
+          (e.g. the live site). */}
+      <DevUserSwitcher />
 
-        {navLinks.map((link) => (
+      <div className="mx-auto w-full max-w-5xl px-4 py-2">
+        {/* aria-label names this set of links for screen readers. */}
+        <nav
+          aria-label="Main"
+          // flex-wrap is what makes this work on a phone: when the links
+          // don't fit on one line they carry on underneath, instead of
+          // pushing the page wider than the screen. EVERY link stays here,
+          // because the app-navigation spec says the bar links to each page
+          // (the design's smaller tab set was not adopted).
+          className="flex flex-wrap items-center gap-x-1 gap-y-1"
+        >
+          {/* The wordmark: "Collab" in the display face and an italic "z",
+              the one mischievous letter (brand board). The two parts sit in
+              ONE inner span: the link is a flex box, and flex would treat
+              them as separate items, so a screen reader would read
+              "Collab z" instead of "Collabz". */}
           <Link
-            key={link.href}
-            href={link.href}
-            className="py-1 text-sm underline underline-offset-4"
+            href="/"
+            className={`${linkShape} mr-2 font-display text-2xl leading-none`}
           >
-            {link.label}
-            {/* Only the Requests link carries a count. It draws nothing when
-                you are signed out or nothing is waiting. */}
-            {link.href === "/requests" && <WaitingRequestsCount />}
+            <span>
+              Collab<span className="italic text-primary-text">z</span>
+            </span>
           </Link>
-        ))}
-      </nav>
 
-      {/* Slice 1 (#8): the real sign-in state, with a Sign out button. */}
-      <div className="mt-2">
-        <SignedInStatus />
-      </div>
+          {navLinks.map((link) => (
+            <Link
+              key={link.href}
+              href={link.href}
+              className={`${linkShape} text-sm font-medium`}
+            >
+              {link.label}
+              {/* Only the Requests link carries a count. It draws nothing
+                  when you are signed out or nothing is waiting. */}
+              {link.href === "/requests" && <WaitingRequestsCount />}
+            </Link>
+          ))}
+        </nav>
 
-      {/* Draws nothing where the pretend cohort is off (e.g. the live site). */}
-      <div className="mt-2">
-        <DevUserSwitcher />
+        {/* Slice 1 (#8): the real sign-in state, with a Sign out button. */}
+        <div className="mt-1">
+          <SignedInStatus />
+        </div>
       </div>
     </header>
   );
 }
+
+// What every link in the bar shares:
+// - min-h-11 and min-w-11 are 44px, the smallest comfortable touch target
+//   (visual-design spec "Every screen works at phone width first");
+// - rounded-control and hover:bg-surface-2 give the soft tab look;
+// - the focus-visible outline is the keyboard focus ring: it only shows for
+//   keyboard users, in the readable accent colour.
+const linkShape =
+  "inline-flex min-h-11 min-w-11 items-center justify-center rounded-control px-3 " +
+  "hover:bg-surface-2 focus-visible:outline-2 focus-visible:outline-offset-2 " +
+  "focus-visible:outline-primary-text";

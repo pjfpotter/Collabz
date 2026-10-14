@@ -150,3 +150,22 @@ test("at phone width every link is reachable and nothing scrolls sideways", asyn
   );
   expect(sticksOutBy).toBe(0);
 });
+
+// Slice 10 (#45), visual-design spec "Every screen works at phone width
+// first": every link in the bar can be tapped with a thumb, so each is at
+// least 44 pixels high and wide.
+test("at phone width every nav link is at least 44 pixels high and wide", async ({ page }) => {
+  await page.setViewportSize({ width: 375, height: 700 });
+  await page.goto("/");
+
+  const links = mainNav(page).getByRole("link");
+  const count = await links.count();
+  expect(count).toBeGreaterThan(0);
+
+  for (let index = 0; index < count; index += 1) {
+    const box = await links.nth(index).boundingBox();
+    const label = await links.nth(index).textContent();
+    expect(box?.height, `${label} is tall enough`).toBeGreaterThanOrEqual(44);
+    expect(box?.width, `${label} is wide enough`).toBeGreaterThanOrEqual(44);
+  }
+});

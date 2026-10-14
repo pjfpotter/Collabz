@@ -95,7 +95,7 @@ test("a waiting request shows the sender's alias and silhouette with Approve and
   await expect(row.getByRole("button", { name: /Approve/ })).toBeVisible();
   await expect(row.getByRole("button", { name: /Decline/ })).toBeVisible();
   // The nav bar's Requests link carries the count, on any page.
-  await expect(mainNav(page).getByTestId("waiting-count")).toHaveText(/\(1/);
+  await expect(mainNav(page).getByTestId("waiting-count")).toHaveText(/^1\b/);
 
   // And no email anywhere in the page. (The pretend cohort's emails all end
   // in @collabz.test.)
@@ -117,7 +117,7 @@ test("the count is on every page, and shows the number waiting", async ({ page }
   // Not the requests page itself: the count must be there on other pages.
   await page.goto("/catalogue");
 
-  await expect(mainNav(page).getByTestId("waiting-count")).toHaveText(/\(2/);
+  await expect(mainNav(page).getByTestId("waiting-count")).toHaveText(/^2\b/);
 });
 
 // Spec scenario: "Request approved"
