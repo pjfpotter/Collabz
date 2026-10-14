@@ -8,6 +8,7 @@
 // the contract other tracks rely on, so they must not change. The rules for
 // SENDING and READING messages live in src/lib/messages/, not here.
 
+import { Prisma } from "@/generated/prisma/client";
 import type { Conversation } from "@/generated/prisma/client";
 import { prisma } from "@/lib/db";
 import { orderUserPair } from "@/lib/userPair";
@@ -15,8 +16,8 @@ import { orderUserPair } from "@/lib/userPair";
 // Returns the conversation between two users, creating it if they don't have
 // one yet. The order of the two ids doesn't matter.
 //
-// It is safe to call twice: the second call finds the first call's
-// conversation rather than making another.
+// It is safe to call twice, even at the same moment: the second call finds
+// the first call's conversation rather than making another.
 //
 // If the pair's conversation has been CLOSED (for example by a block), it is
 // returned as it is, still closed. This is a decided rule (slice 6, design
@@ -34,18 +35,39 @@ export async function openConversation(
   // A pair is stored once, lower id first (see src/lib/userPair.ts).
   const { userAId, userBId } = orderUserPair(firstUserId, secondUserId);
 
-  // upsert = "update it if it exists, otherwise create it", done by the
-  // database as ONE step. We use it instead of "look, then create if missing"
-  // because two requests arriving at the same moment could both look, both
-  // find nothing, and both try to create. `update: {}` means "if it exists,
-  // change nothing and just give it to me".
-  return prisma.conversation.upsert({
-    // userAId_userBId is the name Prisma gives the "one conversation per
-    // pair" rule from schema.prisma.
-    where: { userAId_userBId: { userAId, userBId } },
-    update: {},
-    create: { userAId, userBId },
-  });
+  // upsert = "update it if it exists, otherwise create it". `update: {}`
+  // means "if it exists, change nothing and just give it to me".
+  //
+  // upsert is NOT a single atomic step with our database adapter: it can look,
+  // find nothing, and then insert. So two calls at the same moment can both
+  // look, both find nothing, and both try to insert. The database's "one
+  // conversation per pair" rule lets only one insert win and refuses the
+  // other with error P2002 (unique constraint failed).
+  try {
+    return await prisma.conversation.upsert({
+      // userAId_userBId is the name Prisma gives the "one conversation per
+      // pair" rule from schema.prisma.
+      where: { userAId_userBId: { userAId, userBId } },
+      update: {},
+      create: { userAId, userBId },
+    });
+  } catch (error) {
+    // Only this one error is expected. Anything else (a lost connection, say)
+    // is a real problem and must still reach the caller.
+    const lostTheRace =
+      error instanceof Prisma.PrismaClientKnownRequestError &&
+      error.code === "P2002";
+    if (!lostTheRace) {
+      throw error;
+    }
+
+    // Losing the race means the other call has just created the pair's
+    // conversation, so reading it back is safe and gives both callers the
+    // same row.
+    return prisma.conversation.findUniqueOrThrow({
+      where: { userAId_userBId: { userAId, userBId } },
+    });
+  }
 }
 
 // Closes a conversation, so no more messages can be sent in it.
