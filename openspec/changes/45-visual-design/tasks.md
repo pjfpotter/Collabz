@@ -21,9 +21,12 @@ Verify at 375px and 1280px, in light and dark, for every group that changes what
 
 ## 2. Silhouettes and course mark
 
-- [ ] 2.1 Check the seed's silhouette ids (`prisma/seed-data.ts` and the pretend cohort) against `silhouette-01` to `silhouette-12`. Verify: a short list of the ids found is shown to the team; stop and ask if they differ (design 5)
-- [ ] 2.2 Add the twelve silhouettes as SVG components (from the Silhouettes board) with a lookup by stored id, and make `SilhouetteStandIn` draw them at its existing `size`, with the same props. Verify: `/matches` and `/graph` show the new pictures; they read at 24px and at 96px in both themes
+- [x] 2.1 Check the seed's silhouette ids (`prisma/seed-data.ts` and the pretend cohort) against `silhouette-01` to `silhouette-12`. Verify: a short list of the ids found is shown to the team; stop and ask if they differ (design 5)
+  - Checked 14 Oct 2026: the pretend cohort (`prisma/pretend-cohort.ts`) stores `silhouette-01` to `silhouette-12`, spread evenly, and `SILHOUETTE_IDS` in the account stand-ins has the same twelve. The ids match.
+- [x] 2.2 Add the twelve silhouettes as SVG files in `public/silhouettes/silhouette-01.svg` … `-12.svg` (where slice 2's design 7 puts them, colours for light and dark inside each file), and make `SilhouetteStandIn` show them at its existing `size`, with the same props (team decision, 14 Oct 2026). Verify: `/matches` and `/graph` show the new pictures; they read at 24px and at 96px in both themes
+  - Checked 14 Oct 2026: a contact sheet of all 12 at 24, 48 and 96px in Chrome shows each reading clearly, in the light colours and (with the dark values forced, since headless Chrome would not switch scheme) the dark colours. `SilhouettePlaceholder` on the account page now shows the real picture too. Unknown ids fall back to `silhouette-01`. The three e2e selectors `svg[data-silhouette]` became `img[data-silhouette]`; the requests, profile, messages, account, matches and graph specs pass (59). Slice 2 only needs to add `silhouettes.ts` and its picker: the files are done.
 - [ ] 2.3 Add `CourseMark` (shape + colour + name) and the course badge, and the grey circle fallback for other courses (design 4). Add a unit test for which shape and colour each course id gets. Verify: `npm test` passes, and a greyscale screenshot of the badge pair still tells the two apart
+  - Built 14 Oct 2026: `src/lib/course/courseLook.ts` (shape and colour per course), `src/components/CourseMark.tsx` (badge and plain variants) and `tests/unit/courseLook.test.ts` (4 passing). Left unticked: it isn't used on any screen yet, so the greyscale check waits for group 6.
 
 ## 3. Navigation and the always-there strip
 

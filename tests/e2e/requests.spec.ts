@@ -91,7 +91,7 @@ test("a waiting request shows the sender's alias and silhouette with Approve and
 
   const row = page.getByTestId("waiting-list").getByRole("listitem");
   await expect(row).toContainText(await aliasOf(sender));
-  await expect(row.locator("svg[data-silhouette]")).toBeVisible();
+  await expect(row.locator("img[data-silhouette]")).toBeVisible();
   await expect(row.getByRole("button", { name: /Approve/ })).toBeVisible();
   await expect(row.getByRole("button", { name: /Decline/ })).toBeVisible();
   // The nav bar's Requests link carries the count, on any page.

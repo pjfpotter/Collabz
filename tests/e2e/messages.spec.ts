@@ -92,7 +92,7 @@ test("the list shows the other person and the latest message, and no email", asy
   const row = page.getByTestId("conversation-list").getByRole("listitem");
   await expect(row).toContainText(await aliasOf(friend));
   await expect(row).toContainText("Fancy a coffee before the pitch night?");
-  await expect(row.locator("svg[data-silhouette]")).toBeVisible();
+  await expect(row.locator("img[data-silhouette]")).toBeVisible();
   expect(await page.content()).not.toContain("@collabz.test");
 });
 

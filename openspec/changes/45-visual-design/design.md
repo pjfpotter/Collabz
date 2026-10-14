@@ -43,9 +43,9 @@ Instrument Serif and Figtree are loaded in the root layout with CSS variables, r
 
 A `CourseMark` component draws the shape (circle or rounded square) in the course colour and writes the name, used by the course badge, person rows and cards, and the graph legend. The graph's canvas code draws the same two shapes from the same colour names. A course that isn't Software or Business keeps the grey circle fallback that already exists. *Why:* "never colour alone" is the single most important accessibility rule here, so there is one place that enforces it.
 
-### 5. Silhouettes keep their component and their ids
+### 5. Silhouettes are files in `public/silhouettes/`, behind the same component
 
-The twelve designs become one React SVG component, with a lookup from the stored id (`silhouette-01` to `silhouette-12`, in the board's order: Sprout, Capped, Antennae, Specs, Beanie, Curls, Bun, Spiky, Hooded, Headphones, Halo, Wide hat) to the drawing. `SilhouetteStandIn` keeps its props and calls it, so no caller changes. They use `currentColor` plus the foxfire detail so they work in both themes. Unknown ids fall back to the first. **Assumption to check in task 2.1:** the seed's ids really are `silhouette-01` to `silhouette-12`.
+The twelve designs are `public/silhouettes/silhouette-01.svg` to `-12.svg`, the location slice 2's approved design (#9, decision 7) already names, so its `silhouetteUrl(id)` and picker use them unchanged. `SilhouetteStandIn` keeps its props and becomes an `<img>` of the matching file, with an unknown id falling back to the first. Light and dark colours (a cream or ink body and one foxfire detail) live inside each SVG in a `prefers-color-scheme` rule, because an `<img>` can't read the page's CSS. Order: Sprout, Capped, Antennae, Specs, Beanie, Curls, Bun, Spiky, Hooded, Headphones, Halo, Wide hat. *Alternative:* inline React components, which follow the page theme directly but would have given slice 2 a different API from the one it was approved with (team decision, 14 Oct 2026). The seed's ids were checked and are `silhouette-01` to `-12`.
 
 ### 6. Graph: restyle only
 
@@ -70,7 +70,7 @@ Visual work is mostly looked at, so the checks are specific: the existing e2e su
 
 ## Risks / Trade-offs
 
-- **Silhouette ids don't match the seed** → checked in task 2.1 before anything is drawn; stop and ask if not.
+- **Silhouette ids don't match the seed** → checked in task 2.1: they match.
 - **Touching shared components others import** (`SilhouetteStandIn`, `NavBar`, `PlaceholderPage`) → props unchanged, so no caller breaks; flag to the #9 owner in the PR.
 - **Tests that match old text or classes break** → fix in the group that causes them, never at the end.
 - **Merge conflicts with #9** → `/onboarding` is not touched.
