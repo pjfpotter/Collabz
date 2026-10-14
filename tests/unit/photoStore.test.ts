@@ -65,19 +65,18 @@ describe("folderPhotoStore", () => {
 
 describe("choosePhotoStore", () => {
   it("uses Vercel Blob whenever a token is set", () => {
-    expect(choosePhotoStore({ blobToken: "vercel_blob_rw_x", vercelEnv: "production" })).toBe("vercel-blob");
-    expect(choosePhotoStore({ blobToken: "vercel_blob_rw_x", vercelEnv: "preview" })).toBe("vercel-blob");
+    expect(choosePhotoStore({ blobToken: "vercel_blob_rw_x", onVercel: true })).toBe("vercel-blob");
   });
 
   it("uses the local folder on a laptop with no token", () => {
-    expect(choosePhotoStore({ blobToken: undefined, vercelEnv: undefined })).toBe("folder");
-    expect(choosePhotoStore({ blobToken: "", vercelEnv: undefined })).toBe("folder");
+    expect(choosePhotoStore({ blobToken: undefined, onVercel: false })).toBe("folder");
+    expect(choosePhotoStore({ blobToken: "", onVercel: false })).toBe("folder");
   });
 
-  // Vercel's disk is wiped after each request: photos written there would
-  // vanish, so the live site must refuse rather than pretend to work.
-  it("refuses on the live site when there's no token", () => {
-    expect(() => choosePhotoStore({ blobToken: undefined, vercelEnv: "production" })).toThrow(
+  // Vercel's disk can't hold photos, on previews as much as on the live
+  // site, so any Vercel deployment without a token must refuse clearly.
+  it("refuses on any Vercel deployment when there's no token", () => {
+    expect(() => choosePhotoStore({ blobToken: undefined, onVercel: true })).toThrow(
       "BLOB_READ_WRITE_TOKEN",
     );
   });

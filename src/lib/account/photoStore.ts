@@ -118,21 +118,24 @@ export function folderPhotoStore(folder: string = LOCAL_PHOTO_FOLDER): PhotoStor
 
 // Which storage to use here. Kept as a plain function of the settings, so
 // the tests can check every case without changing the real environment.
-//   - A Blob token is set                -> Vercel Blob.
-//   - No token, not the live site        -> the local folder.
-//   - No token, ON the live site          -> refuse, loudly. Vercel's disk is
-//     wiped after every request, so writing photos there would "work" and
-//     then lose them. Better to fail with a message that says what to fix.
+//   - A Blob token is set                     -> Vercel Blob.
+//   - No token, on a laptop or in the tests   -> the local folder.
+//   - No token, on ANY Vercel deployment      -> refuse, loudly. Vercel's
+//     disk is read-only apart from a temporary area that's wiped between
+//     requests, so the folder can't work there: a clear message beats a
+//     confusing server error or photos that silently vanish.
+// `onVercel` is true on every Vercel deployment (Vercel sets VERCEL=1 on
+// Preview and Production alike).
 export function choosePhotoStore(settings: {
   blobToken: string | undefined;
-  vercelEnv: string | undefined;
+  onVercel: boolean;
 }): "vercel-blob" | "folder" {
   if (settings.blobToken) {
     return "vercel-blob";
   }
-  if (settings.vercelEnv === "production") {
+  if (settings.onVercel) {
     throw new Error(
-      "Photos can't be stored: BLOB_READ_WRITE_TOKEN isn't set on the live site. " +
+      "Photos can't be stored: BLOB_READ_WRITE_TOKEN isn't set on this Vercel deployment. " +
         "Connect a Blob store to the Vercel project (Storage -> Blob).",
     );
   }
@@ -143,7 +146,7 @@ export function choosePhotoStore(settings: {
 export function getPhotoStore(): PhotoStore {
   const kind = choosePhotoStore({
     blobToken: process.env.BLOB_READ_WRITE_TOKEN,
-    vercelEnv: process.env.VERCEL_ENV,
+    onVercel: Boolean(process.env.VERCEL),
   });
   return kind === "vercel-blob" ? vercelBlobPhotoStore() : folderPhotoStore();
 }

@@ -55,7 +55,7 @@
 ### 1. Photos live in private Vercel Blob, behind one storage interface
 `src/lib/account/photoStore.ts` exports a small interface, `put(key, bytes, contentType)`, `get(key)` and `delete(key)`, with two versions:
 - **Vercel Blob** (`access: "private"`), used whenever `BLOB_READ_WRITE_TOKEN` is set (Vercel Preview and Production).
-- **A folder on disk** (`.photo-store/`, gitignored), used when the token isn't set **and** we're not on the production deployment (local dev and the tests). On production without a token it throws a clear error instead of silently writing to a disk that Vercel throws away.
+- **A folder on disk** (`.photo-store/`, gitignored), used when the token isn't set **and** we're not on Vercel at all (local dev and the tests). On any Vercel deployment without a token, Preview as well as Production, it throws a clear error: Vercel's disk is read-only apart from a temporary area wiped between requests, so the folder can't work there. *(Corrected during the build, 14 Oct 2026: first written as "not on production", which would have broken uploads on previews with a confusing error.)*
 - *Why private:* a public Blob address works for anyone who has it, which would break "refused even with the direct link". Private files can only be read by our server, so every view goes through decision 3.
 - *Why a folder for dev and tests:* nobody needs a Vercel token to work on the app, and tests never touch real storage. The folder version is tested; the Blob version is a thin wrapper over three library calls, checked on the preview (task 7.2).
 - *Keys:* `photos/<userId>/<random id>.<ext>`. *Why a new random name each time:* a replaced photo gets a new key, so nothing can confuse the old file with the new one, and the old one is simply deleted.

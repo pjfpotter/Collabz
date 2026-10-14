@@ -39,7 +39,7 @@ Before starting: `git merge origin/master` into `feature/14-account` if slice 1'
 
 ## 6. Docs
 
-- [ ] 6.1 Add an "Account and photos" section to `README.md` (what `/account` does, where photos are stored locally and on Vercel, `BLOB_READ_WRITE_TOKEN`, `removeProfilePhoto` for slices 8 and 9) and a "Stand-ins" note listing slice 7's stand-ins and what replaces them. Comment on #17 with the same list. Verify: every name and path matches the code, and the comment is posted
+- [x] 6.1 Add an "Account and photos" section to `README.md` (what `/account` does, where photos are stored locally and on Vercel, `BLOB_READ_WRITE_TOKEN`, `removeProfilePhoto` for slices 8 and 9) and a "Stand-ins" note listing slice 7's stand-ins and what replaces them. Comment on #17 with the same list. Verify: every name and path matches the code, and the comment is posted
 
 ## 7. Deploy
 
