@@ -46,7 +46,7 @@ Collabz is our version of the course brief "Bootcamp Connect". It matches softwa
 - **One helper holds every send rule** (`sendRequest.ts`): not yourself, not someone suspended or unfinished, not a blocked pair, not a pair that already has a request, and only top 5 or glitch match. Because the rules live inside the helper and not in a route or the button, they hold even when something calls it directly.
 - **Answering** (`answerRequest.ts`, behind `POST /api/requests/[id]/approve` and `/decline`): only the person asked, only once, and only while the sender is still allowed.
 - **The requests page and the nav count** (`/requests`, `src/components/WaitingRequestsCount.tsx`): waiting and sent lists, built from one filter that also drives the number beside the Requests link, so they can't disagree.
-- **`areConnected(a, b)`** (`areConnected.ts`): the rule for who may see a photo, for slice 7. An approved request and no block. No photo code was built here.
+- **`areConnected(a, b)`** (`areConnected.ts`): the rule for who may see a photo. An approved request and no block. Slice 7's photo code calls it.
 
 **Built (slice 6, #13):**
 
@@ -55,6 +55,14 @@ Collabz is our version of the course brief "Bootcamp Connect". It matches softwa
 - **Someone else's conversation is "not found", not "forbidden"** (`getConversation.ts`, `POST /api/messages/[conversationId]`): a 403 would confirm that the id is real. Reading uses the same rule as sending, so only the two people can ever read a conversation.
 - **Closed means closed for good**: `closeConversation` only records the time, `sendMessage` refuses to send in a closed conversation, and `openConversation` returns a closed one still closed. A block (slice 9) is therefore final. A closed conversation can still be read.
 - **`openConversation` survives two calls at the same moment**: the database's one-conversation-per-pair rule lets one insert win, and the loser reads the winner's row back instead of failing.
+
+**Built (slice 7, #14):**
+
+- **The account page** (`/account`, `src/app/account/`): your alias, silhouette, bio and picks, your course, your photo and Sign out. The course can be changed straight away; it isn't scored, so nobody is rescored.
+- **Editing answers, one category at a time** (`/account/edit/[category]`, `src/lib/account/editAnswers.ts`): the same pick-from-list limits as onboarding, then the server rescores only that person with `scoreUser`. Alias, requests and conversations don't change. Slice 2's real pick screen isn't built, so the pieces it will own sit in clearly marked stand-ins (`src/lib/account/standIns.ts`) to be swapped when it lands.
+- **An optional photo** (`src/lib/account/photos.ts`, `photoStore.ts`, `photoRules.ts`): JPEG, PNG or WebP up to 4 MB, kept privately in Vercel Blob (or the gitignored `.photo-store/` folder locally and in tests) and only ever served through `/api/account/photo/[userId]`, which checks the viewer on every request.
+- **`ProfilePhoto`** (`src/components/ProfilePhoto.tsx`): the one component slice 4's profile page uses to show a photo. It draws nothing for anyone not allowed to see it, so a stranger can't tell whether a photo exists.
+- **`removeProfilePhoto(userId)`** (`@/lib/account/photos`): the shared helper that deletes the stored file and clears the key, used by the account page and by admin remove-photo.
 
 **Built (slice 8, #15):**
 
@@ -79,7 +87,7 @@ Collabz is our version of the course brief "Bootcamp Connect". It matches softwa
 **Planned:**
 
 
-- **Private file storage (proposed: Vercel Blob)**: optional profile photos. Photos are only served through the app, after a permission check.
+Nothing is left in the planned list except onboarding (slice 2), safety (slice 9) and join-up (#17).
 
 ## How a request flows through the system
 
@@ -105,9 +113,9 @@ The flows below are planned, not built yet.
 
 **Joining:** scan QR → sign up (email, course, accept terms) → magic link → onboarding (7 pick-from-list exercises) → the server scores the new user against everyone and stores the edges → graph.
 
-**Editing answers:** account page → save → the server deletes and recalculates *only that user's* edges. Nobody else's scores change. (The recalculation, `scoreUser`, is built. The account page that calls it is not.)
+**Editing answers (built):** `/account` → pick a category → `/account/edit/[category]` → save → a Server Action checks the pick limits, stores the picks, and the server deletes and recalculates *only that user's* edges with `scoreUser`. Nobody else's scores change. If the edit moves the glitch match into the user's new top 5, the glitch match is replaced.
 
-**Seeing a photo:** browser asks the app for a photo → the app checks the viewer is the owner, a connected user or an admin → only then fetches it from private storage.
+**Seeing a photo (built):** the profile page asks `ProfilePhoto`, which draws an image only if the person has one and the viewer is the owner, someone connected to them or an admin → the browser asks `/api/account/photo/[userId]` → the route checks the viewer again and only then fetches the file from private storage. Anyone else, even with the direct link, gets "not found".
 
 ## Key decisions and why
 
@@ -145,7 +153,8 @@ The flows below are planned, not built yet.
 - **A decline is final for the pair, in both directions:** it protects the person who said no and makes the rule easy to state, check and test. Loosening it is one check.
 - **Blocked and suspended look the same to the sender:** "this person blocked you" would be a safety leak, so both answer "You can't send a request to this person."
 - **The waiting count and the page's list come from one filter:** a count of 3 over a list of 2, or an Approve button that answers 409, would look broken.
-- **The photo rule is a function, with no photo code** (`areConnected`): slice 7 owns upload and serving, and a block makes the rule false by itself, so slice 9 needs no extra code here.
+- **The photo rule is a function** (`areConnected`, used by `canSeePhoto`): upload and serving are slice 7's, and a block makes the rule false by itself, so slice 9 needs no extra code here.
+- **Photos are checked twice, and never go through Next.js's image cache:** the page checks so it never shows a broken image, and the photo address checks on every request. `<Image>` would copy a private photo into a shared cache, so a plain `<img>` is used.
 - **A member who opens an admin page gets "page not found", not "access denied":** it gives nothing away, and Next.js's "forbidden" page is still experimental.
 - **Admin actions check for an admin themselves, not just the page:** a Server Action can be posted to directly, so the page's check protects nothing. Each action calls `requireAdmin()` first, and one test calls every action as a member.
 - **A new tag's id is `<category>-<name>`, made once:** it matches the seeded ids and is readable. A name that would make an existing id is refused rather than numbered, and a rename never touches the id.
@@ -159,9 +168,9 @@ Full reasoning: `openspec/changes/archive/2026-10-01-2-mvp-overview/design.md` a
 
 ## Open questions / known gaps
 
-- Only slice 0, the foundation, slices 1, 3, 4, 5, 6 and 8 are built. Real sign-up and sign-in exist, but there are no real profiles yet (onboarding, slice 2, isn't built). The graph, people list, profile pages and requests work on the pretend cohort, and messaging works between connected pretend people, and the remaining pages are placeholders.
+- Only slice 0, the foundation, slices 1, 3, 4, 5, 6, 7 and 8 are built. Real sign-up and sign-in exist, but there are no real profiles yet (onboarding, slice 2, isn't built). The graph, people list, profile pages and requests work on the pretend cohort, and messaging works between connected pretend people, and the remaining pages are placeholders.
 - The five stand-ins in `src/lib/cohort/standIns.ts` are temporary, and the real `getTopFive` and `explainMatch` now exist in `src/lib/matching/` under the same names, so join-up (#17) swaps them and the two "finished and not suspended" rules (written twice on purpose) get merged. `sendConnectionRequest` was agreed and is real.
-- The profile page (slice 4's) is still rough in two places: after a decline it still shows Connect, though pressing it is refused with a clear sentence, and a waiting request doesn't say who asked. Join-up (#17) tidies both. The graph and list don't yet hide people who have blocked you, and profiles don't show photos yet. Photos need slice 7, which will call `areConnected`.
+- The profile page (slice 4's) is still rough in two places: after a decline it still shows Connect, though pressing it is refused with a clear sentence, and a waiting request doesn't say who asked. Join-up (#17) tidies both. The graph and list don't yet hide people who have blocked you, The profile page now shows a photo to connected people (slice 7).
 - Requests can't be withdrawn, and there is no email when one arrives. Both were left out on purpose.
 - Sign-in on production needs `AUTH_SECRET`, `GMAIL_USER`, `GMAIL_APP_PASSWORD`, `EMAIL_FROM` and `ADMIN_EMAILS` in Vercel; until they are set it fails with a server configuration error. Magic-link delivery was only checked into Gmail, not Outlook or iCloud.
 - The pretend cohort, the dev switcher and their switch are temporary. Join-up (#17) deletes them once real sign-in and real profiles exist.
@@ -170,7 +179,8 @@ Full reasoning: `openspec/changes/archive/2026-10-01-2-mvp-overview/design.md` a
 - Tests empty the tables on the shared `dev` database and refill them at the end. Two people running tests at the same moment can trip each other up, and anything changed by hand on `dev` is lost on the next test run.
 - Still to be recorded on #7: Tom's check of the `User` and sign-in tables, and the team's agreement on who creates migrations.
 - Email-sending service for magic links: not chosen (slice 1).
-- File storage provider: proposed, confirmed in slice 7.
+- File storage provider: Vercel Blob, private. Production needs `BLOB_READ_WRITE_TOKEN`, which Vercel adds when a Blob store is connected to the project.
+- The account page's answer editing runs on stand-ins for slice 2's pick screen, bio and rules; join-up (#17) swaps them for slice 2's real ones once it lands.
 - Messages refresh on page load, and there are no unread markers. Real-time chat is a stretch goal. A conversation loads all its messages at once, which is fine at cohort size.
 - A suspended person is treated as no longer connected for sending, but the conversation stays readable and listed. Slice 8 did not change this, so hiding them from the list is still a follow-up.
 - The admin screens (slice 8) have no dashboard stats, and cannot view a profile or reset someone's onboarding: all three are MVP Later. A users list has no search, which is fine at cohort size. Whether a first real admin account exists on production depends on `ADMIN_EMAILS` being set before that person signs up.
