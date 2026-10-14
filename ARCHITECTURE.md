@@ -8,7 +8,7 @@ Update this as the last step whenever `/opsx:archive-change` lands a change that
 
 Collabz is our version of the course brief "Bootcamp Connect". It matches software-course and business-course students by **chemistry**, not CVs. People build a profile by picking tags from fixed lists, the app scores every pair, and everyone sees the whole cohort as a live graph. Two people who both agree to connect get a private conversation.
 
-> **Status (13 Oct 2026):** slice 0, the foundation (#7), slice 3 (#10, chemistry matching), slice 4 (#11, the graph, the people list and profile pages) and slice 5 (#12, connection requests) are built and live. The app runs on Vercel, talks to Neon through Prisma, and shows the tag catalogue at `/catalogue`. The foundation added every MVP database table, a placeholder page for every route, a cohort of pretend students and a dev-only way to act as any of them. Slice 4 then added the cohort graph, the people list with its filters and the profile pages. They run on the pretend cohort and on stand-ins for other tracks' work (see below). Slice 5 then made the Connect button real and added the requests page, and slice 3 replaced the pretend scores with the real chemistry formula and added `/matches`. The other real features (sign-up, onboarding, messages) are not built yet: the tracks are building those in parallel on top of the foundation (slice map: issue #18). The per-capability specs are in `openspec/specs/`. The reasoning behind them is `openspec/changes/archive/2026-10-01-2-mvp-overview/` as amended by `openspec/changes/archive/2026-10-01-4-brief-alignment/`. Where the two disagree, #4 wins.
+> **Status (14 Oct 2026):** slice 0, the foundation (#7), slice 1 (#8, sign-up and sign-in), slice 3 (#10, chemistry matching), slice 4 (#11, the graph, the people list and profile pages) and slice 5 (#12, connection requests) are built and live. The app runs on Vercel, talks to Neon through Prisma, and shows the tag catalogue at `/catalogue`. The foundation added every MVP database table, a placeholder page for every route, a cohort of pretend students and a dev-only way to act as any of them. Slice 4 then added the cohort graph, the people list with its filters and the profile pages. They run on the pretend cohort and on stand-ins for other tracks' work (see below). Slice 5 then made the Connect button real and added the requests page, and slice 3 replaced the pretend scores with the real chemistry formula and added `/matches`. Slice 1 then added real sign-up and sign-in by emailed magic link, with the course and terms accepted at sign-up. The other real features (onboarding, messages) are not built yet: the tracks are building those in parallel on top of the foundation (slice map: issue #18). The per-capability specs are in `openspec/specs/`. The reasoning behind them is `openspec/changes/archive/2026-10-01-2-mvp-overview/` as amended by `openspec/changes/archive/2026-10-01-4-brief-alignment/`. Where the two disagree, #4 wins.
 
 ## The pieces
 
@@ -20,7 +20,7 @@ Collabz is our version of the course brief "Bootcamp Connect". It matches softwa
 - **A seed** (`prisma/seed.ts`): fills the catalogue tables from `prisma/seed-data.ts`. It runs on every deploy and only adds rows that are missing.
 - **A page for every route, and one nav bar** (`src/components/NavBar.tsx`): every address in the route plan already exists as a placeholder saying which slice will build it. Each track replaces its own placeholders and leaves the rest alone.
 - **The pretend cohort** (`npm run seed:fake`, built in `prisma/pretend-cohort.ts`): 32 pretend students on the `dev` database, 30 with finished profiles, scores, glitch matches, requests, conversations and messages. Since slice 3 the seed scores them with the real formula, so the scores are calculated, not made up. It lets every track build and test before real sign-up exists. It is the same on every machine, because the "random" choices are worked out from each user's id.
-- **The dev switcher** (`src/components/DevUserSwitcher.tsx` and `/api/dev/sign-in-as`): a "Dev sign-in as" list in the nav bar that makes you any pretend student. It stands in for real sign-in until slice 1 lands.
+- **The dev switcher** (`src/components/DevUserSwitcher.tsx` and `/api/dev/sign-in-as`): a "Dev sign-in as" list in the nav bar that makes you any pretend student. Since slice 1 it only applies when nobody is really signed in: a real magic-link session always wins. Join-up (#17) removes it.
 - **The pretend cohort switch** (`src/lib/pretendCohort.ts`): the cohort and the switcher only exist where `PRETEND_COHORT` is set to `on`, and never on the production deploy, whatever is set there.
 - **Shared helpers** (`src/lib/`): the only way one track reaches another track's feature. `getCurrentUser` and `requireAdmin` (who is using the app, and are they an admin), `scoreUser`, `getTopFive`, `explainMatch` and `ensureGlitchMatch` (slice 3, from `src/lib/matching/`), `openConversation` and `closeConversation`, and `orderUserPair`. Slice 5 added `sendConnectionRequest` and `areConnected` in `src/lib/requests/`.
 - **Tests**: Vitest checks the seeds, the database rules and the helpers, and Playwright checks the pages, the nav bar and the switcher in a real browser. Both run against the real `dev` database, not a fake one, and put the catalogue and the pretend cohort back when they finish.
@@ -48,10 +48,19 @@ Collabz is our version of the course brief "Bootcamp Connect". It matches softwa
 - **The requests page and the nav count** (`/requests`, `src/components/WaitingRequestsCount.tsx`): waiting and sent lists, built from one filter that also drives the number beside the Requests link, so they can't disagree.
 - **`areConnected(a, b)`** (`areConnected.ts`): the rule for who may see a photo, for slice 7. An approved request and no block. No photo code was built here.
 
+**Built (slice 1, #8):**
+
+- **Auth.js v5 with email magic links** (`src/auth.ts`, `/api/auth/*`): sign-in without passwords. Sessions are rows in the `Session` table, so a suspension takes effect on the very next page. No `Account` rows are made: magic-link users don't need them.
+- **Emails sent through a dedicated Gmail account** (`src/lib/auth/sendMagicLinkEmail.ts`), with an app password: free, and no domain of our own needed. Our own short wording, one retry if Gmail says "try again later", and a test inbox (`.magic-links/`) for the pretend students' `@collabz.test` addresses while the pretend cohort is on. Sending through Resend is kept in the code, switched off, ready for when we have a domain.
+- **`/signup` and `/signup/finish`**: one form (email, course, accept the terms). The course and terms travel inside the magic link, so sign-up finishes in whichever browser opens it. An account with no course or no accepted terms counts as not created.
+- **`/signin`**, with plain messages for a suspended account and for a used or expired link, and **"Signed in as … / Sign out"** in the nav bar (`src/components/SignedInStatus.tsx`).
+- **`getCurrentUser()` now returns the real user** (`src/lib/currentUser.ts`, deciding through `pickCurrentUser()` in `src/lib/auth/accountState.ts`): a finished, unsuspended magic-link user first; otherwise the dev switcher's pretend user where the cohort is on; otherwise nobody. Its name and return value didn't change, so no other track changed any code.
+- **First admins from `ADMIN_EMAILS`** (`src/lib/auth/signInRules.ts`): applied once, when an account is created.
+- **`/terms` and `/privacy`** in plain English, and **`npm run qr`** for the printable QR code (`public/qr-code.png`).
+
 **Planned:**
 
 
-- **Auth.js with email magic links**: sign-in without passwords. Needs an email-sending service (chosen in slice 1).
 - **Private file storage (proposed: Vercel Blob)**: optional profile photos. Photos are only served through the app, after a permission check.
 
 ## How a request flows through the system
@@ -60,7 +69,11 @@ Collabz is our version of the course brief "Bootcamp Connect". It matches softwa
 
 **Deploying (built):** a push to GitHub starts a Vercel build → the build updates the database tables (`prisma migrate deploy`), runs the seed, then builds the app. If the database can't be reached the build fails and the previous version stays live.
 
-**Acting as a pretend student (built, dev and previews only):** pick someone in the "Dev sign-in as" list and press Switch → the browser posts the form to `/api/dev/sign-in-as` → the server stores that user's id in a cookie the page's own scripts can't read, and sends the browser back to the page it was on → from then on `getCurrentUser()` reads the cookie and returns that user. On production the route answers "not found" and `getCurrentUser()` returns nobody.
+**Acting as a pretend student (built, dev and previews only):** pick someone in the "Dev sign-in as" list and press Switch → the browser posts the form to `/api/dev/sign-in-as` → the server stores that user's id in a cookie the page's own scripts can't read, and sends the browser back to the page it was on → from then on `getCurrentUser()` reads the cookie and returns that user. On production the route answers "not found", so `getCurrentUser()` only ever returns someone who really signed in. Anyone really signed in is never swapped for a pretend user.
+
+**Signing up (built):** scan the QR code → `/signup` → email, course and the terms tick box → a Server Action checks them (`checkSignUpForm`) and asks Auth.js to email a magic link whose return address carries the course and terms (`/signup/finish?course=…&terms=accepted`) → Gmail delivers it → the student taps it → `/api/auth/callback/nodemailer`: Auth.js checks and uses up the token, refuses a suspended account, creates the `User` (made an admin if on `ADMIN_EMAILS`) and a `Session` → `/signup/finish` shows the answers filled in → one tap saves the course and terms (`completeSignUp`, which checks them again) → `/onboarding`.
+
+**Signing in (built):** `/signin` → email → magic link → `/signin` again, which sends a finished account home and an unfinished one to `/signup/finish`. Sign out deletes the session row.
 
 **Opening an admin page (built):** the page calls `requireAdmin()` before anything else → nobody signed in: sent to `/signin` → signed in but not an admin: the standard "page not found" page, so a member can't even tell the page exists → an admin: the page renders.
 
@@ -78,6 +91,9 @@ The flows below are planned, not built yet.
 
 - **Next.js with API routes, not a separate backend:** one codebase and one deploy for two beginners.
 - **Magic links, no passwords:** we never store passwords, and it fits the QR-code sign-up.
+- **Course and terms travel inside the magic link:** on a phone, Gmail often opens links in its own browser, which doesn't share cookies with the one that scanned the QR code. Carrying the answers in the link means sign-up works whichever browser opens it.
+- **Gmail for now, Resend kept ready:** Resend needs a verified domain to email anyone but its owner, and we have none. Gmail is free and needs no domain; switching back is documented in `src/auth.ts`.
+- **`getCurrentUser()` decides with a plain, tested function:** every track's pages depend on it, so the choice between a real user, a pretend user and nobody lives in `pickCurrentUser()`, where each case has a unit test.
 - **Tags, categories and courses are database rows with fixed ids:** admins must manage them (brief), and fixed ids mean renaming a tag never changes a score.
 - **Scores are stored, and recalculated only for the user who changed:** a pair's score depends only on those two profiles, so nothing else needs recalculating.
 - **Seeking↔Quality pairings are stored data:** complement scoring depends on them, and admins can add tags.
@@ -110,14 +126,15 @@ The flows below are planned, not built yet.
 - **The photo rule is a function, with no photo code** (`areConnected`): slice 7 owns upload and serving, and a block makes the rule false by itself, so slice 9 needs no extra code here.
 - **A member who opens an admin page gets "page not found", not "access denied":** it gives nothing away, and Next.js's "forbidden" page is still experimental.
 
-Full reasoning: `openspec/changes/archive/2026-10-01-2-mvp-overview/design.md` and `openspec/changes/archive/2026-10-01-4-brief-alignment/design.md`. For slice 0: `openspec/changes/archive/2026-10-08-6-tag-catalogue/design.md`. For the foundation: `openspec/changes/archive/2026-10-08-7-foundation/design.md`. For the graph, people list and profile pages: `openspec/changes/archive/2026-10-12-11-graph-search/design.md`. For connection requests: `openspec/changes/archive/2026-10-12-12-connection-requests/design.md`. For chemistry matching: `openspec/changes/archive/2026-10-13-10-matching/design.md`.
+Full reasoning: `openspec/changes/archive/2026-10-01-2-mvp-overview/design.md` and `openspec/changes/archive/2026-10-01-4-brief-alignment/design.md`. For slice 0: `openspec/changes/archive/2026-10-08-6-tag-catalogue/design.md`. For the foundation: `openspec/changes/archive/2026-10-08-7-foundation/design.md`. For the graph, people list and profile pages: `openspec/changes/archive/2026-10-12-11-graph-search/design.md`. For connection requests: `openspec/changes/archive/2026-10-12-12-connection-requests/design.md`. For chemistry matching: `openspec/changes/archive/2026-10-13-10-matching/design.md`. For sign-up and sign-in: `openspec/changes/archive/2026-10-14-8-user-auth/design.md`.
 
 ## Open questions / known gaps
 
-- Only slice 0, the foundation, slice 3, slice 4 and slice 5 are built. There are no real users and no real sign-in. The graph, people list, profile pages and requests work on the pretend cohort, and the other pages are placeholders.
+- Only slice 0, the foundation, slices 1, 3, 4 and 5 are built. Real sign-up and sign-in exist, but there are no real profiles yet (onboarding, slice 2, isn't built). The graph, people list, profile pages and requests work on the pretend cohort, and the other pages are placeholders.
 - The five stand-ins in `src/lib/cohort/standIns.ts` are temporary, and the real `getTopFive` and `explainMatch` now exist in `src/lib/matching/` under the same names, so join-up (#17) swaps them and the two "finished and not suspended" rules (written twice on purpose) get merged. `sendConnectionRequest` was agreed and is real.
 - The profile page (slice 4's) is still rough in two places: after a decline it still shows Connect, though pressing it is refused with a clear sentence, and a waiting request doesn't say who asked. Join-up (#17) tidies both. The graph and list don't yet hide people who have blocked you, and profiles don't show photos yet. Photos need slice 7, which will call `areConnected`.
 - Requests can't be withdrawn, and there is no email when one arrives. Both were left out on purpose.
+- Sign-in on production needs `AUTH_SECRET`, `GMAIL_USER`, `GMAIL_APP_PASSWORD`, `EMAIL_FROM` and `ADMIN_EMAILS` in Vercel; until they are set it fails with a server configuration error. Magic-link delivery was only checked into Gmail, not Outlook or iCloud.
 - The pretend cohort, the dev switcher and their switch are temporary. Join-up (#17) deletes them once real sign-in and real profiles exist.
 - The 23 Seeking↔Quality pairings are a draft that was assumed approved so slice 3 could be built. If the team changes them, edit `prisma/seed-data.ts` and run `npm run rescore:all`. Skills and Interests are not scored and are empty until slice 2 adds those categories.
 - The pretend requests and conversations were built from the old invented ranking, so a few may sit between people who are no longer in each other's top 5.
