@@ -35,6 +35,10 @@ import { SilhouetteStandIn } from "@/lib/cohort/SilhouetteStandIn";
 // Plain arithmetic (no database code), so it is safe to import in the browser.
 import { findSettledCircle, limitToCircle, type Circle } from "@/lib/cohort/dragLimit";
 
+import { CourseMark } from "@/components/CourseMark";
+import { secondaryButtonClasses, textLinkClasses } from "@/components/formStyles";
+import { courseLook } from "@/lib/course/courseLook";
+
 import { courseColourName } from "./graphColours";
 import styles from "./graphColours.module.css";
 
@@ -168,6 +172,39 @@ function withOpacity(hexColour: string, opacity: number): string {
   const blue = parseInt(hexColour.slice(5, 7), 16);
   return `rgba(${red}, ${green}, ${blue}, ${opacity})`;
 }
+
+// Traces (but does not paint) a square with rounded corners, centred on
+// (centreX, centreY). `half` is half the side, so a square with half = 6 is
+// 12 across, the same width as a circle with radius 6. The caller then calls
+// fill() or stroke(). This is how Business is drawn, so the two courses
+// differ by SHAPE and not only by colour (visual-design spec, "Course is
+// never shown by colour alone").
+//
+// arcTo draws a corner by "heading for" the next corner and rounding off
+// before it, which is why each call names the corner it is heading for and
+// the one after.
+function traceRoundedSquare(
+  context: CanvasRenderingContext2D,
+  centreX: number,
+  centreY: number,
+  half: number,
+  corner: number,
+) {
+  const left = centreX - half;
+  const top = centreY - half;
+  const side = half * 2;
+
+  context.moveTo(left + corner, top);
+  context.arcTo(left + side, top, left + side, top + side, corner);
+  context.arcTo(left + side, top + side, left, top + side, corner);
+  context.arcTo(left, top + side, left, top, corner);
+  context.arcTo(left, top, left + side, top, corner);
+  context.closePath();
+}
+
+// How rounded the corners are, as a share of half the side. The design's
+// square is 40 across with a 9 corner, which is 0.45 of half the side.
+const ROUNDED_SQUARE_CORNER_SHARE = 0.45;
 
 // ---------------------------------------------------------------------------
 // Types
@@ -346,9 +383,15 @@ export default function CohortGraph({ nodes, links }: CohortGraphProps) {
     // drawn after it partly see-through, until it is set back.
     context.globalAlpha = node.matchesFilter ? 1 : DIMMED_OPACITY;
 
-    // The dot, in its course's colour.
+    // The dot, in its course's colour AND its course's shape: a circle for
+    // Software, a rounded square for Business (courseLook.ts decides).
+    const isSquare = courseLook(node.courseId).shape === "square";
     context.beginPath();
-    context.arc(node.x, node.y, radius, 0, 2 * Math.PI);
+    if (isSquare) {
+      traceRoundedSquare(context, node.x, node.y, radius, radius * ROUNDED_SQUARE_CORNER_SHARE);
+    } else {
+      context.arc(node.x, node.y, radius, 0, 2 * Math.PI);
+    }
     context.fillStyle = colours[courseColourName(node.courseId)];
     context.fill();
 
@@ -368,8 +411,20 @@ export default function CohortGraph({ nodes, links }: CohortGraphProps) {
       ringColour = colours["--graph-line"];
     }
     if (ringColour) {
+      // The ring follows the dot's shape, a little way out from it.
+      const ringRadius = radius + RING_GAP;
       context.beginPath();
-      context.arc(node.x, node.y, radius + RING_GAP, 0, 2 * Math.PI);
+      if (isSquare) {
+        traceRoundedSquare(
+          context,
+          node.x,
+          node.y,
+          ringRadius,
+          ringRadius * ROUNDED_SQUARE_CORNER_SHARE,
+        );
+      } else {
+        context.arc(node.x, node.y, ringRadius, 0, 2 * Math.PI);
+      }
       context.strokeStyle = ringColour;
       context.lineWidth = RING_WIDTH;
       context.setLineDash(ringIsDashed ? GLITCH_DASH : []);
@@ -393,7 +448,9 @@ export default function CohortGraph({ nodes, links }: CohortGraphProps) {
       const text = node.isViewer ? "You" : node.alias;
       const textY = node.y + radius + RING_GAP + fontSize;
 
-      context.font = `${node.isViewer ? "bold " : ""}${fontSize}px sans-serif`;
+      // Figtree is the site's body face (loaded in layout.tsx); sans-serif
+      // is what it was before and is still the fallback.
+      context.font = `${node.isViewer ? "bold " : ""}${fontSize}px Figtree, sans-serif`;
       context.textAlign = "center";
       context.textBaseline = "middle";
       // First a thick outline in the page's background colour, then the text
@@ -578,9 +635,10 @@ type SelectedPersonPanelProps = {
 function SelectedPersonPanel({ node, onClose }: SelectedPersonPanelProps) {
   return (
     <div
-      // Sits over the bottom of the canvas. `bg-background` gives it the
-      // page's own background colour so the graph doesn't show through.
-      className="bg-background absolute inset-x-2 bottom-2 rounded border border-current/30 p-3 shadow-lg sm:right-auto sm:w-80"
+      // Sits over the bottom of the canvas. bg-surface gives it a solid
+      // card colour so the graph doesn't show through, and shadow-sheet lifts
+      // it off the canvas (design tokens, globals.css).
+      className="absolute inset-x-2 bottom-2 rounded-feature border border-line bg-surface p-3 shadow-sheet sm:right-auto sm:w-80"
       // Screen readers announce the panel's contents when it appears.
       role="status"
       data-testid="graph-panel"
@@ -589,14 +647,23 @@ function SelectedPersonPanel({ node, onClose }: SelectedPersonPanelProps) {
         <SilhouetteStandIn silhouette={node.silhouette} size={48} />
 
         <div className="min-w-0 flex-1">
-          <p className="font-semibold">{node.alias}</p>
-          <p className="text-sm">{node.courseName ?? "No course"}</p>
+          {/* The alias in the display face, wrapped rather than cut off. */}
+          <p className="font-display text-xl leading-6 text-foreground [overflow-wrap:anywhere]">
+            {node.alias}
+          </p>
+          <div className="mt-1">
+            <CourseMark
+              courseId={node.courseId}
+              name={node.courseName ?? "No course"}
+              variant="plain"
+            />
+          </div>
 
           {/* Exactly one of these lines, depending on who was tapped. */}
           {node.isViewer ? (
-            <p className="mt-1 text-sm">This is you.</p>
+            <p className="mt-1 text-sm text-muted">This is you.</p>
           ) : (
-            <p className="mt-1 text-sm">
+            <p className="mt-1 text-sm text-muted">
               {node.scoreWithViewer === null
                 ? "No score with you yet"
                 : `Score with you: ${node.scoreWithViewer}`}
@@ -607,17 +674,13 @@ function SelectedPersonPanel({ node, onClose }: SelectedPersonPanelProps) {
 
           <p className="mt-2">
             {/* The node's id IS its profile address (see aliasAddress.ts). */}
-            <Link href={`/people/${node.id}`} className="underline underline-offset-4">
+            <Link href={`/people/${node.id}`} className={textLinkClasses}>
               View profile
             </Link>
           </p>
         </div>
 
-        <button
-          type="button"
-          onClick={onClose}
-          className="rounded border border-current/30 px-2 py-1 text-sm"
-        >
+        <button type="button" onClick={onClose} className={secondaryButtonClasses}>
           Close
         </button>
       </div>
