@@ -9,7 +9,7 @@ Names used, so the tasks stay short:
 
 ## 1. Before building
 
-- [ ] 1.1 **(human)** Assign yourself to #13 (`gh issue edit 13 --add-assignee @me`) and comment on #13 and #16 that a closed conversation never reopens, so a block closes it for good. Verify: both comments exist and #13 shows an assignee
+- [x] 1.1 **(human)** Assign yourself to #13 (`gh issue edit 13 --add-assignee @me`) and comment on #13 and #16 that a closed conversation never reopens, so a block closes it for good. Verify: both comments exist and #13 shows an assignee
 - [x] 1.2 Read the Next.js 16 guides in `node_modules/next/dist/docs/` for dynamic route segments in pages and route handlers (`params` is a Promise) and `router.refresh()`, and note any difference from design decision 5 in this file's "Notes" section. Verify: the notes exist, or say "nothing differs"
 
 ## 2. The shared helpers
@@ -40,9 +40,9 @@ Names used, so the tasks stay short:
 
 ## 6. Deploy and hand over
 
-- [ ] 6.1 **(human)** Push, open the PR, and on the preview URL as `pretend-user-02` repeat #13's three success checks (only the two people can read it, even by calling the server directly; sent messages appear on refresh; a closed conversation can't receive new messages), one on a real phone. Verify: all three are ticked in the PR description, with the design's assumptions listed for the reviewer to confirm
-- [ ] 6.2 **(human)** Comment on #16 (use `closeConversation()`, a closed conversation is read-only and never reopens) and #17 (what join-up needs to know: nothing changes for slice 5's call). Verify: both comments exist
-- [ ] 6.3 After the PR merges, archive with `/opsx:archive`, sync the specs, and update `ARCHITECTURE.md` for the messaging flow. Verify: `openspec/specs/messaging/spec.md` holds the new requirement text and `ARCHITECTURE.md` mentions messaging
+- [x] 6.1 **(human)** Push, open the PR, and on the preview URL as `pretend-user-02` repeat #13's three success checks (only the two people can read it, even by calling the server directly; sent messages appear on refresh; a closed conversation can't receive new messages), one on a real phone. Verify: all three are ticked in the PR description, with the design's assumptions listed for the reviewer to confirm
+- [x] 6.2 **(human)** Comment on #16 (use `closeConversation()`, a closed conversation is read-only and never reopens) and #17 (what join-up needs to know: nothing changes for slice 5's call). Verify: both comments exist
+- [x] 6.3 After the PR merges, archive with `/opsx:archive`, sync the specs, and update `ARCHITECTURE.md` for the messaging flow. Verify: `openspec/specs/messaging/spec.md` holds the new requirement text and `ARCHITECTURE.md` mentions messaging
 
 ## Notes
 
