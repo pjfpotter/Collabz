@@ -16,7 +16,12 @@ import {
   parseFilters,
   type PersonListing,
 } from "@/lib/cohort/search";
-import { SilhouetteStandIn, requireFinishedProfile } from "@/lib/cohort/standIns";
+import { requireFinishedProfile } from "@/lib/cohort/standIns";
+
+import { textLinkClasses } from "@/components/formStyles";
+import { PersonRow } from "@/components/PersonRow";
+import { StateMessage } from "@/components/StateMessage";
+import { TagChip } from "@/components/TagChip";
 
 import { PeopleFilters } from "./PeopleFilters";
 
@@ -45,8 +50,8 @@ export default async function PeoplePage({ searchParams }: PageProps<"/people">)
 
   return (
     <main className="mx-auto w-full max-w-2xl px-4 py-8">
-      <h1 className="text-3xl font-semibold">People</h1>
-      <p className="mt-2 text-zinc-600 dark:text-zinc-400">
+      <h1 className="text-4xl">People</h1>
+      <p className="mt-2 text-muted">
         Everyone in the cohort, best match with you first.
       </p>
 
@@ -56,7 +61,7 @@ export default async function PeoplePage({ searchParams }: PageProps<"/people">)
           filters change, so it is clear that something happened. */}
       <p className="mt-6 text-sm" aria-live="polite" data-testid="people-count">
         {countSentence(people.length, hasAnyFilter(filters))}{" "}
-        <Link href={`/graph${query}`} className="underline underline-offset-4">
+        <Link href={`/graph${query}`} className={textLinkClasses}>
           Show on the graph
         </Link>
       </p>
@@ -64,12 +69,12 @@ export default async function PeoplePage({ searchParams }: PageProps<"/people">)
       {people.length === 0 ? (
         <NobodyMatches filtersAreOn={hasAnyFilter(filters)} />
       ) : (
-        <ul className="mt-4 divide-y divide-current/20" data-testid="people-list">
+        <ul className="mt-4 divide-y divide-line" data-testid="people-list">
           {people.map((person) => (
             // The address is unique per person, and unlike the database id it
             // is safe to appear in the page.
             <li key={person.address} className="py-4">
-              <PersonRow person={person} />
+              <PersonListItem person={person} />
             </li>
           ))}
         </ul>
@@ -92,65 +97,62 @@ function countSentence(count: number, filtersAreOn: boolean): string {
 function NobodyMatches({ filtersAreOn }: { filtersAreOn: boolean }) {
   if (!filtersAreOn) {
     // No filters and still nobody: the viewer is the only finished profile.
-    return <p className="mt-4">Nobody else has finished their profile yet.</p>;
+    return (
+      <div className="mt-4">
+        <StateMessage title="Nobody else has finished their profile yet." />
+      </div>
+    );
   }
   return (
-    <p className="mt-4" data-testid="nobody-matches">
-      Nobody matches all of these filters.{" "}
-      <Link href="/people" className="underline underline-offset-4">
-        Clear the filters
-      </Link>{" "}
-      to see everyone.
-    </p>
+    <div className="mt-4" data-testid="nobody-matches">
+      <StateMessage title="Nobody matches all of these filters.">
+        <Link href="/people" className={textLinkClasses}>
+          Clear the filters
+        </Link>{" "}
+        to see everyone.
+      </StateMessage>
+    </div>
   );
 }
 
 // One person in the list. Only public things are shown: alias, silhouette,
 // course, tags and the score with you. Never an email or a photo (rule B1).
-function PersonRow({ person }: { person: PersonListing }) {
+// One person in the list. Drawn by the shared PersonRow (alias that wraps,
+// silhouette, course shape and name, score). The page only adds what is
+// specific to this list: the Top 5 / Glitch match words, and the skills and
+// interests lines.
+function PersonListItem({ person }: { person: PersonListing }) {
   return (
-    <div className="flex items-start gap-3">
-      <SilhouetteStandIn silhouette={person.silhouette} size={48} />
-
-      <div className="min-w-0 flex-1">
-        <p>
-          <Link
-            href={`/people/${person.address}`}
-            className="font-semibold underline underline-offset-4"
-          >
-            {person.alias}
-          </Link>
-          {/* A badge, in words, for the people the viewer is allowed to send
-              a connection request to. */}
-          {person.isTopFive && <Badge>Top 5</Badge>}
-          {person.isGlitch && <Badge>Glitch match</Badge>}
+    <PersonRow
+      alias={person.alias}
+      silhouette={person.silhouette}
+      courseId={person.courseId}
+      courseName={person.courseName ?? "No course"}
+      score={person.scoreWithViewer ?? undefined}
+      scoreLabel="Score with you"
+      href={`/people/${person.address}`}
+    >
+      {/* A badge, in words, for the people the viewer is allowed to send a
+          connection request to. */}
+      {(person.isTopFive || person.isGlitch) && (
+        <p className="mt-2 flex flex-wrap gap-2">
+          {person.isTopFive && <TagChip>Top 5</TagChip>}
+          {person.isGlitch && <TagChip>Glitch match</TagChip>}
         </p>
+      )}
 
-        <p className="text-sm text-zinc-600 dark:text-zinc-400">
-          {person.courseName ?? "No course"}
-          {" · "}
-          {person.scoreWithViewer === null
-            ? "No score with you yet"
-            : `Score with you: ${person.scoreWithViewer}`}
-        </p>
+      {person.scoreWithViewer === null && (
+        <p className="mt-1 text-sm text-muted">No score with you yet</p>
+      )}
 
-        {/* Each line only appears if the person picked something in that
-            category. Before slice 2 lands, nobody has, so neither shows. */}
-        {person.skillNames.length > 0 && (
-          <p className="mt-1 text-sm">Skills: {person.skillNames.join(", ")}</p>
-        )}
-        {person.interestNames.length > 0 && (
-          <p className="text-sm">Interests: {person.interestNames.join(", ")}</p>
-        )}
-      </div>
-    </div>
-  );
-}
-
-function Badge({ children }: { children: React.ReactNode }) {
-  return (
-    <span className="ml-2 rounded border border-current/40 px-2 py-0.5 text-xs font-normal whitespace-nowrap">
-      {children}
-    </span>
+      {/* Each line only appears if the person picked something in that
+          category. Before slice 2 lands, nobody has, so neither shows. */}
+      {person.skillNames.length > 0 && (
+        <p className="mt-2 text-sm text-muted">Skills: {person.skillNames.join(", ")}</p>
+      )}
+      {person.interestNames.length > 0 && (
+        <p className="text-sm text-muted">Interests: {person.interestNames.join(", ")}</p>
+      )}
+    </PersonRow>
   );
 }

@@ -25,7 +25,8 @@ Verify at 375px and 1280px, in light and dark, for every group that changes what
   - Checked 14 Oct 2026: the pretend cohort (`prisma/pretend-cohort.ts`) stores `silhouette-01` to `silhouette-12`, spread evenly, and `SILHOUETTE_IDS` in the account stand-ins has the same twelve. The ids match.
 - [x] 2.2 Add the twelve silhouettes as SVG files in `public/silhouettes/silhouette-01.svg` … `-12.svg` (where slice 2's design 7 puts them, colours for light and dark inside each file), and make `SilhouetteStandIn` show them at its existing `size`, with the same props (team decision, 14 Oct 2026). Verify: `/matches` and `/graph` show the new pictures; they read at 24px and at 96px in both themes
   - Checked 14 Oct 2026: a contact sheet of all 12 at 24, 48 and 96px in Chrome shows each reading clearly, in the light colours and (with the dark values forced, since headless Chrome would not switch scheme) the dark colours. `SilhouettePlaceholder` on the account page now shows the real picture too. Unknown ids fall back to `silhouette-01`. The three e2e selectors `svg[data-silhouette]` became `img[data-silhouette]`; the requests, profile, messages, account, matches and graph specs pass (59). Slice 2 only needs to add `silhouettes.ts` and its picker: the files are done.
-- [ ] 2.3 Add `CourseMark` (shape + colour + name) and the course badge, and the grey circle fallback for other courses (design 4). Add a unit test for which shape and colour each course id gets. Verify: `npm test` passes, and a greyscale screenshot of the badge pair still tells the two apart
+- [x] 2.3 Add `CourseMark` (shape + colour + name) and the course badge, and the grey circle fallback for other courses (design 4). Add a unit test for which shape and colour each course id gets. Verify: `npm test` passes, and a greyscale screenshot of the badge pair still tells the two apart
+  - Closed 14 Oct 2026 in group 6: `CourseMark` is on the people list and the profile page. Looked at in Chrome at 375px and 1280px: Software is a blue circle and Business an orange rounded square, each with its name beside it, so the pair is told apart by shape and word as well as colour.
   - Built 14 Oct 2026: `src/lib/course/courseLook.ts` (shape and colour per course), `src/components/CourseMark.tsx` (badge and plain variants) and `tests/unit/courseLook.test.ts` (4 passing). Left unticked: it isn't used on any screen yet, so the greyscale check waits for group 6.
 
 ## 3. Navigation and the always-there strip
@@ -55,9 +56,12 @@ Verify at 375px and 1280px, in light and dark, for every group that changes what
 
 ## 6. Matches, people and profile
 
-- [ ] 6.1 Restyle `/matches` (`MatchCard`, top five, glitch match, existing wording unchanged). Verify: `tests/e2e/matches.spec.ts` passes; a 60-character alias wraps at 375px
-- [ ] 6.2 Restyle `/people` and its filters, with the new empty state when filters match nobody. Verify: `tests/e2e/people.spec.ts` passes; filters usable at 375px
-- [ ] 6.3 Restyle `/people/[alias]`: header, "Why you match", the connect box in each state (can connect, waiting, connected, cannot). Verify: `tests/e2e/profile.spec.ts` passes; the Connect button still shows only for the six allowed people
+- [x] 6.1 Restyle `/matches` (`MatchCard`, top five, glitch match, existing wording unchanged). Verify: `tests/e2e/matches.spec.ts` passes; a 60-character alias wraps at 375px
+  - Checked 14 Oct 2026: `/matches` and `MatchCard` use `PersonCard`, `ReasonsList` and `ScoreBadge`; the glitch card is dashed with a "Surprise match" caption. All text, test ids and data are unchanged (the match data carries no course, so none is shown, as before). Looked at at 375px: long aliases wrap. `matches.spec.ts` and `matchesPage.test.ts` pass.
+- [x] 6.2 Restyle `/people` and its filters, with the new empty state when filters match nobody. Verify: `tests/e2e/people.spec.ts` passes; filters usable at 375px
+  - Checked 14 Oct 2026: `/people` and its filters use `PersonRow`, `StateMessage`, `TagChip` and the shared form styles; the two empty states keep their words. Found by the test and fixed: the score label read "Score with you::" because the badge adds its own colon. `people.spec.ts` (21) and `search.test.ts` pass.
+- [x] 6.3 Restyle `/people/[alias]`: header, "Why you match", the connect box in each state (can connect, waiting, connected, cannot). Verify: `tests/e2e/profile.spec.ts` passes; the Connect button still shows only for the six allowed people
+  - Checked 14 Oct 2026: `/people/[alias]` shows the alias, `CourseMark`, bio, tags as chips and "Why you match" with a score badge; the Connect button and its answer use the shared styles. One data-shape change outside this slice's files, flagged for review: `ProfileView` in `src/lib/cohort/profile.ts` (slice 4) gained `courseId` so the page can draw the course shape. It is the same id the people list and graph already carry. `profile.spec.ts` (31 across matches, people and profile) and `profile.test.ts` pass. Not looked at in the "connected" or "waiting" request states by eye; their sentences are unchanged and covered by the tests.
 
 ## 7. Graph (look only)
 

@@ -18,16 +18,35 @@ import { PersonRow } from "@/components/PersonRow";
 
 type PersonCardProps = ComponentProps<typeof PersonRow> & {
   tone?: "normal" | "glitch";
+  // A small label above the person, e.g. "Surprise match".
+  caption?: string;
+  // Attributes the page's tests look for on the card. Only data-* ones, so
+  // the card can't be made to carry anything else by accident.
+  frameProps?: {
+    "data-testid"?: string;
+    "data-score"?: number;
+    "data-alias"?: string;
+  };
 };
 
-export function PersonCard({ tone = "normal", ...rowProps }: PersonCardProps) {
+export function PersonCard({
+  tone = "normal",
+  caption,
+  frameProps,
+  ...rowProps
+}: PersonCardProps) {
   const frame =
     tone === "glitch"
       ? "border-2 border-dashed border-glitch"
       : "border border-line";
 
   return (
-    <article className={`rounded-feature bg-surface p-4 ${frame}`}>
+    <article className={`rounded-feature bg-surface p-4 ${frame}`} {...frameProps}>
+      {caption && (
+        <p className="mb-2 text-xs font-bold uppercase tracking-[0.08em] text-glitch">
+          {caption}
+        </p>
+      )}
       <PersonRow {...rowProps} />
     </article>
   );

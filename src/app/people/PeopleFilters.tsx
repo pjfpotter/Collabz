@@ -12,6 +12,7 @@
 import Link from "next/link";
 
 import type { FilterOption, FilterOptions, PeopleFilters } from "@/lib/cohort/search";
+import { inputClasses, secondaryButtonClasses, textLinkClasses } from "@/components/formStyles";
 
 type PeopleFiltersProps = {
   // What each dropdown offers.
@@ -49,11 +50,11 @@ export function PeopleFilters({ options, filters }: PeopleFiltersProps) {
         chosenId={filters.interestTagId}
       />
 
-      <button type="submit" className="rounded border border-current/30 px-3 py-1">
+      <button type="submit" className={secondaryButtonClasses}>
         Apply
       </button>
       {/* "Clear" is just a link to the page with no query at all. */}
-      <Link href="/people" className="py-1 underline underline-offset-4">
+      <Link href="/people" className={`inline-flex min-h-11 items-center ${textLinkClasses}`}>
         Clear
       </Link>
     </form>
@@ -83,7 +84,7 @@ function FilterDropdown({ label, name, options, chosenId }: FilterDropdownProps)
 
   return (
     <div className="flex flex-col gap-1">
-      <label htmlFor={id} className="text-sm">
+      <label htmlFor={id} className="text-sm text-muted">
         {label}
       </label>
       <select
@@ -92,7 +93,7 @@ function FilterDropdown({ label, name, options, chosenId }: FilterDropdownProps)
         // `defaultValue` sets what is chosen when the page loads and then
         // leaves the dropdown alone, which is all a plain form needs.
         defaultValue={chosenId ?? ""}
-        className="bg-background rounded border border-current/30 px-2 py-1"
+        className={inputClasses}
       >
         {/* An empty value means "no filter" (see pickKnownId in search.ts). */}
         <option value="">Any</option>

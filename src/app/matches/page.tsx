@@ -26,13 +26,13 @@ export default async function MatchesPage() {
 
   return (
     <main className="mx-auto w-full max-w-2xl px-4 py-8">
-      <h1 className="text-3xl font-semibold">Matches</h1>
-      <p className="mt-2 text-zinc-600 dark:text-zinc-400">
+      <h1 className="text-4xl">Matches</h1>
+      <p className="mt-2 text-muted">
         Your five best fits, and one surprise. You can ask any of them to connect.
       </p>
 
       <section className="mt-8" aria-labelledby="top-five-heading">
-        <h2 id="top-five-heading" className="text-xl font-semibold">
+        <h2 id="top-five-heading" className="text-3xl">
           Your top 5
         </h2>
 
@@ -53,10 +53,10 @@ export default async function MatchesPage() {
       </section>
 
       <section className="mt-10" aria-labelledby="glitch-heading">
-        <h2 id="glitch-heading" className="text-xl font-semibold">
+        <h2 id="glitch-heading" className="text-3xl">
           Your surprise match
         </h2>
-        <p className="mt-1 text-sm">
+        <p className="mt-1 text-sm text-muted">
           Picked at random, and never one of your top 5. Sometimes the best
           conversation is the one you didn&apos;t see coming.
         </p>

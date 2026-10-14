@@ -35,6 +35,8 @@ type PersonRowProps = {
   scoreLabel?: string;
   // Where the alias links to. Left out for a row that isn't a link.
   href?: string;
+  // 1 to 5 for a ranked list (the top five). Shown as "1." before the alias.
+  rank?: number;
   // Silhouette size in pixels.
   size?: number;
   // Anything shown under the name: reasons, a sentence, buttons.
@@ -49,6 +51,7 @@ export function PersonRow({
   score,
   scoreLabel,
   href,
+  rank,
   size = 48,
   children,
 }: PersonRowProps) {
@@ -68,6 +71,7 @@ export function PersonRow({
       <div className="min-w-0 flex-1">
         <div className="flex items-start justify-between gap-3">
           <h3 className={aliasClasses}>
+            {rank !== undefined && <span className="mr-1">{rank}.</span>}
             {href ? (
               <Link href={href} className="hover:underline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary-text">
                 {alias}

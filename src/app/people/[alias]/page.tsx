@@ -16,9 +16,15 @@ import {
   type ProfileView,
   type RequestStatus,
 } from "@/lib/cohort/profile";
-import { SilhouetteStandIn, requireFinishedProfile } from "@/lib/cohort/standIns";
+import { SilhouetteStandIn } from "@/lib/cohort/SilhouetteStandIn";
+import { requireFinishedProfile } from "@/lib/cohort/standIns";
 // Slice 7 (#14): the photo, for the owner, admins and connected people only.
+import { CourseMark } from "@/components/CourseMark";
+import { textLinkClasses } from "@/components/formStyles";
 import { ProfilePhoto } from "@/components/ProfilePhoto";
+import { ReasonsList } from "@/components/ReasonsList";
+import { ScoreBadge } from "@/components/ScoreBadge";
+import { TagChip } from "@/components/TagChip";
 
 import { ConnectButton } from "./ConnectButton";
 
@@ -46,7 +52,7 @@ export default async function PersonProfilePage({
   return (
     <main className="mx-auto w-full max-w-2xl px-4 py-8">
       <p className="text-sm">
-        <Link href="/people" className="underline underline-offset-4">
+        <Link href="/people" className={textLinkClasses}>
           Back to the list
         </Link>
       </p>
@@ -70,8 +76,15 @@ function ProfileHeader({ profile }: { profile: ProfileView }) {
     <div className="mt-4 flex items-center gap-4">
       <SilhouetteStandIn silhouette={profile.silhouette} size={72} />
       <div>
-        <h1 className="text-3xl font-semibold">{profile.alias}</h1>
-        <p className="text-zinc-600 dark:text-zinc-400">{profile.courseName ?? "No course"}</p>
+        {/* The alias wraps rather than being cut off, however long. */}
+        <h1 className="text-4xl leading-tight [overflow-wrap:anywhere]">{profile.alias}</h1>
+        <div className="mt-1">
+          <CourseMark
+            courseId={profile.courseId}
+            name={profile.courseName ?? "No course"}
+            variant="plain"
+          />
+        </div>
       </div>
     </div>
   );
@@ -81,15 +94,15 @@ function ProfileHeader({ profile }: { profile: ProfileView }) {
 function TagGroups({ profile }: { profile: ProfileView }) {
   return (
     <section className="mt-6" aria-label="About this person">
-      <p data-testid="profile-bio">{profile.bio}</p>
+      <p className="text-lg leading-7" data-testid="profile-bio">{profile.bio}</p>
 
       {profile.tagGroups.map((group) => (
         <div key={group.categoryId} className="mt-4">
-          <h2 className="text-sm font-semibold">{group.categoryName}</h2>
+          <h2 className="font-sans text-xs font-bold uppercase tracking-[0.08em] text-muted">{group.categoryName}</h2>
           <ul className="mt-1 flex flex-wrap gap-2">
             {group.tagNames.map((tagName) => (
-              <li key={tagName} className="rounded border border-current/40 px-2 py-0.5 text-sm">
-                {tagName}
+              <li key={tagName}>
+                <TagChip>{tagName}</TagChip>
               </li>
             ))}
           </ul>
@@ -102,10 +115,10 @@ function TagGroups({ profile }: { profile: ProfileView }) {
 // Your own profile: no breakdown and no Connect, just a way to edit it.
 function OwnProfileNote() {
   return (
-    <section className="mt-8 border-t border-current/20 pt-4" data-testid="own-profile">
+    <section className="mt-8 border-t border-line pt-4" data-testid="own-profile">
       <p>This is your profile, as other people see it.</p>
       <p className="mt-2">
-        <Link href="/account" className="underline underline-offset-4">
+        <Link href="/account" className={textLinkClasses}>
           Go to your account
         </Link>
       </p>
@@ -118,28 +131,29 @@ function MatchSection({ address, match }: { address: string; match: MatchView })
   const { explanation } = match;
 
   return (
-    <section className="mt-8 border-t border-current/20 pt-4" aria-label="Why you match">
-      <h2 className="text-xl font-semibold">Why you match</h2>
+    <section className="mt-8 border-t border-line pt-4" aria-label="Why you match">
+      <h2 className="text-3xl">Why you match</h2>
 
       {explanation === null ? (
         <p className="mt-2">There is no match score between you two yet.</p>
       ) : (
         <>
-          <p className="mt-2" data-testid="match-score">
-            Score with you: {explanation.score}
+          <p className="mt-2 flex items-center gap-2" data-testid="match-score">
+            Score with you:
+            <ScoreBadge score={explanation.score} label="Score with you" />
           </p>
-          <ul className="mt-2 list-disc pl-5">
-            {explanation.sentences.map((sentence) => (
-              <li key={sentence}>{sentence}</li>
-            ))}
-          </ul>
+          <div className="mt-3">
+            <ReasonsList groups={[{ sentences: explanation.sentences }]} />
+          </div>
           {/* Shared skills and interests are "for information" only: they
               are not part of the score (rule B5). */}
           {explanation.sharedSkills.length > 0 && (
-            <p className="mt-2 text-sm">Skills you share: {explanation.sharedSkills.join(", ")}</p>
+            <p className="mt-2 text-sm text-muted">
+              Skills you share: {explanation.sharedSkills.join(", ")}
+            </p>
           )}
           {explanation.sharedInterests.length > 0 && (
-            <p className="text-sm">
+            <p className="text-sm text-muted">
               Interests you share: {explanation.sharedInterests.join(", ")}
             </p>
           )}
@@ -147,7 +161,7 @@ function MatchSection({ address, match }: { address: string; match: MatchView })
       )}
 
       {match.connectReason === "glitch" && (
-        <p className="mt-4 font-semibold" data-testid="glitch-note">
+        <p className="mt-4 font-bold text-glitch" data-testid="glitch-note">
           This person is your glitch match.
         </p>
       )}
@@ -157,13 +171,12 @@ function MatchSection({ address, match }: { address: string; match: MatchView })
   );
 }
 
-// One of: the Connect button, the status of an existing request, or nothing.
 function ConnectArea({ address, match }: { address: string; match: MatchView }) {
   // An existing request is shown INSTEAD of the button, so nobody is invited
   // to ask twice.
   if (match.requestStatus !== null) {
     return (
-      <p className="mt-4" data-testid="request-status">
+      <p className="mt-4 font-medium" data-testid="request-status">
         {requestStatusSentence(match.requestStatus)}
       </p>
     );
