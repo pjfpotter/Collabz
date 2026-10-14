@@ -53,6 +53,8 @@ Start only once #6 and #7 have merged into `master` and this branch has been reb
 
 - [x] 6.1 Add a short "Onboarding" section to `README.md`: the routes, the shared helpers other tracks may call (`redirectIfOnboardingIncomplete`, `generateBio`, `ProfileCard`), and how to try it with the dev switcher. Verify: a teammate follows it on their machine
   - Written. The "teammate follows it" check is left for review.
-- [ ] 6.2 Push, open the PR, and on the preview deploy repeat the four success checks from #9 with a pretend user who has no profile. Verify: all four ticked in the PR description
-- [ ] 6.3 Note the join-up items on #17: other tracks' pages call `redirectIfOnboardingIncomplete()`; slice 7 reuses `PickStep`, `validateOnboardingAnswers` and `ProfileCard`; slice 4 decides how an alias becomes a URL. Verify: comment posted on #17
+- [x] 6.2 Push, open the PR, and on the preview deploy repeat the four success checks from #9 with a pretend user who has no profile. Verify: all four ticked in the PR description
+  - PR #49. The four checks are ticked in its description, checked against the `dev` database. On the preview (`collabz-git-feature-9-onboarding-…vercel.app`), `/onboarding` sends a signed-out visitor to `/signin`, `/catalogue` lists Skills and Interests, and the silhouettes load.
+- [x] 6.3 Note the join-up items on #17: other tracks' pages call `redirectIfOnboardingIncomplete()`; slice 7 reuses `PickStep`, `validateOnboardingAnswers` and `ProfileCard`; slice 4 decides how an alias becomes a URL. Verify: comment posted on #17
+  - Posted: https://github.com/pjfpotter/Collabz/issues/17#issuecomment-6180866026
 - [x] 6.4 Add `contributions.md` to this change folder: who drove which group and one decision each person can explain. Verify: file present
