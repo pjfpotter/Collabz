@@ -43,9 +43,12 @@ Before starting: `git merge origin/master` into `feature/14-account` if slice 1'
 
 ## 7. Deploy
 
-- [ ] 7.1 **(human, Patrick)** Connect a Blob store to the Vercel project (Storage → Create → Blob, for Preview and Production). Verify: `BLOB_READ_WRITE_TOKEN` appears in the project's environment variables
-- [ ] 7.2 Push and open the build PR (flagging the line in slice 4's page). On the preview, as a pretend user: upload, view and remove a photo through real Blob storage. Verify: #14's success checks 1, 3 and 4 are ticked in the PR description
-- [ ] 7.3 On the preview: edit an answer as a pretend user and check their alias and conversations are unchanged on `/account` and `/messages`. Verify: #14's success check 2 is ticked
+- [x] 7.1 **(human, Patrick)** Connect a Blob store to the Vercel project (Storage → Create → Blob, for Preview and Production). Verify: `BLOB_READ_WRITE_TOKEN` appears in the project's environment variables
+  - 14 Oct 2026: the Blob store was already connected. An upload on #40's preview was stored and served through private Vercel Blob (key `photos/pretend-user-02/<random>.jpg`), so `BLOB_READ_WRITE_TOKEN` is set for Preview.
+- [x] 7.2 Push and open the build PR (flagging the line in slice 4's page). On the preview, as a pretend user: upload, view and remove a photo through real Blob storage. Verify: #14's success checks 1, 3 and 4 are ticked in the PR description
+  - 14 Oct 2026, on the preview as pretend users: upload 200; owner, admin and a connected user (`pretend-user-19`) 200; a stranger (`pretend-user-04`) and signed out 404; remove 200, then 404 for the owner too. Not seen from here: that the file is gone from Blob itself (no token on this laptop). Removing it is covered by the integration tests; it can be confirmed in Vercel's Storage browser.
+- [x] 7.3 On the preview: edit an answer as a pretend user and check their alias and conversations are unchanged on `/account` and `/messages`. Verify: #14's success check 2 is ticked
+  - 14 Oct 2026, on the preview: `pretend-user-05` changed Seeking in a real browser and was returned to `/account`. Seeking changed in the database; alias and requests unchanged. They have no conversations, so "conversations unchanged" rests on the integration test (`editAnswers.test.ts`).
 
 ## Workflow follow-up
 
