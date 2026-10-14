@@ -16,6 +16,7 @@
 import { expect, test, type Page } from "@playwright/test";
 
 import { seedCatalogue } from "../../prisma/seed";
+import { seedCategories } from "../../prisma/seed-data";
 import { aliasToAddress } from "../../src/lib/cohort/aliasAddress";
 import {
   createTestDatabaseClient,
@@ -43,7 +44,25 @@ test.beforeAll(async () => {
   await loadPretendCohortForTests(prisma);
 });
 
+// The catalogue tests that run after this file (catalogue.spec.ts) only add
+// missing rows and expect the seeded catalogue as it was shipped. So this
+// file puts back the two tags it changes, instead of leaving them renamed and
+// retired for the next spec to trip over.
+const tagsToRestore = new Set<string>(["energy-sea-captain"]);
+
 test.afterAll(async () => {
+  if (prisma) {
+    for (const category of seedCategories) {
+      for (const tag of category.tags) {
+        if (tagsToRestore.has(tag.id)) {
+          await prisma.tag.update({
+            where: { id: tag.id },
+            data: { name: tag.name, retiredAt: null },
+          });
+        }
+      }
+    }
+  }
   // The whole database is put back after the run (playwrightGlobalTeardown).
   await prisma?.$disconnect();
 });
@@ -146,6 +165,8 @@ test.describe("as an admin", () => {
       include: { tag: true, profile: true },
     });
     const tagName = pick.tag.name;
+    // Remember it, so afterAll can un-retire it.
+    tagsToRestore.add(pick.tag.id);
     const profileAddress = `/people/${aliasToAddress(pick.profile.alias)}`;
 
     await page.goto("/admin/categories");

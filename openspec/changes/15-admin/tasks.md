@@ -38,13 +38,13 @@ Groups build on each other in order: the small logic functions with tests (1, 2,
 
 ## 6. End-to-end checks and docs
 
-- [ ] 6.1 Add `tests/e2e/admin.spec.ts` for the issue's success checks: a member and a signed-out visitor can't open `/admin`, `/admin/categories`, `/admin/courses` or `/admin/users`; an admin renames a tag and `/catalogue` shows it; a retired tag isn't listed but a profile still shows it; a suspended pretend user vanishes from the graph. Verify: `npm run test:e2e` passes
-- [ ] 6.2 Check that the sign-in refusal for a suspended real user still works with a user suspended from this screen (the existing `signin.spec.ts` case covers it). Verify: `npm run test:e2e` passes unchanged
+- [x] 6.1 Add `tests/e2e/admin.spec.ts` for the issue's success checks: a member and a signed-out visitor can't open `/admin`, `/admin/categories`, `/admin/courses` or `/admin/users`; an admin renames a tag and `/catalogue` shows it; a retired tag isn't listed but a profile still shows it; a suspended pretend user vanishes from the graph. Verify: `npm run test:e2e` passes
+- [x] 6.2 Check that the sign-in refusal for a suspended real user still works with a user suspended from this screen (the existing `signin.spec.ts` case covers it). Verify: `npm run test:e2e` passes unchanged
 - [x] 6.3 Add an "Admin screens" section to `README.md`: what each screen does, that nothing is deleted, that "Rescore everyone" is needed after pairing changes. (The photo-removal line is added in 7.3.) Verify: every path and button name in the README matches the code
 - [ ] 6.4 **(human)** Tell #14 (account page, PR #40) that admin "remove photo" will call its `removeProfilePhoto(userId)`, so its name and signature should not change without a word. Post on #17: check onboarding doesn't offer retired tags and sign-up doesn't offer retired courses. Verify: both comments exist
 - [ ] 6.5 Run the four success checks from #15 on the deployed preview and record the result under a "Checked" note at the top of this file. Verify: the note exists
 
-- Group 6 status (14 Oct 2026): `tests/e2e/admin.spec.ts` is written and passed 7 of 7 on its own run. The WHOLE e2e suite has not passed yet: a full run was disturbed by another writer on the shared test database (foreign-key errors in unrelated specs, no process of ours running). 6.1 and 6.2 stay unticked until `npm run test:e2e` passes in full. 6.3 is done. 6.4 and 6.5 are human tasks. The e2e spec also exercises 5.1's suspend and unsuspend through `/people`; 5.1 names `/graph` too, which is not checked in a browser, so it stays unticked.
+- Group 6 status (14 Oct 2026): the whole `npm run test:e2e` suite passes (109 of 109) with `AUTH_SECRET` set in the environment (this machine's `.env` has none, so the sign-in and sign-up specs can't make a magic link without it; that is the environment, not this change). Two fixes were needed: `admin.spec.ts` now puts back the two tags it renames and retires, so `catalogue.spec.ts` sees the seeded catalogue; and `switcher.spec.ts` no longer expects the old `/admin` placeholder text, which this slice replaced. 6.3 is done. 6.4 and 6.5 are human tasks. The e2e spec exercises 5.1's suspend and unsuspend through `/people`; 5.1 names `/graph` too, which is not checked in a browser, so it stays unticked.
 
 ## 7. Remove photo (waits for #14 / PR #40 to merge)
 
