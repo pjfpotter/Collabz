@@ -13,6 +13,7 @@ import type { CourseChoice } from "@/lib/auth/courses";
 
 import { CourseAndTermsFields } from "../CourseAndTermsFields";
 import { finishSignUp, type FinishFormState } from "./actions";
+import { primaryButtonClasses } from "@/components/formStyles";
 
 type FinishFormProps = {
   courses: CourseChoice[];
@@ -47,7 +48,7 @@ export function FinishForm({ courses, courseId, acceptedTerms }: FinishFormProps
       <button
         type="submit"
         disabled={pending}
-        className="mt-2 rounded border border-current px-4 py-2 font-semibold disabled:opacity-50"
+        className={`mt-2 ${primaryButtonClasses}`}
       >
         {pending ? "Saving…" : "Finish sign-up"}
       </button>

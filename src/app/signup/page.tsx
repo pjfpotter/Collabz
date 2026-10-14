@@ -16,6 +16,7 @@ import { getActiveCourses } from "@/lib/auth/courses";
 import { getSessionUser } from "@/lib/auth/session";
 
 import { SignUpForm } from "./SignUpForm";
+import { textLinkClasses } from "@/components/formStyles";
 
 // Sets the browser tab title for this page.
 export const metadata = {
@@ -34,8 +35,8 @@ export default async function SignUpPage() {
 
   return (
     <main className="mx-auto w-full max-w-md px-4 py-8">
-      <h1 className="text-3xl font-semibold">Sign up</h1>
-      <p className="mt-2 text-zinc-600 dark:text-zinc-400">
+      <h1 className="text-4xl">Sign up</h1>
+      <p className="mt-2 text-muted">
         Tell us your email and course, and we&apos;ll send you a link to finish
         signing up. No password needed.
       </p>
@@ -44,7 +45,7 @@ export default async function SignUpPage() {
 
       <p className="mt-8 text-sm">
         Already signed up?{" "}
-        <Link href="/signin" className="underline underline-offset-4">
+        <Link href="/signin" className={textLinkClasses}>
           Sign in
         </Link>
       </p>

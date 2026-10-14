@@ -55,13 +55,13 @@ export default async function FinishSignUpPage({
 
   return (
     <main className="mx-auto w-full max-w-md px-4 py-8">
-      <h1 className="text-3xl font-semibold">Finish signing up</h1>
-      <p className="mt-2 text-zinc-600 dark:text-zinc-400">
+      <h1 className="text-4xl">Finish signing up</h1>
+      <p className="mt-2 text-muted">
         {answersCameWithTheLink
           ? "Nearly there. Check your answers and finish signing up."
           : "Before you start, choose your course and accept the terms."}
       </p>
-      <p className="mt-2 text-sm text-zinc-600 dark:text-zinc-400">
+      <p className="mt-2 text-sm text-muted">
         Signing up as <strong>{sessionUser.email}</strong>
       </p>
 

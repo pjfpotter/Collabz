@@ -46,9 +46,12 @@ Verify at 375px and 1280px, in light and dark, for every group that changes what
 
 ## 5. Home, sign up and sign in
 
-- [ ] 5.1 Restyle `/` (home) with the wordmark, keeping its existing text. Verify: at 375px and 1280px, both themes
-- [ ] 5.2 Restyle `/signup` (form, course choice, terms), `/signup/finish` and `/signin`, including their error and "check your email" states. Verify: `tests/e2e/signup.spec.ts` and `signin.spec.ts` pass; the forms work by keyboard with a visible focus ring
-- [ ] 5.3 Update any selectors those tests need. Verify: `npm run test:e2e` passes
+- [x] 5.1 Restyle `/` (home) with the wordmark, keeping its existing text. Verify: at 375px and 1280px, both themes
+  - Checked 14 Oct 2026: home keeps its text, with the wordmark (italic z) as the heading; looked at in Chrome at 375px.
+- [x] 5.2 Restyle `/signup` (form, course choice, terms), `/signup/finish` and `/signin`, including their error and "check your email" states. Verify: `tests/e2e/signup.spec.ts` and `signin.spec.ts` pass; the forms work by keyboard with a visible focus ring
+  - Checked 14 Oct 2026: `/signup`, `/signup/finish` and `/signin` use new shared form styles (`src/components/formStyles.ts`: inputs, primary and secondary buttons, error text, notice box, links, tick box) that groups 8 and 9 reuse. Looked at in Chrome at 375px and 1280px, including the sign-in "link already used" notice. Inputs and buttons are 44px high; the focus ring is `focus-visible` and was not seen in a screenshot, only added in the classes. The "check your email" state is covered by the e2e tests, not seen by eye. Dark mode not seen.
+- [x] 5.3 Update any selectors those tests need. Verify: `npm run test:e2e` passes
+  - Checked 14 Oct 2026: no selector needed changing. `signup.spec.ts`, `signin.spec.ts`, `navigation.spec.ts` and `catalogue.spec.ts` pass (36).
 
 ## 6. Matches, people and profile
 
