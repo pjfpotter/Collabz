@@ -14,6 +14,7 @@
 //
 // Owner: slice 8 (#15).
 
+import { removeProfilePhoto } from "@/lib/account/photos";
 import { prisma } from "@/lib/db";
 import { scoreUser } from "@/lib/matching";
 
@@ -92,5 +93,26 @@ export async function unsuspendUser(userId: string): Promise<string[]> {
 
   // They come back into everyone's scores.
   await scoreUser(userId);
+  return [];
+}
+
+// Removes a user's photo (admin spec: "Remove a photo").
+//
+// This is a thin wrapper on purpose. Photo storage belongs to slice 7 (#14),
+// and removeProfilePhoto() is the one place that knows how: it clears
+// Profile.photoKey and then deletes the stored file (private Vercel Blob, or
+// a folder on a laptop). Calling it, rather than clearing the key ourselves,
+// means the file really goes and slice 7 can change how photos are stored
+// without this file changing (design decision 7).
+//
+// The rest of the profile (alias, tags, scores) is not touched.
+export async function removePhoto(userId: string): Promise<string[]> {
+  const user = await prisma.user.findUnique({ where: { id: userId } });
+  if (!user) {
+    return ["That user doesn't exist."];
+  }
+
+  // Safe if they have no photo: removeProfilePhoto then does nothing.
+  await removeProfilePhoto(userId);
   return [];
 }

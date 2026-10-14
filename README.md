@@ -456,7 +456,7 @@ Slice 8 (#15). Admins (Patrick and Tom) keep the lists up to date, and suspend p
 | `/admin` | The admin home, with a menu to the sections below (and a link to `/admin/reports`, which is slice 9's) |
 | `/admin/categories` | Categories and tags: add, rename, reorder, retire and un-retire. Edit a tag's description. Seeking and Quality tags also have their pairings and a **Rescore everyone** button |
 | `/admin/courses` | Courses: add, rename, reorder, retire and un-retire. Shows how many people are on each |
-| `/admin/users` | Everyone, with their course, role and alias. **Suspend** and **Unsuspend** (not on your own row) |
+| `/admin/users` | Everyone, with their course, role and alias. **Suspend** and **Unsuspend** (not on your own row), and **Remove photo** for anyone who has one |
 
 **The rules, in plain words:**
 
@@ -465,7 +465,8 @@ Slice 8 (#15). Admins (Patrick and Tom) keep the lists up to date, and suspend p
 - **A new Seeking or Quality tag must be paired** with at least one tag on the other side, in the same step, so it can never exist unpaired. Editing a tag's pairings keeps any pair with a retired tag.
 - **Changing a pairing does not change anyone's score by itself.** After changing pairings, press **Rescore everyone** to recalculate every finished, active person (it uses slice 3's `rescoreEveryone()`). It tells you how many people were rescored.
 - **Suspending someone is reversible.** They can't sign in, they vanish from the graph and search, they have no scores and are nobody's top 5 or glitch match. Unsuspending brings them back. You can't suspend yourself, so the last admin can't lock everyone out.
-- **Not built yet:** dashboard stats, viewing a profile and resetting onboarding (MVP Later), and removing a photo, which waits for slice 7's `removeProfilePhoto` (PR #40).
+- **Removing a photo also deletes the stored file.** The button calls slice 7's `removeProfilePhoto()`, which clears the profile's photo and then deletes the file from private storage (Vercel Blob on a deployment, a folder on a laptop). The rest of the profile is untouched.
+- **Not built yet:** dashboard stats, and viewing a profile and resetting onboarding (all MVP Later).
 
 **Where the code is:**
 

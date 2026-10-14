@@ -42,6 +42,6 @@ None.
 - **Code (new):** `src/app/admin/` (page, `categories/`, `courses/`, `users/`, each with its Server Actions), `src/lib/admin/` (the small, tested functions that do the changes).
 - **Shared code changed:** none planned. `requireAdmin()` is used as it is. The `/admin` page replaces the placeholder.
 - **Routes owned:** `/admin` and everything under it **except** `/admin/reports`.
-- **Photos:** photo storage is built by the account slice (#14, PR #40), which is not merged yet. "Remove photo" here calls its `removeProfilePhoto(userId)`, which clears `Profile.photoKey` and deletes the stored file. That one task waits until #14 has merged (design decision 7).
+- **Photos:** photo storage is built by the account slice (#14, PR #40, merged 14 Oct 2026). "Remove photo" here calls its `removeProfilePhoto(userId)`, which clears `Profile.photoKey` and deletes the stored file (design decision 7).
 - **Join-up (#17):** onboarding (#9) must not offer retired tags or categories, and sign-up already skips retired courses. Both are checked with the live test rehearsal.
 - **Out of scope:** dashboard stats (MVP Later), the moderation queue (slice 9), viewing profiles, resetting onboarding, editing a tag's alias word, deleting anything.

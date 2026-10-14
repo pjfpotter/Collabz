@@ -8,6 +8,7 @@
 
 import { afterAll, beforeEach, describe, expect, it, vi } from "vitest";
 
+import { removeProfilePhoto } from "@/lib/account/photos";
 import { prisma } from "@/lib/db";
 
 import { seedCatalogue } from "../../prisma/seed";
@@ -30,6 +31,10 @@ vi.mock("next/headers", () => ({
   cookies: async () => ({ get: () => undefined }),
 }));
 
+// Slice 7's photo helper is replaced with a fake: we only care WHETHER the
+// action reaches it, and that no real photo storage is touched.
+vi.mock("@/lib/account/photos", () => ({ removeProfilePhoto: vi.fn(async () => {}) }));
+
 // revalidatePath needs a running Next.js server; here it can do nothing.
 vi.mock("next/cache", () => ({ revalidatePath: () => {} }));
 
@@ -46,7 +51,11 @@ import {
   setTagRetiredAction,
   updateTagDescriptionAction,
 } from "@/app/admin/categories/actions";
-import { suspendUserAction, unsuspendUserAction } from "@/app/admin/users/actions";
+import {
+  removePhotoAction,
+  suspendUserAction,
+  unsuspendUserAction,
+} from "@/app/admin/users/actions";
 import {
   addCourseAction,
   moveCourseAction,
@@ -86,6 +95,7 @@ async function snapshot() {
 }
 
 beforeEach(async () => {
+  vi.mocked(removeProfilePhoto).mockClear();
   signedInAs.userId = null;
   await emptyDatabase(prisma);
   await seedCatalogue(prisma);
@@ -128,6 +138,7 @@ const allAdminActions: [string, (f: FormData) => Promise<void>, Record<string, s
   ["rescore everyone", rescoreEveryoneAction, {}],
   ["suspend user", suspendUserAction, { id: "test-victim" }],
   ["unsuspend user", unsuspendUserAction, { id: "test-victim" }],
+  ["remove photo", removePhotoAction, { id: "test-victim" }],
 ];
 
 describe("admin actions refuse anyone who isn't an admin", () => {
@@ -135,6 +146,7 @@ describe("admin actions refuse anyone who isn't an admin", () => {
     const before = await snapshot();
     await callAction(action, fields);
     expect(await snapshot()).toEqual(before);
+    expect(removeProfilePhoto).not.toHaveBeenCalled();
   });
 
   it.each(allAdminActions)("%s: refused for a member", async (_name, action, fields) => {
@@ -146,6 +158,7 @@ describe("admin actions refuse anyone who isn't an admin", () => {
     const before = await snapshot();
     await callAction(action, fields);
     expect(await snapshot()).toEqual(before);
+    expect(removeProfilePhoto).not.toHaveBeenCalled();
   });
 
   it("does the change for an admin (so the refusals above mean something)", async () => {
@@ -163,6 +176,23 @@ describe("admin actions refuse anyone who isn't an admin", () => {
 
     const course = await prisma.course.findUniqueOrThrow({ where: { id: "software" } });
     expect(course.name).toBe("Software Engineering");
+  });
+
+  it("lets an admin remove someone's photo, by calling slice 7's helper", async () => {
+    const admin = await prisma.user.create({
+      data: {
+        email: "admin3@example.com",
+        role: "ADMIN",
+        courseId: "software",
+        acceptedTermsAt: new Date(),
+      },
+    });
+    signedInAs.userId = admin.id;
+
+    await callAction(removePhotoAction, { id: "test-victim" });
+
+    expect(removeProfilePhoto).toHaveBeenCalledTimes(1);
+    expect(removeProfilePhoto).toHaveBeenCalledWith("test-victim");
   });
 
   it("lets an admin suspend someone else but never themselves", async () => {

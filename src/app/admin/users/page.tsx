@@ -1,13 +1,14 @@
 // /admin/users - list users, suspend and unsuspend (slice 8, #15).
 //
-// A Server Component with plain forms. Removing a photo is not here yet: it
-// waits for slice 7's removeProfilePhoto (tasks.md, group 7).
+// A Server Component with plain forms. "Remove photo" only appears for
+// people who have one, and calls slice 7's removeProfilePhoto through
+// removePhoto() in src/lib/admin/users.ts.
 
 import { listUsers } from "@/lib/admin/users";
 import { requireAdmin } from "@/lib/currentUser";
 
 import { AdminMenu } from "../AdminMenu";
-import { suspendUserAction, unsuspendUserAction } from "./actions";
+import { removePhotoAction, suspendUserAction, unsuspendUserAction } from "./actions";
 
 export const metadata = {
   title: "Users · Admin · Collabz",
@@ -68,14 +69,27 @@ export default async function AdminUsersPage({ searchParams }: PageProps<"/admin
               </p>
               {suspended && <p className="text-sm font-semibold">Suspended</p>}
 
-              {!isYou && (
-                <form action={suspended ? unsuspendUserAction : suspendUserAction} className="mt-2">
-                  <input type="hidden" name="id" value={user.id} />
-                  <button type="submit" className={BUTTON}>
-                    {suspended ? "Unsuspend" : "Suspend"}
-                  </button>
-                </form>
-              )}
+              <div className="mt-2 flex flex-wrap gap-2">
+                {!isYou && (
+                  <form action={suspended ? unsuspendUserAction : suspendUserAction}>
+                    <input type="hidden" name="id" value={user.id} />
+                    <button type="submit" className={BUTTON}>
+                      {suspended ? "Unsuspend" : "Suspend"}
+                    </button>
+                  </form>
+                )}
+
+                {/* Anyone with a photo, including you: removing a photo is
+                    not the dangerous action that suspending yourself is. */}
+                {user.hasPhoto && (
+                  <form action={removePhotoAction}>
+                    <input type="hidden" name="id" value={user.id} />
+                    <button type="submit" className={BUTTON}>
+                      Remove photo
+                    </button>
+                  </form>
+                )}
+              </div>
             </li>
           );
         })}

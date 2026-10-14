@@ -2,9 +2,10 @@
 // real test database: suspend, unsuspend, the self-suspend refusal, and the
 // users list.
 
-import { afterAll, beforeEach, describe, expect, it } from "vitest";
+import { afterAll, beforeEach, describe, expect, it, vi } from "vitest";
 
-import { listUsers, suspendUser, unsuspendUser } from "@/lib/admin/users";
+import { removeProfilePhoto } from "@/lib/account/photos";
+import { listUsers, removePhoto, suspendUser, unsuspendUser } from "@/lib/admin/users";
 import { getVisiblePeople } from "@/lib/cohort/visiblePeople";
 import { prisma } from "@/lib/db";
 import { rescoreEveryone } from "@/lib/matching";
@@ -13,7 +14,13 @@ import { seedCatalogue } from "../../prisma/seed";
 import { emptyDatabase } from "../helpers/database";
 import { createPerson } from "../helpers/people";
 
+// Slice 7's photo helper is replaced with a fake, so these tests never touch
+// real photo storage. removePhoto() must only CALL it; what it does (clear the
+// key, delete the file) is slice 7's own tests' business.
+vi.mock("@/lib/account/photos", () => ({ removeProfilePhoto: vi.fn(async () => {}) }));
+
 beforeEach(async () => {
+  vi.mocked(removeProfilePhoto).mockClear();
   await emptyDatabase(prisma);
   await seedCatalogue(prisma);
 });
@@ -121,5 +128,26 @@ describe("listUsers", () => {
     expect(rows.find((row) => row.id === admin)!.role).toBe("ADMIN");
     const newRow = rows.find((row) => row.id === "no-profile")!;
     expect(newRow).toMatchObject({ alias: null, courseName: null, hasPhoto: false });
+  });
+});
+
+describe("removePhoto", () => {
+  it("calls slice 7's removeProfilePhoto once with that user's id and leaves the profile alone", async () => {
+    const anna = await createPerson(prisma, "anna");
+    const before = await prisma.profile.findUniqueOrThrow({ where: { userId: anna } });
+
+    expect(await removePhoto(anna)).toEqual([]);
+
+    expect(removeProfilePhoto).toHaveBeenCalledTimes(1);
+    expect(removeProfilePhoto).toHaveBeenCalledWith(anna);
+    // The fake did nothing, and removePhoto itself must not have changed the
+    // profile: alias and tags are the same.
+    const after = await prisma.profile.findUniqueOrThrow({ where: { userId: anna } });
+    expect(after).toEqual(before);
+  });
+
+  it("refuses a user that doesn't exist, without calling the helper", async () => {
+    expect(await removePhoto("nobody")).toHaveLength(1);
+    expect(removeProfilePhoto).not.toHaveBeenCalled();
   });
 });

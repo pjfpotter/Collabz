@@ -35,7 +35,7 @@ See `proposal.md` for why. What exists already, checked on 14 Oct 2026:
 
 6. **Pairings are rows in `TagPairing`, edited from the tag's own screen.** The add-tag form shows, for a Seeking tag, the list of active Quality tags (and the reverse), as tick boxes; at least one must be ticked. Existing pairings are edited the same way. Which categories are "Seeking" and "Qualities" is read from `CATEGORY_IDS` in `src/lib/matching/eligiblePeople.ts`, not re-hardcoded. Adding Seeking/Quality tags and their pairing happens in **one transaction**, so a tag is never stored unpaired.
 
-7. **Remove photo calls slice 7's `removeProfilePhoto(userId)`.** The account slice (#14, PR #40) exports it "for slices 8 and 9": it clears `Profile.photoKey` and then deletes the stored file (private Vercel Blob). Calling it means there is one place that knows how photos are stored, and an admin removal really deletes the file. `removePhoto()` in `src/lib/admin/users.ts` is a thin wrapper that calls it. *Depends on #14 being merged:* if it isn't when group 3 starts, stop and ask rather than writing a stand-in (see Risks). *Alternative:* clear `photoKey` here and leave the file. Rejected: it would leave a private photo in storage that nobody can reach or delete. *Alternative:* build our own storage delete. Rejected: it's another track's design.
+7. **Remove photo calls slice 7's `removeProfilePhoto(userId)`.** The account slice (#14, PR #40) exports it "for slices 8 and 9": it clears `Profile.photoKey` and then deletes the stored file (private Vercel Blob). Calling it means there is one place that knows how photos are stored, and an admin removal really deletes the file. `removePhoto()` in `src/lib/admin/users.ts` is a thin wrapper that calls it. *#14 merged on 14 Oct 2026,* so this is built as designed (group 7). *Alternative:* clear `photoKey` here and leave the file. Rejected: it would leave a private photo in storage that nobody can reach or delete. *Alternative:* build our own storage delete. Rejected: it's another track's design.
 
 8. **Suspend/unsuspend sets `suspendedAt` then calls `scoreUser()`.** Order matters: save first, rescore after, so a scoring problem can't undo the suspension (same rule as `scoreUser`'s header comment). The refusal to suspend yourself is checked in the function, not just by hiding the button.
 
@@ -51,7 +51,7 @@ See `proposal.md` for why. What exists already, checked on 14 Oct 2026:
 - **Last admin suspends someone's way into an empty admin list** → can't suspend yourself; admins are also set from `ADMIN_EMAILS` at deploy time.
 - **Retired category with active tags confuses the list** → the screen shows "retired" on the category and greys its tags, and says tags are hidden while it is retired.
 - **Rescoring everyone is slow on a big cohort** → fine for a bootcamp (tens of people); the button is a human action, never automatic.
-- **Remove photo can't be built until #14 (PR #40) merges** → it is its own last group (7), so the rest of the admin area ships first; the exact import path of `removeProfilePhoto` is confirmed against #14's merged code, not assumed.
+- **Remove photo depends on slice 7's `removeProfilePhoto` keeping its name and signature** → built in group 7 against the merged code (`@/lib/account/photos`), and a note was posted on #14 asking to be told before it changes.
 
 ## Open Questions
 

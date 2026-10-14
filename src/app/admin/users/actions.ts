@@ -9,12 +9,13 @@
 // After a change we refresh the pages that list people, so a suspended user
 // vanishes from the graph and search straight away.
 
-import { suspendUser, unsuspendUser } from "@/lib/admin/users";
+import { removePhoto, suspendUser, unsuspendUser } from "@/lib/admin/users";
 import { requireAdmin } from "@/lib/currentUser";
 
 import { redirectBack } from "../redirectBack";
 
 const PAGE = "/admin/users";
+// /people is refreshed too: a profile page shows the photo to connected people.
 const REFRESH = ["/graph", "/people", "/matches"];
 
 export async function suspendUserAction(formData: FormData): Promise<void> {
@@ -27,4 +28,10 @@ export async function unsuspendUserAction(formData: FormData): Promise<void> {
   await requireAdmin();
   const userId = String(formData.get("id") ?? "");
   redirectBack(PAGE, REFRESH, await unsuspendUser(userId));
+}
+
+export async function removePhotoAction(formData: FormData): Promise<void> {
+  await requireAdmin();
+  const userId = String(formData.get("id") ?? "");
+  redirectBack(PAGE, REFRESH, await removePhoto(userId));
 }

@@ -34,6 +34,7 @@ const prisma = testingDeployedSite ? null : createTestDatabaseClient();
 const admin = "pretend-user-01";
 const member = "pretend-user-02";
 const personToSuspend = "pretend-user-05";
+const personWithPhoto = "pretend-user-07";
 
 const adminPages = ["/admin", "/admin/categories", "/admin/courses", "/admin/users"];
 
@@ -221,5 +222,48 @@ test.describe("as an admin", () => {
     const ownCard = page.getByRole("listitem").filter({ hasText: user.email });
     await expect(ownCard.getByText("(you)")).toBeVisible();
     await expect(ownCard.getByRole("button")).toHaveCount(0);
+  });
+
+  // Admin spec: "Remove a photo". We give someone a photo key directly in the
+  // database (the file itself doesn't need to exist: removing is forgiving
+  // about that), then remove it from the users screen.
+  test("an admin removes a photo and the rest of the profile stays", async ({ page }) => {
+    const before = await prisma!.profile.findUniqueOrThrow({
+      where: { userId: personWithPhoto },
+      include: { tags: true },
+    });
+    await prisma!.profile.update({
+      where: { userId: personWithPhoto },
+      data: { photoKey: `photos/${personWithPhoto}/e2e-test.jpg` },
+    });
+    const user = await prisma!.user.findUniqueOrThrow({ where: { id: personWithPhoto } });
+
+    await page.goto("/admin/users");
+    const card = page.getByRole("listitem").filter({ hasText: user.email });
+    await expect(card.getByText("Has a photo")).toBeVisible();
+
+    await Promise.all([
+      page.waitForResponse(
+        (response) =>
+          response.request().method() === "POST" &&
+          response.request().headers()["next-action"] !== undefined,
+      ),
+      card.getByRole("button", { name: "Remove photo", exact: true }).click(),
+    ]);
+
+    await expect(card.getByText("Has a photo")).toHaveCount(0);
+    await expect(card.getByRole("button", { name: "Remove photo" })).toHaveCount(0);
+
+    const after = await prisma!.profile.findUniqueOrThrow({
+      where: { userId: personWithPhoto },
+      include: { tags: true },
+    });
+    expect(after.photoKey).toBeNull();
+    // Alias, silhouette and picks are unchanged.
+    expect(after.alias).toBe(before.alias);
+    expect(after.silhouette).toBe(before.silhouette);
+    expect(after.tags.map((tag) => tag.tagId).sort()).toEqual(
+      before.tags.map((tag) => tag.tagId).sort(),
+    );
   });
 });
