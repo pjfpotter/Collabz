@@ -13,6 +13,8 @@ import { expect, test } from "@playwright/test";
 // finished profile. Nobody is signed in during these tests, so following that
 // link ends up on the sign-in page instead. (What the page shows to someone
 // who is signed in is tested in that page's own file, e.g. graph.spec.ts.)
+// `needsSignIn: true` is the same for a built page that only needs someone
+// signed in, profile or not (e.g. /account, tested in account.spec.ts).
 // Keep this in step with `navLinks` in src/components/NavBar.tsx: if a link
 // is added there, the "has a link to every page" test below fails until it
 // is added here too.
@@ -26,7 +28,8 @@ const publicLinks = [
   { label: "People", path: "/people", heading: "People", needsProfile: true },
   { label: "Requests", path: "/requests", heading: "Requests", needsProfile: true },
   { label: "Messages", path: "/messages", heading: "Messages", needsProfile: true },
-  { label: "Account", path: "/account", heading: "Account" },
+  // Slice 7 (#14) built /account: signed out, it leads to the sign-in page.
+  { label: "Account", path: "/account", heading: "Account", needsSignIn: true },
 ];
 
 // The two admin links. Nobody is signed in during these tests, so following
@@ -63,9 +66,9 @@ for (const link of publicLinks) {
 
     await mainNav(page).getByRole("link", { name: link.label, exact: true }).click();
 
-    if (link.needsProfile) {
-      // A built page that needs a finished profile: signed out, the link
-      // leads to the sign-in page.
+    if (link.needsProfile || link.needsSignIn) {
+      // A built page that needs a finished profile, or just someone signed
+      // in: signed out, the link leads to the sign-in page.
       await expect(page).toHaveURL(/\/signin$/);
     } else {
       await expect(page).toHaveURL(new RegExp(`${link.path}$`));
@@ -96,13 +99,14 @@ test("the Collabz link goes back to the home page", async ({ page }) => {
 
 // Spec scenario: "A planned page that isn't built yet"
 test("a page that isn't built yet says so and names who will build it", async ({ page }) => {
-  // /account is still a placeholder (slice 7 builds it). Slice 6 (#13)
-  // replaced the one this test used to use, /messages.
-  await page.goto("/account");
+  // /onboarding is still a placeholder (slice 2 builds it). Slice 6 (#13)
+  // replaced /messages and slice 7 (#14) replaced /account, the two pages
+  // this test used before.
+  await page.goto("/onboarding");
 
-  await expect(page.getByRole("heading", { level: 1, name: "Account" })).toBeVisible();
+  await expect(page.getByRole("heading", { level: 1, name: "Onboarding" })).toBeVisible();
   await expect(page.getByText("This page is a placeholder.")).toBeVisible();
-  await expect(page.getByText("Slice 7 (issue #14) will build it.")).toBeVisible();
+  await expect(page.getByText("Slice 2 (issue #9) will build it.")).toBeVisible();
 });
 
 // Spec scenario: "A page with a person in its address"
