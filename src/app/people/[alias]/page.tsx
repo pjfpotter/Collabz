@@ -17,6 +17,8 @@ import {
   type RequestStatus,
 } from "@/lib/cohort/profile";
 import { SilhouetteStandIn, requireFinishedProfile } from "@/lib/cohort/standIns";
+// Slice 7 (#14): the photo, for the owner, admins and connected people only.
+import { ProfilePhoto } from "@/components/ProfilePhoto";
 
 import { ConnectButton } from "./ConnectButton";
 
@@ -50,6 +52,8 @@ export default async function PersonProfilePage({
       </p>
 
       <ProfileHeader profile={lookup.profile} />
+      {/* Slice 7 (#14): draws nothing for anyone not allowed to see it. */}
+      <ProfilePhoto alias={lookup.profile.alias} viewer={viewer} />
       <TagGroups profile={lookup.profile} />
 
       {lookup.kind === "own" ? (

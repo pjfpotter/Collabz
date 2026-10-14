@@ -33,9 +33,9 @@ Before starting: `git merge origin/master` into `feature/14-account` if slice 1'
 
 ## 5. Showing the photo on profile pages
 
-- [ ] 5.1 Add `src/components/ProfilePhoto.tsx` (runs `canSeePhoto`; draws a plain `<img>` only when allowed, with the eslint comment on why not `<Image>`) (design 8). Verify: `npx tsc --noEmit` and `npx eslint src` pass
-- [ ] 5.2 Add one import and one line to `src/app/people/[alias]/page.tsx` showing `ProfilePhoto` beside the silhouette, with a comment naming slice 7 as its owner. Verify: as a connected pretend user the photo shows; as a stranger only the silhouette shows
-- [ ] 5.3 Add to `tests/e2e/account.spec.ts`: after A uploads a photo, a pretend user connected to A sees it on A's profile page; a stranger doesn't, and gets 404 at the direct address; after a block, the connected user no longer sees it; the pretend admin can open the address. Verify: `npm run test:e2e` passes, including every other track's tests
+- [x] 5.1 Add `src/components/ProfilePhoto.tsx` (runs `canSeePhoto`; draws a plain `<img>` only when allowed, with the eslint comment on why not `<Image>`) (design 8). Verify: `npx tsc --noEmit` and `npx eslint src` pass
+- [x] 5.2 Add one import and one line to `src/app/people/[alias]/page.tsx` showing `ProfilePhoto` beside the silhouette, with a comment naming slice 7 as its owner. Verify: as a connected pretend user the photo shows; as a stranger only the silhouette shows
+- [x] 5.3 Add to `tests/e2e/account.spec.ts`: after A uploads a photo, a pretend user connected to A sees it on A's profile page; a stranger doesn't, and gets 404 at the direct address; after a block, the connected user no longer sees it; the pretend admin can open the address. Verify: `npm run test:e2e` passes, including every other track's tests
 
 ## 6. Docs
 

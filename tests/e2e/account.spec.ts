@@ -9,6 +9,7 @@
 import { expect, test, type Page } from "@playwright/test";
 
 import { seedCatalogue } from "../../prisma/seed";
+import { aliasToAddress } from "../../src/lib/cohort/aliasAddress";
 import {
   createTestDatabaseClient,
   emptyDatabase,
@@ -236,4 +237,130 @@ test("an unknown category is 'page not found'", async ({ page }) => {
   await signInAs(page, member);
   const response = await page.goto("/account/edit/not-a-category");
   expect(response?.status()).toBe(404);
+});
+
+// ---------------------------------------------------------------------------
+// Who sees the photo on the profile page (task 5.3)
+// ---------------------------------------------------------------------------
+
+const admin = "pretend-user-01";
+
+// The profile address (/people/the-...) of a pretend user, worked out from
+// their alias the same way the app does (as in profile.spec.ts).
+async function profileAddressOf(userId: string): Promise<string> {
+  const profile = await prisma!.profile.findUniqueOrThrow({ where: { userId } });
+  return `/people/${aliasToAddress(profile.alias)}`;
+}
+
+// Someone with an approved request with `userId`, and no block: connected.
+async function someoneConnectedTo(userId: string): Promise<string> {
+  const approved = await prisma!.connectionRequest.findMany({
+    where: { status: "APPROVED", OR: [{ fromUserId: userId }, { toUserId: userId }] },
+  });
+  for (const request of approved) {
+    const other = request.fromUserId === userId ? request.toUserId : request.fromUserId;
+    const blocks = await prisma!.block.count({
+      where: {
+        OR: [
+          { blockerId: userId, blockedId: other },
+          { blockerId: other, blockedId: userId },
+        ],
+      },
+    });
+    if (blocks === 0) return other;
+  }
+  throw new Error(`The pretend cohort has nobody connected to ${userId}`);
+}
+
+// A finished, unsuspended member with no request at all with `userId`.
+async function aStrangerTo(userId: string): Promise<string> {
+  const people = await prisma!.user.findMany({
+    where: {
+      id: { startsWith: "pretend-user-", notIn: [userId, admin] },
+      role: "MEMBER",
+      suspendedAt: null,
+      profile: { completedAt: { not: null } },
+      requestsSent: { none: { toUserId: userId } },
+      requestsReceived: { none: { fromUserId: userId } },
+    },
+    orderBy: { id: "asc" },
+    take: 1,
+  });
+  return people[0].id;
+}
+
+test.describe("the photo on the profile page", () => {
+  const owner = member;
+
+  // Give the owner a photo first (removed again at the end).
+  test.beforeAll(async ({ browser }) => {
+    const page = await browser.newPage();
+    await signInAs(page, owner);
+    await page.goto("/account");
+    await choosePhoto(page, { name: "me.png", mimeType: "image/png", buffer: tinyPng });
+    await expect(page.getByTestId("own-photo")).toBeVisible();
+    await page.close();
+  });
+
+  test.afterAll(async ({ browser }) => {
+    const page = await browser.newPage();
+    await signInAs(page, owner);
+    await page.request.delete("/api/account/photo");
+    await page.close();
+  });
+
+  // Spec: "Connected user sees the photo".
+  test("someone connected sees it", async ({ page }) => {
+    const connected = await someoneConnectedTo(owner);
+    await signInAs(page, connected);
+    await page.goto(await profileAddressOf(owner));
+
+    await expect(page.getByTestId("profile-photo")).toBeVisible();
+    // The browser really loaded it (an image that failed to load is 0 wide).
+    await expect
+      .poll(() => page.getByTestId("profile-photo").evaluate((img: HTMLImageElement) => img.naturalWidth))
+      .toBeGreaterThan(0);
+  });
+
+  // Spec: "Stranger cannot see photo" and "Refused even with the direct link".
+  test("a stranger sees only the silhouette, and the direct address says 'not found'", async ({ page }) => {
+    const stranger = await aStrangerTo(owner);
+    await signInAs(page, stranger);
+    await page.goto(await profileAddressOf(owner));
+
+    await expect(page.getByRole("heading", { level: 1 })).toBeVisible();
+    await expect(page.getByTestId("profile-photo")).toHaveCount(0);
+    expect((await page.request.get(`/api/account/photo/${owner}`)).status()).toBe(404);
+  });
+
+  // Spec: "Admin sees the photo".
+  test("an admin can open it", async ({ page }) => {
+    await signInAs(page, admin);
+    expect((await page.request.get(`/api/account/photo/${owner}`)).status()).toBe(200);
+  });
+
+  // Spec: "Blocked after connecting".
+  test("after a block, the connected person no longer sees it", async ({ page }) => {
+    const connected = await someoneConnectedTo(owner);
+    const block = await prisma!.block.create({ data: { blockerId: owner, blockedId: connected } });
+    try {
+      await signInAs(page, connected);
+      expect((await page.request.get(`/api/account/photo/${owner}`)).status()).toBe(404);
+    } finally {
+      // Put the cohort back as it was for any later test.
+      await prisma!.block.delete({
+        where: { blockerId_blockedId: { blockerId: block.blockerId, blockedId: block.blockedId } },
+      });
+    }
+  });
+
+  // Spec: photos "SHALL never appear on the graph or in search".
+  test("it never appears in the people list", async ({ page }) => {
+    const connected = await someoneConnectedTo(owner);
+    await signInAs(page, connected);
+    await page.goto("/people");
+
+    await expect(page.getByTestId("people-list")).toBeVisible();
+    await expect(page.locator(`img[src*="/api/account/photo/"]`)).toHaveCount(0);
+  });
 });
