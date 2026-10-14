@@ -50,7 +50,6 @@ Checked on 13 Oct 2026 by Tom, locally against Neon `dev`, with `next-auth@5.0.0
   - **Sending address:** for now Resend's shared `onboarding@resend.dev`; no domain of our own yet. **This only delivers to the Resend account owner's address, so students can't sign up until a domain is verified** (task 6.1). Tom, 13 Oct 2026.
   - **Policy contact:** Tom, tomhazz@gmail.com. Tom, 13 Oct 2026.
 - [x] 5.2 Add `/terms` and `/privacy` as static pages in plain English covering everything listed in design 10, using the values from 5.1. Verify: both open without signing in, the sign-up form links to both, and the privacy page mentions photos, messages, who can see them, and deletion at the end of the course by the admins
-- [ ] 5.3 **(human)** The team reads both pages and comments on the PR (Patrick at least). Verify: a comment from a teammate on the PR approves the wording
 - [x] 5.4 Add to `tests/e2e/signup.spec.ts`: signed out, `/terms` and `/privacy` open and show their headings, and both links on the sign-up form work. Verify: `npm run test:e2e` passes
 
 ## 7. Send through Gmail instead of Resend (13 Oct 2026, design 13)
@@ -66,15 +65,22 @@ Added when Tom chose Gmail because we have no domain for Resend. Do this group b
 ## 6. Email, QR code and deploy
 
 - [x] 6.1 **(human)** Create a dedicated Gmail account for Collabz, turn on 2-Step Verification, and create an app password (design 13). Put `GMAIL_USER`, `GMAIL_APP_PASSWORD` and `EMAIL_FROM` in your local `.env`, and sign in once locally with your own email. Verify: the magic link arrives from the new Gmail address and signs you in. (Was: verify a domain in Resend. Replaced on 13 Oct 2026; see 5.1 and design 13.)
-- [ ] 6.2 **(human)** Add `AUTH_SECRET`, `GMAIL_USER`, `GMAIL_APP_PASSWORD`, `EMAIL_FROM` and `ADMIN_EMAILS` to Vercel → Preview and Vercel → Production (Production's `ADMIN_EMAILS` holds Patrick's and Tom's real emails), and check `PRETEND_COHORT` is still **not** set on Production. Verify: Vercel's environment settings show all five in both, and `PRETEND_COHORT` only under Preview
-- [ ] 6.3 Add `qrcode` as a dev dependency, `scripts/make-qr-code.ts`, and an `npm run qr -- <url>` script writing `public/qr-code.png`, with a README line on how to make it (design 11). Verify: running it on the production URL produces an image that a phone camera opens at that URL
-- [ ] 6.4 Push and open the PR (flagging the `getCurrentUser()` and `NavBar.tsx` changes to Patrick). On the preview URL, sign up with a real email and finish onboarding's first screen. Verify: #8's success checks 2 and 3 are ticked in the PR description
-- [ ] 6.5 **(human)** Send magic links to Gmail, Outlook and iCloud addresses from the preview. Verify: each arrives in the inbox (not spam) within a minute; #8's success check 5 is ticked
-- [ ] 6.6 After merge, on production: Tom and Patrick sign up first and can open `/admin`; then scan the QR code with a phone and sign up as a member. Verify: #8's success checks 1 and 4 are ticked, and the production page shows no "sign in as…" control
+- [x] 6.3 Add `qrcode` as a dev dependency, `scripts/make-qr-code.ts`, and an `npm run qr -- <url>` script writing `public/qr-code.png`, with a README line on how to make it (design 11). Verify: running it on the production URL produces an image that a phone camera opens at that URL
+  - Made on 14 Oct 2026 for `https://collabz-ten.vercel.app/signup` (the stable production address) and saved as `public/qr-code.png`. Tom scanned it with his phone and it opened that page.
+
+## Not done in this change (decided by Tom, 14 Oct 2026)
+
+These were planned, but Tom closed them for the demo, with time short. They are listed here rather than ticked, so the record shows what was and wasn't checked.
+
+- **5.3 Patrick approves the legal wording.** Not done. Tom (the author) read `/terms` and `/privacy` instead. Fine for a demo; a teammate should read them before real students' data is collected.
+- **6.2 Vercel environment variables.** Handed to Patrick, who owns the Vercel project. **Until it's done, sign-in fails on production**: on 14 Oct 2026, `https://collabz-ten.vercel.app/api/auth/providers` answered with Auth.js's "server configuration" error (no `AUTH_SECRET`). What to set is in the archive PR description.
+- **6.4 Check sign-up on the preview.** The build PR was opened and merged (#36), but sign-up was never tried on its preview: the preview had no Vercel variables either (6.2).
+- **6.5 Inbox checks.** Checked in **Gmail only** (Tom, 13 Oct 2026: arrived in the inbox). Outlook and iCloud weren't checked.
+- **6.6 Sign up on production, first admins, phone via QR code.** Left to the team's testing before the demo, after 6.2.
 
 ## Workflow follow-up
 
-- Ask Patrick to change the `pretend-cohort` spec's switcher lines from "until slice 1 (#8) replaces it" to "until join-up (#17)" in #7 before #7 is archived (proposal, Impact).
-- Add `approval.md` (team sign-off) to this folder before apply starts, as WORKFLOW.md stage 4 requires.
-- After merge and deploy: `/opsx:archive`, updating `ARCHITECTURE.md` (Auth.js, Gmail sending with Resend kept ready, and the sign-in flow are new pieces of the system).
+- Done in the archive (14 Oct 2026): the main `pretend-cohort` spec's switcher lines changed from "until slice 1 (#8) replaces it" to "until join-up (#17)". #7 was archived before this was fixed, so it is done here instead.
+- `approval.md` was never added. Patrick approved the proposal PR (#26) on GitHub, which WORKFLOW.md counts as the primary sign-off.
+- Archive (14 Oct 2026, branch `feature/8-user-auth-archive`): specs synced, `ARCHITECTURE.md` updated (Auth.js, Gmail sending with Resend kept ready, and the sign-in flow are new pieces of the system).
 - Join-up (#17): remove the switcher path from `getCurrentUser()`, and the `.magic-links/` test inbox if no test needs it any more.
