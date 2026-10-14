@@ -1,26 +1,161 @@
 @import "tailwindcss";
 
+/*
+  THE DESIGN TOKENS (slice 10, #45, design decision 1).
+
+  Every colour, radius and shadow the app uses is named here, ONCE, with a
+  light value ("paper") and a dark value ("loam"). The values come from the
+  "Design language" board of the Claude Design export.
+
+  Three steps to read this file:
+  1. :root holds the LIGHT values, as plain CSS variables.
+  2. The prefers-color-scheme block below it replaces them for dark devices.
+  3. @theme inline hands the variables to Tailwind, so a class like
+     bg-surface or text-muted picks the right one in whichever theme is on.
+
+  WHY VARIABLES AND NOT A JAVASCRIPT THEME: the graph is drawn on a canvas,
+  which can't use Tailwind classes. It reads these same CSS variables when it
+  starts (src/app/graph/graphColours.module.css), so the page and the graph
+  can never disagree about a colour.
+
+  Two pairs are easy to mix up:
+  - primary is the foxfire FILL (buttons, selected chips) and is the same in
+    both themes. primary-text is the readable version for TEXT and links,
+    which has to be darker on paper.
+  - business is for shapes and fills; business-text is for words.
+*/
+
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  /* Surfaces */
+  --background: #f6f3ea; /* page */
+  --surface: #fffdf7; /* cards, sheets, nav */
+  --surface-2: #efe9d8; /* raised things, inputs */
+  --line: #e1d9c3; /* dividers (decorative only) */
+  --line-strong: #857e62; /* control borders, 3.7:1 */
+
+  /* Text */
+  --foreground: #1a1f16; /* 15.1:1 */
+  --muted: #586049; /* 5.9:1 */
+
+  /* Brand */
+  --primary: #a8f27c; /* fill */
+  --on-primary: #12200a; /* text on a primary fill, 12.7:1 */
+  --primary-text: #2a6414; /* links and accents, 6.5:1 */
+
+  /* The two courses (always shown with a shape and a label as well) */
+  --software: #1a3590;
+  --on-software: #ffffff;
+  --business: #cc7000; /* shapes and fills only, 3.2:1 */
+  --business-text: #9a5200; /* words, 5.3:1 */
+  --on-business: #1a1f16;
+
+  /* Glitch match and errors */
+  --glitch: #a3217f;
+  --danger: #b3321f;
+
+  /* Shadow colour, used by the shadow tokens below */
+  --shadow-color: rgba(26, 31, 22, 0.18);
+}
+
+/* The same names with dark values. This follows the device's setting, the
+   same way the site already did. */
+@media (prefers-color-scheme: dark) {
+  :root {
+    --background: #0d100c;
+    --surface: #151913;
+    --surface-2: #1d231a;
+    --line: #262d21;
+    --line-strong: #5f6f52; /* 3.5:1 */
+
+    --foreground: #efebdd; /* 16.1:1 */
+    --muted: #a9ad9a; /* 8.3:1 */
+
+    --primary: #a8f27c;
+    --on-primary: #12200a;
+    --primary-text: #a8f27c; /* 14.3:1, so the fill works as text on loam */
+
+    --software: #c4d3ff; /* a light periwinkle: 12.9:1 */
+    --on-software: #0d100c;
+    --business: #d96a12; /* 5.5:1 */
+    --business-text: #d96a12;
+    --on-business: #0d100c;
+
+    --glitch: #f08ad2;
+    --danger: #ff8a78;
+
+    --shadow-color: rgba(0, 0, 0, 0.5);
+  }
 }
 
 @theme inline {
+  /* Colours. The first two names are the ones the app already used. */
   --color-background: var(--background);
   --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
-}
+  --color-surface: var(--surface);
+  --color-surface-2: var(--surface-2);
+  --color-line: var(--line);
+  --color-line-strong: var(--line-strong);
+  --color-muted: var(--muted);
+  --color-primary: var(--primary);
+  --color-on-primary: var(--on-primary);
+  --color-primary-text: var(--primary-text);
+  --color-software: var(--software);
+  --color-on-software: var(--on-software);
+  --color-business: var(--business);
+  --color-business-text: var(--business-text);
+  --color-on-business: var(--on-business);
+  --color-glitch: var(--glitch);
+  --color-danger: var(--danger);
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
+  /* Fonts: set up in src/app/layout.tsx with next/font. */
+  --font-sans: var(--font-figtree), system-ui, sans-serif;
+  --font-display: var(--font-instrument-serif), Georgia, serif;
+
+  /* Radii, a little uneven on purpose (rounded-control, rounded-card,
+     rounded-feature). The alternating corners on rounded-feature are the
+     design's signature on cards and chips. */
+  --radius-control: 10px;
+  --radius-card: 18px;
+  --radius-feature: 26px 22px 26px 22px;
+
+  /* Elevation: flat is just a border; shadow-sheet lifts a sheet or panel;
+     shadow-glow marks a selected thing. */
+  --shadow-sheet: 0 8px 24px var(--shadow-color);
+  --shadow-glow: 0 0 16px rgba(168, 242, 124, 0.7);
 }
 
 body {
   background: var(--background);
   color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  font-family: var(--font-sans);
+}
+
+/* Headings and aliases use the display face (design language board). Body
+   text and H3 stay in the sans face. */
+h1,
+h2 {
+  font-family: var(--font-display);
+  font-weight: 400;
+}
+
+/* Long aliases must wrap instead of pushing the page sideways
+   (visual-design spec: "Long aliases wrap"). */
+h1,
+h2,
+h3 {
+  overflow-wrap: anywhere;
+}
+
+/* REDUCED MOTION (visual-design spec): when the device asks for less motion,
+   nothing on the site animates or eases. The graph is separate: its motion
+   isn't changed in this slice. */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.001ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.001ms !important;
+    scroll-behavior: auto !important;
+  }
 }
