@@ -22,11 +22,11 @@ export function PlaceholderPage({ title, slice, issue, willShow }: PlaceholderPa
   return (
     // Same single narrow column as the home page and the catalogue.
     <main className="mx-auto w-full max-w-md px-4 py-12">
-      <h1 className="text-3xl font-semibold">{title}</h1>
+      <h1 className="text-4xl">{title}</h1>
 
-      <p className="mt-4 text-lg">{willShow}</p>
+      <p className="mt-4 text-lg text-muted">{willShow}</p>
 
-      <p className="mt-8 rounded border border-current/30 p-4 text-sm">
+      <p className="mt-8 rounded-feature border border-dashed border-line-strong bg-surface p-4 text-sm">
         <strong>This page is a placeholder.</strong> Slice {slice} (issue #{issue})
         will build it. If that&apos;s your track, replace this file with the real
         page.

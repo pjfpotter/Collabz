@@ -131,19 +131,27 @@ body {
 }
 
 /* Headings and aliases use the display face (design language board). Body
-   text and H3 stay in the sans face. */
-h1,
-h2 {
-  font-family: var(--font-display);
-  font-weight: 400;
-}
+   text and H3 stay in the sans face.
 
-/* Long aliases must wrap instead of pushing the page sideways
-   (visual-design spec: "Long aliases wrap"). */
-h1,
-h2,
-h3 {
-  overflow-wrap: anywhere;
+   These rules are inside @layer base on purpose. Tailwind puts its utility
+   classes (font-sans, text-4xl ...) in a later layer, so a class on an
+   element can override these defaults. Written outside a layer, a plain
+   `h1 { font-family }` would beat every utility class and nothing could
+   change a heading's font. */
+@layer base {
+  h1,
+  h2 {
+    font-family: var(--font-display);
+    font-weight: 400;
+  }
+
+  /* Long aliases must wrap instead of pushing the page sideways
+     (visual-design spec: "Long aliases wrap"). */
+  h1,
+  h2,
+  h3 {
+    overflow-wrap: anywhere;
+  }
 }
 
 /* REDUCED MOTION (visual-design spec): when the device asks for less motion,
