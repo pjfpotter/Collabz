@@ -25,7 +25,7 @@ const publicLinks = [
   { label: "Graph", path: "/graph", heading: "Graph", needsProfile: true },
   { label: "People", path: "/people", heading: "People", needsProfile: true },
   { label: "Requests", path: "/requests", heading: "Requests", needsProfile: true },
-  { label: "Messages", path: "/messages", heading: "Messages" },
+  { label: "Messages", path: "/messages", heading: "Messages", needsProfile: true },
   { label: "Account", path: "/account", heading: "Account" },
 ];
 
@@ -96,13 +96,13 @@ test("the Collabz link goes back to the home page", async ({ page }) => {
 
 // Spec scenario: "A planned page that isn't built yet"
 test("a page that isn't built yet says so and names who will build it", async ({ page }) => {
-  // /messages is still a placeholder (slice 6 builds it). Slice 3 (#10)
-  // replaced the one this test used to use, /matches.
-  await page.goto("/messages");
+  // /account is still a placeholder (slice 7 builds it). Slice 6 (#13)
+  // replaced the one this test used to use, /messages.
+  await page.goto("/account");
 
-  await expect(page.getByRole("heading", { level: 1, name: "Messages" })).toBeVisible();
+  await expect(page.getByRole("heading", { level: 1, name: "Account" })).toBeVisible();
   await expect(page.getByText("This page is a placeholder.")).toBeVisible();
-  await expect(page.getByText("Slice 6 (issue #13) will build it.")).toBeVisible();
+  await expect(page.getByText("Slice 7 (issue #14) will build it.")).toBeVisible();
 });
 
 // Spec scenario: "A page with a person in its address"

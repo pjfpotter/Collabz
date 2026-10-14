@@ -122,7 +122,7 @@ Every page the app will have already exists, so that two tracks can't invent the
 | `/matches` | 3 | #10 | 3 |
 | `/graph`, `/people`, `/people/[alias]` | 4 | #11 | 4 |
 | `/requests` | 5 | #12 | 5 |
-| `/messages` | 6 | #13 | 5 |
+| `/messages`, `/messages/[conversationId]` | 6 | #13 | 5 |
 | `/account` | 7 | #14 | 1 |
 | `/admin` (and anything under it except reports) | 8 | #15 | 2 |
 | `/admin/reports` | 9 | #16 | 3 |
@@ -363,12 +363,24 @@ The words people see (every refusal and success sentence) are in `messages.ts`, 
 
 ## Messaging
 
-Slice 6 (#13). This section grows as the pages are built; for now it lists what sending a message is made of.
+Slice 6 (#13). Two people who have agreed to connect can talk in a private conversation, so nobody has to swap personal contact details.
+
+**What the pages show.** `/messages` lists your conversations, newest activity first: the other person's alias and silhouette, the start of the latest message and its time, and "(closed)" on a closed one. Opening one shows the messages oldest first, each with who sent it ("You" for your own) and the time (London time), and a box to send a new one. Signed out you are sent to `/signin`.
+
+**The rules, in plain words:**
+
+- **Only the two people in a conversation can read or write in it**, and the server checks that every time, not only the page. Someone else's conversation, or a made-up address, shows "page not found" (and the route answers 404), so an address can't be probed.
+- **Messages are limited to 1000 characters**, and an empty or spaces-only message is refused. The form's counter is a courtesy; the server is the real check.
+- **A closed conversation can still be read but takes no new messages, and it never reopens.** A block closes it for good (slice 9 calls `closeConversation()`), and `openConversation()` keeps returning a closed one as it is.
+- **Sending is refused if the two are no longer connected** (an approved request and no block), or if the other person is suspended. The refusal is one vague sentence on purpose, so it can't be used to learn who blocked whom.
+- **New messages appear when you refresh the page.** Real-time chat and unread markers are "MVP Later" and are not built.
 
 **Routes this track owns:**
 
 | Route | What it does |
 |---|---|
+| `/messages` | **Built.** Your conversations, newest first. Signed out you are sent to `/signin` |
+| `/messages/[conversationId]` | **Built.** One conversation, its messages and the send form. "Page not found" if it isn't yours |
 | `POST /api/messages/[conversationId]` | **Built.** Sends a message in one of your conversations. Send `{ "body": "the text" }`. 401 signed out, 404 no such conversation or not yours, 409 closed or no longer connected, 422 empty or longer than 1000 characters |
 
 **Helpers** (in `src/lib/messages/`):
