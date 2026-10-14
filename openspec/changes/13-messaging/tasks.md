@@ -25,9 +25,9 @@ Names used, so the tasks stay short:
 
 ## 4. Reading conversations
 
-- [ ] 4.1 Add `src/lib/messages/listConversations.ts` with `listConversations(userId)`: the viewer's conversations, newest activity first, each with the other person's alias, address and silhouette, the start of the latest message with its time, and whether it is closed. Integration test: only the viewer's conversations appear; ordering; a conversation with no messages still appears; nothing in the result is an email or a user id other than the conversation's own id. Verify: `npm test` passes
-- [ ] 4.2 Add `src/lib/messages/getConversation.ts` with `getConversation(userId, conversationId)`: returns the other person and the messages oldest first with "mine" marked, or `null` when it isn't the viewer's or doesn't exist. Integration test: both participants can read it; a third person gets `null`; a made-up id gets `null`; a closed conversation can still be read. Verify: `npm test` passes
-- [ ] 4.3 README: add `listConversations` and `getConversation` to the helpers table. Verify: both appear
+- [x] 4.1 Add `src/lib/messages/listConversations.ts` with `listConversations(userId)`: the viewer's conversations, newest activity first, each with the other person's alias, address and silhouette, the start of the latest message with its time, and whether it is closed. Integration test: only the viewer's conversations appear; ordering; a conversation with no messages still appears; nothing in the result is an email or a user id other than the conversation's own id. Verify: `npm test` passes
+- [x] 4.2 Add `src/lib/messages/getConversation.ts` with `getConversation(userId, conversationId)`: returns the other person and the messages oldest first with "mine" marked, or `null` when it isn't the viewer's or doesn't exist. Integration test: both participants can read it; a third person gets `null`; a made-up id gets `null`; a closed conversation can still be read. Verify: `npm test` passes
+- [x] 4.3 README: add `listConversations` and `getConversation` to the helpers table. Verify: both appear
 
 ## 5. The pages
 

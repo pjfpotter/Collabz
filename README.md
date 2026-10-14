@@ -376,6 +376,8 @@ Slice 6 (#13). This section grows as the pages are built; for now it lists what 
 | Helper | File | What it does |
 |---|---|---|
 | `sendMessage(senderId, conversationId, body)` | `sendMessage.ts` | Stores a message, or refuses with a `reason` and a sentence the form can show as it is. All the sending rules live here: only the two people, not closed, still connected, not empty, at most 1000 characters |
+| `listConversations(userId)` | `listConversations.ts` | The conversations this person is in, newest activity first: the other person's alias, address and silhouette, the start of the latest message with its time, and whether it is closed. Never an email or a user id |
+| `getConversation(userId, conversationId)` | `getConversation.ts` | One conversation for its page: the other person and the messages, oldest first, with the viewer's own marked. `null` when it isn't theirs or doesn't exist (the same answer for both). A closed conversation can still be read |
 
 The words people see (every refusal sentence) and the 1000 limit are in `messages.ts`, so the code, the tests and the form can't drift apart.
 
