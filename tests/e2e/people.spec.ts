@@ -22,10 +22,11 @@ const prisma = testingDeployedSite ? null : createTestDatabaseClient();
 // The person these tests sign in as (see the README's "Pretend cohort" table).
 const member = "pretend-user-02";
 
-// The Skills and Interests tags arrive with slice 2 (#9), so these tests add
-// two small categories of their own and give them to a few pretend users.
-// Who gets what is chosen so every expected answer below can be read off
-// this table:
+// Slice 2 (#9) seeds Skills and Interests, and the pretend cohort gives every
+// pretend user some at random. Random picks would make the expected answers
+// below a guess, so these tests clear everyone's Skills and Interests and
+// give a few pretend users these instead. Who gets what is chosen so every
+// expected answer below can be read off this table:
 //
 //   user | course   | skill  | interest
 //   -----|----------|--------|---------
@@ -51,19 +52,9 @@ test.beforeAll(async () => {
   await seedCatalogue(prisma);
   await loadPretendCohortForTests(prisma);
 
-  await prisma.category.createMany({
-    data: [
-      { id: "skills", name: "Skills", pickMin: 1, pickMax: 4, order: 6 },
-      { id: "interests", name: "Interests", pickMin: 1, pickMax: 4, order: 7 },
-    ],
-  });
-  await prisma.tag.createMany({
-    data: [
-      { id: "skills-data", name: "Data", description: "", order: 1, categoryId: "skills" },
-      { id: "skills-design", name: "Design", description: "", order: 2, categoryId: "skills" },
-      { id: "interests-climate", name: "Climate", description: "", order: 1, categoryId: "interests" },
-      { id: "interests-music", name: "Music", description: "", order: 2, categoryId: "interests" },
-    ],
+  // Clear the cohort's random Skills and Interests (see the table above).
+  await prisma.profileTag.deleteMany({
+    where: { tag: { categoryId: { in: ["skills", "interests"] } } },
   });
   await prisma.profileTag.createMany({
     data: testPicks.flatMap((pick) =>
@@ -73,8 +64,8 @@ test.beforeAll(async () => {
 });
 
 test.afterAll(async () => {
-  // The test categories are removed by the next emptyDatabase(), and the
-  // whole dev database is put back after the run (playwrightGlobalTeardown).
+  // The whole dev database is put back after the run
+  // (playwrightGlobalTeardown), including everyone's Skills and Interests.
   await prisma?.$disconnect();
 });
 

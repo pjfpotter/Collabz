@@ -23,6 +23,9 @@ export type SeedResult = {
   tagsCreated: number;
   coursesCreated: number;
   pairingsCreated: number;
+  // Not a new row: an existing Energy or Vibe tag whose empty alias word was
+  // filled in (see fillEmptyAliasWords below).
+  aliasWordsFilled: number;
 };
 
 export async function seedCatalogue(prisma: PrismaClient): Promise<SeedResult> {
@@ -91,12 +94,47 @@ export async function seedCatalogue(prisma: PrismaClient): Promise<SeedResult> {
     skipDuplicates: true,
   });
 
+  const aliasWordsFilled = await fillEmptyAliasWords(prisma);
+
   return {
     categoriesCreated: categories.count,
     tagsCreated: tags.count,
     coursesCreated: courses.count,
     pairingsCreated: pairings.count,
+    aliasWordsFilled,
   };
+}
+
+// Gives each Energy and Vibe Diagnosis tag its alias word, but ONLY where the
+// word is still empty (slice 2, #9, design decision 8).
+//
+// WHY THIS ISN'T DONE BY createMany ABOVE: createMany skips a tag that already
+// exists, and on databases seeded before slice 2 every Energy and Vibe tag
+// already exists, with no alias word. So those tags would never get one.
+//
+// WHY "ONLY WHERE EMPTY": an admin can change an alias word later (slice 8).
+// Filling only empty words keeps that edit after a re-seed, the same promise
+// the rest of the seed makes ("never overwrite a value that exists").
+//
+// Returns how many words it filled in (0 on a second run).
+async function fillEmptyAliasWords(prisma: PrismaClient): Promise<number> {
+  let filled = 0;
+  for (const category of seedCategories) {
+    for (const tag of category.tags) {
+      if (!tag.aliasWord) {
+        continue; // most tags have no alias word
+      }
+      // updateMany rather than update: update needs to find exactly one row
+      // and fails otherwise, while updateMany with "where aliasWord is empty"
+      // simply changes nothing when the word is already set.
+      const result = await prisma.tag.updateMany({
+        where: { id: tag.id, aliasWord: null },
+        data: { aliasWord: tag.aliasWord },
+      });
+      filled += result.count;
+    }
+  }
+  return filled;
 }
 
 // Runs the seed when this file is started as a command (`prisma db seed`
@@ -112,7 +150,8 @@ async function main() {
     console.log(
       `Seed done. New rows: ${result.categoriesCreated} categories, ` +
         `${result.tagsCreated} tags, ${result.coursesCreated} courses, ` +
-        `${result.pairingsCreated} pairings (existing rows are left as they are).`,
+        `${result.pairingsCreated} pairings, ${result.aliasWordsFilled} alias words filled in ` +
+        `(existing rows are left as they are).`,
     );
   } finally {
     // Close the database connection so the command can exit.
