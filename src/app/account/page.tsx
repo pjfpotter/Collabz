@@ -15,7 +15,7 @@ import { redirect } from "next/navigation";
 import { getAccountProfile, type CategoryPicks } from "@/lib/account/accountProfile";
 // Stand-ins for slice 2's bio and silhouettes: see src/lib/account/standIns.ts.
 import { SilhouettePlaceholder } from "@/lib/account/SilhouettePlaceholder";
-import { bioStandIn } from "@/lib/account/standIns";
+import { bioLines } from "@/lib/account/standIns";
 import { getActiveCourses } from "@/lib/auth/courses";
 import { getCurrentUser } from "@/lib/currentUser";
 
@@ -71,28 +71,59 @@ export default async function AccountPage() {
               </div>
             </div>
             {/* Built from the picks each time it's shown, never stored. */}
-            <p className="mt-4" data-testid="account-bio">
-              {bioStandIn(namesByCategory(account.profile.picks))}
-            </p>
-            <dl className="mt-3 divide-y divide-current/20" data-testid="account-picks">
+            {/* One paragraph per line of the bio, with a gap between each
+                and the label ("Brings", "Looking for"…) in bold, so it's
+                easy to scan. */}
+            <div className="mt-4 space-y-3" data-testid="account-bio">
+              {bioLines(namesByCategory(account.profile.picks)).map((line) => (
+                <p key={line.label ?? "opening"}>
+                  {line.label && <strong>{line.label}:</strong>} {line.text}
+                </p>
+              ))}
+            </div>
+            {/* The answers, set apart from the bio above: a small heading,
+                then one card per category (a light border and padding all
+                round, with a gap between cards), and each picked tag as a
+                rounded "pill". Cards make each category read as its own
+                thing; pills make separate picks read as separate items rather
+                than one long comma-joined sentence. */}
+            <h3 className="mt-6 text-sm font-semibold tracking-wide text-zinc-600 uppercase dark:text-zinc-400">
+              Your answers
+            </h3>
+            <dl className="mt-3 flex flex-col gap-3" data-testid="account-picks">
               {account.profile.picks.map((group) => (
-                <div key={group.categoryId} className="flex items-start justify-between gap-3 py-2">
-                  <div>
+                <div
+                  key={group.categoryId}
+                  className="rounded-lg border border-current/15 px-4 py-3"
+                >
+                  <div className="flex items-start justify-between gap-3">
                     <dt className="font-semibold">{group.categoryName}</dt>
-                    <dd className="text-zinc-700 dark:text-zinc-300">
-                      {group.tags
-                        .map((tag) => (tag.retired ? `${tag.name} (no longer offered)` : tag.name))
-                        .join(", ")}
-                    </dd>
+                    <Link
+                      href={`/account/edit/${group.categoryId}`}
+                      className="shrink-0 text-sm underline underline-offset-4"
+                      // Says WHICH thing is edited, for screen readers.
+                      aria-label={`Edit ${group.categoryName}`}
+                    >
+                      Edit
+                    </Link>
                   </div>
-                  <Link
-                    href={`/account/edit/${group.categoryId}`}
-                    className="shrink-0 text-sm underline underline-offset-4"
-                    // Says WHICH thing is edited, for screen readers.
-                    aria-label={`Edit ${group.categoryName}`}
-                  >
-                    Edit
-                  </Link>
+                  <dd className="mt-2 flex flex-wrap gap-2">
+                    {group.tags.map((tag) => (
+                      <span
+                        key={tag.id}
+                        // A retired tag gets a dashed outline, so it stands
+                        // out at a glance as well as in words.
+                        className={`rounded-full border px-3 py-1 text-sm ${
+                          tag.retired
+                            ? "border-dashed border-current/40 text-zinc-500"
+                            : "border-current/20 bg-current/5 text-zinc-800 dark:text-zinc-200"
+                        }`}
+                      >
+                        {tag.name}
+                        {tag.retired && " (no longer offered)"}
+                      </span>
+                    ))}
+                  </dd>
                 </div>
               ))}
             </dl>

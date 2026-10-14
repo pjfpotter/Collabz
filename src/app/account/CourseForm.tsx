@@ -20,6 +20,11 @@ type CourseFormProps = {
 
 const startingState: CourseFormState = { step: "ready" };
 
+// A small downward chevron, drawn as an SVG picture inside a CSS
+// background, for the course dropdown (see its className).
+const CHEVRON =
+  "url(\"data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 20 20' fill='none' stroke='%2371717a' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M5 7.5l5 5 5-5'/%3E%3C/svg%3E\")";
+
 export function CourseForm({ activeCourses, current }: CourseFormProps) {
   const [state, formAction, pending] = useActionState(saveCourse, startingState);
 
@@ -32,7 +37,14 @@ export function CourseForm({ activeCourses, current }: CourseFormProps) {
         id="courseId"
         name="courseId"
         defaultValue={current?.id ?? ""}
-        className="rounded border border-current/40 bg-transparent px-3 py-2"
+        // Browsers draw the dropdown arrow themselves and mostly ignore
+        // padding around it, which left it squashed against the border.
+        // So: hide theirs (appearance-none) and draw our own chevron as a
+        // background picture, 0.75rem in from the right, with pr-10 keeping
+        // the course name clear of it. A mid-grey chevron reads on both
+        // light and dark backgrounds.
+        className="appearance-none rounded border border-current/40 bg-transparent bg-[length:1rem] bg-[right_0.75rem_center] bg-no-repeat py-2 pr-10 pl-3"
+        style={{ backgroundImage: CHEVRON }}
       >
         {!current && <option value="">Choose your course…</option>}
         {/* Their retired course, shown so the list doesn't pretend they're

@@ -13,7 +13,7 @@
 // | Stand-in here              | Follows #9 design | Replace with (slice 2)                    |
 // |----------------------------|-------------------|-------------------------------------------|
 // | checkEditedPicks()         | decision 3        | validateOnboardingAnswers(), per category |
-// | bioStandIn()               | decision 5        | generateBio()                             |
+// | bioStandIn(), bioLines()   | decision 5        | generateBio()                             |
 // | SILHOUETTE_IDS             | decision 7        | src/lib/profile/silhouettes.ts            |
 // | SilhouettePlaceholder      | decision 7        | the real SVG silhouettes                  |
 // |   (SilhouettePlaceholder.tsx, next to this file: it's a React component)  |
@@ -121,32 +121,47 @@ export function limitMessage(category: Pick<EditableCategory, "pickMin" | "pickM
 // already shapes the alias. Categories it doesn't know are ignored, so one
 // an admin adds later can't break it.
 export function bioStandIn(tagsByCategory: Record<string, string[]>): string {
-  const sentences: string[] = [];
+  return bioLines(tagsByCategory)
+    .map((line) => (line.label ? `${line.label}: ${line.text}` : line.text))
+    .join(" ");
+}
+
+// One line of the bio. `label` is "Brings", "Looking for", "Skills" or
+// "Into"; the opening line has none.
+export type BioLine = { label: string | null; text: string };
+
+// The same bio as bioStandIn, as separate lines, so a page can lay it out
+// with a gap between each and the labels in bold (as /account does), e.g.
+//   { label: null, text: "The Late Bloomer, giving Sea Captain Energy." }
+//   { label: "Brings", text: "says the hard thing kindly." }
+// bioStandIn joins these into one paragraph, so the two always agree.
+export function bioLines(tagsByCategory: Record<string, string[]>): BioLine[] {
+  const lines: BioLine[] = [];
 
   const heroStory = tagsByCategory[HERO_STORY]?.[0];
   const energy = tagsByCategory[ENERGY]?.[0];
   if (heroStory && energy) {
     // Energy tags already read as a phrase ("Giving Sea Captain Energy").
-    sentences.push(`${heroStory}, ${lowerFirst(energy)}.`);
+    lines.push({ label: null, text: `${heroStory}, ${lowerFirst(energy)}.` });
   } else if (heroStory || energy) {
-    sentences.push(`${heroStory ?? energy}.`);
+    lines.push({ label: null, text: `${heroStory ?? energy}.` });
   }
 
-  const lines: [string, string, boolean][] = [
+  const labelled: [string, string, boolean][] = [
     // [category id, label, lower-case the first letter of each name?]
     [QUALITIES, "Brings", true],
     [SEEKING, "Looking for", true],
     [SKILLS, "Skills", false],
     [INTERESTS, "Into", false],
   ];
-  for (const [categoryId, label, lower] of lines) {
+  for (const [categoryId, label, lower] of labelled) {
     const names = tagsByCategory[categoryId] ?? [];
     if (names.length > 0) {
-      sentences.push(`${label}: ${joinAsList(lower ? names.map(lowerFirst) : names)}.`);
+      lines.push({ label, text: `${joinAsList(lower ? names.map(lowerFirst) : names)}.` });
     }
   }
 
-  return sentences.join(" ");
+  return lines;
 }
 
 // "a", "a and b", "a, b and c"

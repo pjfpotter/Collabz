@@ -8,6 +8,7 @@ import { describe, expect, it } from "vitest";
 
 import {
   SILHOUETTE_IDS,
+  bioLines,
   bioStandIn,
   checkEditedPicks,
   type EditableCategory,
@@ -102,6 +103,24 @@ describe("bioStandIn", () => {
 
   it("ignores categories it doesn't know, e.g. Vibe Diagnosis", () => {
     expect(bioStandIn({ "vibe-diagnosis": ["Rising Sign: Feral"] })).toBe("");
+  });
+});
+
+describe("bioLines", () => {
+  // The /account page shows each line as its own paragraph, label in bold.
+  it("gives the opening sentence, then one labelled line per category", () => {
+    expect(
+      bioLines({
+        "hero-story": ["The Quiet Veteran"],
+        energy: ["Giving Mad Inventor Energy"],
+        qualities: ["Actually finishes the thing", "Makes the room believe it too"],
+        seeking: ["Someone who finishes what I start"],
+      }),
+    ).toEqual([
+      { label: null, text: "The Quiet Veteran, giving Mad Inventor Energy." },
+      { label: "Brings", text: "actually finishes the thing and makes the room believe it too." },
+      { label: "Looking for", text: "someone who finishes what I start." },
+    ]);
   });
 });
 
