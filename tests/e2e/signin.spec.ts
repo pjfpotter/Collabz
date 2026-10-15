@@ -48,6 +48,10 @@ test("a member signs in with a magic link, stays signed in, and signs out", asyn
   // A finished account goes from /signin straight to the home page.
   await expect(page).toHaveURL("/");
   await expect(page.locator(status)).toContainText(`Signed in as ${memberEmail}`);
+  // A real session replaces sign-in entry links with its account status.
+  const nav = page.getByRole("navigation", { name: "Main" });
+  await expect(nav.getByRole("link", { name: "Sign in", exact: true })).toHaveCount(0);
+  await expect(nav.getByRole("link", { name: "Sign up", exact: true })).toHaveCount(0);
 
   // Still signed in on another page.
   await page.goto("/catalogue");
@@ -56,6 +60,8 @@ test("a member signs in with a magic link, stays signed in, and signs out", asyn
   // Sign out (spec scenario "Sign out").
   await page.getByRole("button", { name: "Sign out" }).click();
   await expect(page.locator(status)).toHaveText("Not signed in");
+  await expect(nav.getByRole("link", { name: "Sign in", exact: true })).toBeVisible();
+  await expect(nav.getByRole("link", { name: "Sign up", exact: true })).toBeVisible();
 
   // A private page now asks them to sign in again: /admin sends anyone who
   // isn't signed in to /signin (foundation's requireAdmin()).

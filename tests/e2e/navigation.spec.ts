@@ -159,6 +159,7 @@ test("at phone width every link is reachable and nothing scrolls sideways", asyn
   // 375 pixels is a common small phone.
   await page.setViewportSize({ width: 375, height: 700 });
   await page.goto("/requests");
+  await mainNav(page).getByRole("button", { name: "Menu" }).click();
 
   for (const link of [...publicLinks, ...adminLinks]) {
     await expect(
@@ -180,6 +181,7 @@ test("at phone width every link is reachable and nothing scrolls sideways", asyn
 test("at phone width every nav link is at least 44 pixels high and wide", async ({ page }) => {
   await page.setViewportSize({ width: 375, height: 700 });
   await page.goto("/");
+  await mainNav(page).getByRole("button", { name: "Menu" }).click();
 
   const links = mainNav(page).getByRole("link");
   const count = await links.count();
@@ -213,4 +215,25 @@ test("at desktop width the nav links sit on one row", async ({ page }) => {
   const firstTop = (await mainNav(page).getByRole("link").first().boundingBox())?.y;
   const lastTop = (await mainNav(page).getByRole("link").last().boundingBox())?.y;
   expect(lastTop).toBe(firstTop);
+});
+
+// The closed mobile bar must leave room for the page, not just avoid overflow.
+test("phone menu starts compact, opens all routes and closes with Escape", async ({ page }) => {
+  await page.setViewportSize({ width: 375, height: 700 });
+  await page.goto("/catalogue");
+  const nav = mainNav(page);
+  const menu = nav.getByRole("button", { name: "Menu" });
+  await expect(menu).toHaveAttribute("aria-expanded", "false");
+  expect((await nav.boundingBox())!.height).toBeLessThanOrEqual(60);
+  await expect(nav.getByRole("link", { name: "Requests", exact: true })).toBeHidden();
+  await menu.click();
+  await expect(menu).toHaveAttribute("aria-expanded", "true");
+  await expect(nav.getByRole("link", { name: "Requests", exact: true })).toBeVisible();
+  await page.keyboard.press("Escape");
+  await expect(menu).toHaveAttribute("aria-expanded", "false");
+  await expect(menu).toBeFocused();
+  await menu.click();
+  await nav.getByRole("link", { name: "Sign in", exact: true }).click();
+  await expect(page).toHaveURL(/\/signin$/);
+  await expect(menu).toHaveAttribute("aria-expanded", "false");
 });

@@ -2,23 +2,22 @@
 // design decision 11). It is used once, in src/app/layout.tsx.
 //
 // It links to every page in the route plan, so anyone can reach any part of
-// the app from anywhere, and it holds the dev "sign in as…" switcher. The
+// the app from anywhere, and it holds the dev "sign in asÃƒÂ¢Ã¢â€šÂ¬Ã‚Â¦" switcher. The
 // Requests link also shows how many connection requests are waiting for you.
 //
-// FOR NOW IT SHOWS EVERY LINK TO EVERYONE, including Admin. That is on
-// purpose: while we build, we all need to reach every page quickly. Hiding
-// links depending on who is signed in (no Admin link for members, no Sign in
-// link once you're signed in) is tidied up at join-up (#17), once real
-// sign-in exists. The admin PAGES are already protected by requireAdmin();
-// only the link is visible.
+// Sign-in and sign-up links are shown only without a real session. The
+// account area then says "Signed in as …" and offers Sign out. Route access
+// is still checked by each page; this only avoids confusing navigation.
+
+import { getSessionUser } from "@/lib/auth/session";
 
 import { DevUserSwitcher } from "@/components/DevUserSwitcher";
 // The link row itself is a Client Component so it can highlight the current page.
 import { NavLinks, type NavLinkItem } from "@/components/NavLinks";
-// Slice 1 (#8): "Signed in as … / Sign out", or "Not signed in".
+// Slice 1 (#8): "Signed in as ÃƒÂ¢Ã¢â€šÂ¬Ã‚Â¦ / Sign out", or "Not signed in".
 import { SignedInStatus } from "@/components/SignedInStatus";
-// Slice 5 (#12): the number of requests waiting for you, beside the Requests link.
-import { WaitingRequestsCount } from "@/components/WaitingRequestsCount";
+// Read once on the server; the client uses the count in either layout.
+import { findWaitingCount } from "@/components/WaitingRequestsCount";
 
 // THE ROUTE PLAN: every page that can be opened without choosing a person,
 // in the order a new student meets them. (/people/[alias] isn't here because
@@ -41,7 +40,16 @@ const navLinks: NavLinkItem[] = [
   { href: "/admin/reports", label: "Reports" }, // slice 9
 ];
 
-export function NavBar() {
+export async function NavBar() {
+  const [waitingCount, sessionUser] = await Promise.all([
+    findWaitingCount(),
+    getSessionUser(),
+  ]);
+  // A real session is the same source used by SignedInStatus, including an
+  // account still finishing onboarding. Dev switcher identity is separate.
+  const visibleLinks = sessionUser
+    ? navLinks.filter((link) => link.href !== "/signin" && link.href !== "/signup")
+    : navLinks;
   return (
     // bg-surface and border-line are the design tokens (globals.css), so the
     // bar follows the light and dark theme by itself.
@@ -51,24 +59,9 @@ export function NavBar() {
           (e.g. the live site). */}
       <DevUserSwitcher />
 
-      {/* max-w-7xl (1280px) so all twelve links fit on one row on a desktop.
-          On a phone the row wraps instead (see NavLinks). The sign-in status
-          shares the row: ml-auto pushes it to the right when there is room,
-          and it drops underneath when there is not. */}
-      <div className="mx-auto flex w-full max-w-7xl flex-wrap items-center gap-x-4 px-4 py-2">
-        <NavLinks
-          links={navLinks.map((link) => ({
-            ...link,
-            // Only the Requests link carries a count. It draws nothing when
-            // you are signed out or nothing is waiting.
-            badge: link.href === "/requests" ? <WaitingRequestsCount /> : undefined,
-          }))}
-        />
-
-        {/* Slice 1 (#8): the real sign-in state, with a Sign out button. */}
-        <div className="ml-auto">
-          <SignedInStatus />
-        </div>
+      <div className="mx-auto w-full max-w-7xl px-4 py-2">
+        <NavLinks links={visibleLinks} waitingCount={waitingCount}
+          accountStatus={<SignedInStatus />} />
       </div>
     </header>
   );

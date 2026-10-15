@@ -1,97 +1,115 @@
 "use client";
 
-// The row of links inside the nav bar, with the current page highlighted
-// (slice 10, #45, task 10.1).
-//
-// WHY A CLIENT COMPONENT: knowing which page you are on needs the browser's
-// current address, and only a Client Component can read it (usePathname).
-// NavBar stays a Server Component, because the sign-in status and the
-// waiting-requests count it shows are fetched on the server; those are passed
-// in here as ready-made pieces (`badge`) rather than fetched here.
-
+// The same routes stay available everywhere. On phones they live in a
+// dropdown so navigation does not push the actual page below the fold.
 import Link from "next/link";
-import { usePathname } from "next/navigation";
-import type { ReactNode } from "react";
+import { usePathname, useRouter } from "next/navigation";
+import { useEffect, useId, useRef, useState, type ReactNode } from "react";
 
-export type NavLinkItem = {
-  href: string;
-  label: string;
-  // Something shown after the label, e.g. the waiting-requests count.
-  badge?: ReactNode;
-};
+export type NavLinkItem = { href: string; label: string };
 
-// What every link in the bar shares:
-// - min-h-11 and min-w-11 are 44px, the smallest comfortable touch target
-//   (visual-design spec "Every screen works at phone width first");
-// - rounded-control gives the soft tab look;
-// - the focus-visible outline is the keyboard focus ring: it only shows for
-//   keyboard users, in the readable accent colour.
 const linkShape =
   "inline-flex min-h-11 min-w-11 items-center justify-center rounded-control px-3 " +
   "focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary-text";
-
-// The current page gets the pill (surface-2 fill, accent text). The accent
-// text colour is not the only signal: the fill and the bolder weight change
-// too, and aria-current tells screen readers.
 const currentLook = "bg-surface-2 font-semibold text-primary-text";
 const otherLook = "font-medium hover:bg-surface-2";
 
-// Picks which link is "the current page". The LONGEST matching address wins,
-// so on /admin/reports only Reports is lit, not Admin as well.
 function findCurrentHref(pathname: string, links: NavLinkItem[]): string | null {
   let best: string | null = null;
   for (const link of links) {
     const matches = pathname === link.href || pathname.startsWith(link.href + "/");
-    if (matches && (best === null || link.href.length > best.length)) {
-      best = link.href;
-    }
+    if (matches && (best === null || link.href.length > best.length)) best = link.href;
   }
   return best;
 }
 
-export function NavLinks({ links }: { links: NavLinkItem[] }) {
+function WaitingBadge({ count, shortcut = false }: { count: number; shortcut?: boolean }) {
+  if (count <= 0) return null;
+  return (
+    <span
+      className="ml-1.5 inline-flex h-5 min-w-5 items-center justify-center rounded-full bg-primary px-1.5 text-xs font-bold text-on-primary"
+      data-testid={shortcut ? "mobile-waiting-count" : "waiting-count"}
+    >
+      {count}<span className="sr-only"> waiting</span>
+    </span>
+  );
+}
+
+export function NavLinks({ links, waitingCount = 0, accountStatus }: {
+  links: NavLinkItem[];
+  waitingCount?: number;
+  accountStatus?: ReactNode;
+}) {
   const pathname = usePathname();
+  const router = useRouter();
   const currentHref = findCurrentHref(pathname, links);
+  const [openPath, setOpenPath] = useState<string | null>(null);
+  const isOpen = openPath === pathname;
+  const panelId = useId();
+  const menuButton = useRef<HTMLButtonElement>(null);
+
+  useEffect(() => {
+    // Layouts survive navigation, so server-rendered counts otherwise stay
+    // stale when another person sends a request. Refresh visible pages only.
+    const refreshVisiblePage = () => {
+      if (document.visibilityState === "visible") router.refresh();
+    };
+    const timer = window.setInterval(refreshVisiblePage, 30_000);
+    window.addEventListener("focus", refreshVisiblePage);
+    document.addEventListener("visibilitychange", refreshVisiblePage);
+    return () => {
+      window.clearInterval(timer);
+      window.removeEventListener("focus", refreshVisiblePage);
+      document.removeEventListener("visibilitychange", refreshVisiblePage);
+    };
+  }, [router]);
+
+  function closeMenu() { setOpenPath(null); }
 
   return (
-    // aria-label names this set of links for screen readers.
-    <nav
-      aria-label="Main"
-      // flex-wrap is what makes this work on a phone: when the links don't
-      // fit on one line they carry on underneath, instead of pushing the page
-      // wider than the screen. EVERY link stays here, because the
-      // app-navigation spec says the bar links to each page (the design's
-      // smaller tab set was not adopted).
-      className="flex flex-wrap items-center gap-x-1 gap-y-1"
+    <nav aria-label="Main" className="flex w-full flex-wrap items-center gap-x-1 gap-y-1"
+      onKeyDown={(event) => {
+        if (event.key === "Escape" && isOpen) {
+          closeMenu();
+          menuButton.current?.focus();
+        }
+      }}
     >
-      {/* The wordmark: "Collab" in the display face and an italic "z", the
-          one mischievous letter (brand board). The two parts sit in ONE inner
-          span: the link is a flex box, and flex would treat them as separate
-          items, so a screen reader would read "Collab z" instead of
-          "Collabz". */}
-      <Link
-        href="/"
-        className={`${linkShape} mr-2 font-display text-2xl leading-none hover:bg-surface-2`}
-      >
-        <span>
-          Collab<span className="italic text-primary-text">z</span>
-        </span>
+      <Link href="/" onClick={closeMenu}
+        className={`${linkShape} mr-auto font-display text-2xl leading-none hover:bg-surface-2 lg:mr-2 lg:self-start`}>
+        <span>Collab<span className="italic text-primary-text">z</span></span>
       </Link>
 
-      {links.map((link) => {
-        const isCurrent = link.href === currentHref;
-        return (
-          <Link
-            key={link.href}
-            href={link.href}
-            aria-current={isCurrent ? "page" : undefined}
-            className={`${linkShape} text-sm ${isCurrent ? currentLook : otherLook}`}
-          >
-            {link.label}
-            {link.badge}
-          </Link>
-        );
-      })}
+      {/* Requests remain noticeable while the mobile dropdown is closed. */}
+      {waitingCount > 0 && (
+        <Link href="/requests" prefetch={false} onClick={closeMenu}
+          className={`${linkShape} text-sm lg:hidden`} aria-label={`${waitingCount} requests waiting`}>
+          Requests<WaitingBadge count={waitingCount} shortcut />
+        </Link>
+      )}
+      <button type="button" ref={menuButton} aria-expanded={isOpen} aria-controls={panelId}
+        onClick={() => setOpenPath(isOpen ? null : pathname)}
+        className={`${linkShape} border border-line-strong text-sm font-medium lg:hidden`}>
+        Menu <span aria-hidden="true" className="ml-2">{isOpen ? "â–´" : "â–¾"}</span>
+      </button>
+
+      {/* One route list serves both layouts; ordinary links retain native
+          keyboard behaviour rather than pretending to be an ARIA menu. */}
+      <div id={panelId} className={`${isOpen ? "flex" : "hidden"} w-full flex-col gap-2 border-t border-line pt-2 lg:flex lg:w-auto lg:flex-1 lg:flex-row lg:flex-wrap lg:items-center lg:border-0 lg:pt-0`}>
+        <div className="grid grid-cols-2 gap-1 lg:flex lg:flex-wrap lg:items-center">
+          {links.map((link) => (
+            <Link key={link.href} href={link.href} onClick={closeMenu}
+              prefetch={link.href === "/requests" ? false : undefined}
+              aria-current={link.href === currentHref ? "page" : undefined}
+              className={`${linkShape} text-sm ${link.href === currentHref ? currentLook : otherLook}`}>
+              {link.label}{link.href === "/requests" && <WaitingBadge count={waitingCount} />}
+            </Link>
+          ))}
+        </div>
+        <div className="min-w-0 border-t border-line py-2 [overflow-wrap:anywhere] lg:ml-auto lg:border-0 lg:py-0">
+          {accountStatus}
+        </div>
+      </div>
     </nav>
   );
 }

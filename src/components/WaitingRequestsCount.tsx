@@ -18,7 +18,7 @@ import { countWaitingRequests } from "@/lib/requests/listRequests";
 // must not take down the whole site, so it quietly counts as 0 instead. The
 // drawing is kept out of the try/catch below because React's linter rule says
 // a try/catch can't catch errors from drawing a component.
-async function findWaitingCount(): Promise<number> {
+export async function findWaitingCount(): Promise<number> {
   try {
     const user = await getCurrentUser();
     if (!user) {
