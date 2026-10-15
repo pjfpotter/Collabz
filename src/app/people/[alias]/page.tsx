@@ -50,23 +50,50 @@ export default async function PersonProfilePage({
   }
 
   return (
-    <main className="mx-auto w-full max-w-2xl px-4 py-8">
+    // max-w-2xl on a phone-sized screen; wider (max-w-5xl) from the lg
+    // breakpoint (1024px) so the two columns below have room.
+    <main className="mx-auto w-full max-w-2xl px-4 py-8 lg:max-w-5xl">
       <p className="text-sm">
         <Link href="/people" className={textLinkClasses}>
           Back to the list
         </Link>
       </p>
 
-      <ProfileHeader profile={lookup.profile} />
-      {/* Slice 7 (#14): draws nothing for anyone not allowed to see it. */}
-      <ProfilePhoto alias={lookup.profile.alias} viewer={viewer} />
-      <TagGroups profile={lookup.profile} />
+      {/* Desktop layout (task 10.1, Desktop layouts board): who they are, the
+          photo and "Why you match" in a left column; the bio and tags in a
+          right one.
 
-      {lookup.kind === "own" ? (
-        <OwnProfileNote />
-      ) : (
-        <MatchSection address={lookup.profile.address} match={lookup.match} />
-      )}
+          WHY A GRID AND NOT TWO WRAPPERS: on a phone the order must stay
+          header, photo, tags, match (one column, as before). A grid lets the
+          tags box sit in the right column at lg while the HTML order is
+          unchanged, so no reading order or test changes.
+
+          The grid classes all start with lg:, so below 1024px this is just a
+          normal stacked page. The last row is 1fr so the tall tags box adds
+          its extra height under "Why you match", not between the header and
+          the photo. */}
+      <div className="lg:grid lg:grid-cols-[22rem_minmax(0,1fr)] lg:grid-rows-[auto_auto_1fr] lg:gap-x-10">
+        <div className="lg:col-start-1">
+          <ProfileHeader profile={lookup.profile} />
+        </div>
+
+        {/* Slice 7 (#14): draws nothing for anyone not allowed to see it. */}
+        <div className="lg:col-start-1">
+          <ProfilePhoto alias={lookup.profile.alias} viewer={viewer} />
+        </div>
+
+        <div className="lg:col-start-2 lg:row-span-3 lg:row-start-1">
+          <TagGroups profile={lookup.profile} />
+        </div>
+
+        <div className="lg:col-start-1">
+          {lookup.kind === "own" ? (
+            <OwnProfileNote />
+          ) : (
+            <MatchSection address={lookup.profile.address} match={lookup.match} />
+          )}
+        </div>
+      </div>
     </main>
   );
 }
@@ -93,7 +120,8 @@ function ProfileHeader({ profile }: { profile: ProfileView }) {
 // The bio and the tags, one heading per category in catalogue order.
 function TagGroups({ profile }: { profile: ProfileView }) {
   return (
-    <section className="mt-6" aria-label="About this person">
+    // mt-4 at lg lines the bio up with the top of the header beside it.
+    <section className="mt-6 lg:mt-4" aria-label="About this person">
       <p className="text-lg leading-7" data-testid="profile-bio">{profile.bio}</p>
 
       {profile.tagGroups.map((group) => (
