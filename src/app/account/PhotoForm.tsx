@@ -12,6 +12,7 @@
 
 import { useRouter } from "next/navigation";
 import { useState } from "react";
+import { errorTextClasses, primaryButtonClasses, secondaryButtonClasses } from "@/components/formStyles";
 
 // Same limit and types as src/lib/account/photoRules.ts. Repeated here
 // because this file runs in the browser, which can't import server code.
@@ -84,17 +85,17 @@ export function PhotoForm({ userId, photoVersion }: PhotoFormProps) {
         <img
           src={`/api/account/photo/${userId}?v=${photoVersion}`}
           alt="Your photo"
-          className="h-32 w-32 rounded object-cover"
+          className="h-32 w-32 rounded-card border border-line object-cover"
           data-testid="own-photo"
         />
       ) : (
-        <p className="text-sm text-zinc-600 dark:text-zinc-400">
+        <p className="text-sm text-muted">
           No photo yet. It&apos;s optional, and only people you connect with can see it.
         </p>
       )}
 
       <div className="mt-3 flex flex-wrap items-center gap-2">
-        <label className="cursor-pointer rounded border border-current px-4 py-2 font-semibold">
+        <label className={`inline-flex cursor-pointer items-center has-[:focus-visible]:outline-2 has-[:focus-visible]:outline-offset-2 has-[:focus-visible]:outline-primary-text ${primaryButtonClasses}`}>
           {photoVersion ? "Replace photo" : "Add a photo"}
           <input
             type="file"
@@ -119,23 +120,23 @@ export function PhotoForm({ userId, photoVersion }: PhotoFormProps) {
             type="button"
             disabled={busy}
             onClick={() => void send("DELETE")}
-            className="rounded border border-current/40 px-4 py-2 disabled:opacity-50"
+            className={secondaryButtonClasses}
           >
             Remove photo
           </button>
         )}
       </div>
 
-      <p className="mt-2 text-sm text-zinc-600 dark:text-zinc-400">
+      <p className="mt-2 text-sm text-muted">
         JPEG, PNG or WebP, up to 4 MB.
       </p>
       {state.step === "sending" && (
-        <p role="status" className="mt-2 text-sm">
+        <p role="status" className="mt-2 text-sm text-muted">
           Saving…
         </p>
       )}
       {state.step === "problem" && (
-        <p role="alert" className="mt-2 text-sm text-red-700 dark:text-red-400" data-testid="photo-problem">
+        <p role="alert" className={`mt-2 ${errorTextClasses}`} data-testid="photo-problem">
           {state.message}
         </p>
       )}

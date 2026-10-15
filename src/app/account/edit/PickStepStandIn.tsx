@@ -29,6 +29,7 @@ import { useActionState, useState } from "react";
 import { limitMessage, type EditableCategory } from "@/lib/account/standIns";
 
 import { saveEdit, type EditFormState } from "./actions";
+import { errorTextClasses, primaryButtonClasses, textLinkClasses } from "@/components/formStyles";
 
 type PickStepStandInProps = {
   category: EditableCategory;
@@ -64,7 +65,7 @@ export function PickStepStandIn({ category, alreadyPicked }: PickStepStandInProp
         <input key={tagId} type="hidden" name="picks" value={tagId} />
       ))}
 
-      <p className="text-sm text-zinc-600 dark:text-zinc-400" data-testid="pick-limit">
+      <p className="text-sm text-muted" data-testid="pick-limit">
         {limitMessage(category)}
         {!pickOnlyOne && atLimit && ` You can pick up to ${category.pickMax}.`}
       </p>
@@ -83,8 +84,16 @@ export function PickStepStandIn({ category, alreadyPicked }: PickStepStandInProp
                 aria-pressed={isPicked}
                 disabled={disabled}
                 onClick={() => toggle(tag.id)}
-                className={`w-full rounded border px-4 py-3 text-left disabled:opacity-40 ${
-                  isPicked ? "border-current border-2 font-semibold" : "border-current/30"
+                // The same look as OptionCard (selected = brand border, a glow
+                // and a tick), but kept as a <button aria-pressed> because
+                // this is slice 2's pick step stand-in and the tests find it
+                // that way, including by its FIRST span being the tag's
+                // name. The tick is positioned over the corner for that
+                // reason, as a last span, rather than laid out beside it.
+                className={`relative block min-h-11 w-full rounded-feature border bg-surface py-3 pr-12 pl-4 text-left disabled:opacity-40 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary-text ${
+                  isPicked
+                    ? "border-2 border-primary-text font-semibold shadow-glow"
+                    : "border-line-strong"
                 }`}
               >
                 <span className="block">
@@ -92,8 +101,18 @@ export function PickStepStandIn({ category, alreadyPicked }: PickStepStandInProp
                   {tag.retired && " (no longer offered)"}
                 </span>
                 {tag.description && (
-                  <span className="mt-1 block text-sm font-normal text-zinc-600 dark:text-zinc-400">
+                  <span className="mt-1 block text-sm font-normal text-muted">
                     {tag.description}
+                  </span>
+                )}
+                {/* The tick, so a selected card is never shown by colour
+                    alone. */}
+                {isPicked && (
+                  <span
+                    aria-hidden="true"
+                    className="absolute top-3 right-4 flex h-5 w-5 items-center justify-center rounded-full bg-primary text-xs font-bold text-on-primary"
+                  >
+                    ✓
                   </span>
                 )}
               </button>
@@ -103,7 +122,7 @@ export function PickStepStandIn({ category, alreadyPicked }: PickStepStandInProp
       </ul>
 
       {state.problem && (
-        <p role="alert" className="mt-4 text-sm text-red-700 dark:text-red-400" data-testid="edit-problem">
+        <p role="alert" className={`mt-4 ${errorTextClasses}`} data-testid="edit-problem">
           {state.problem}
         </p>
       )}
@@ -112,11 +131,11 @@ export function PickStepStandIn({ category, alreadyPicked }: PickStepStandInProp
         <button
           type="submit"
           disabled={!enough || pending}
-          className="rounded border border-current px-4 py-2 font-semibold disabled:opacity-50"
+          className={primaryButtonClasses}
         >
           {pending ? "Saving…" : "Save"}
         </button>
-        <Link href="/account" className="underline underline-offset-4">
+        <Link href="/account" className={textLinkClasses}>
           Cancel
         </Link>
       </div>

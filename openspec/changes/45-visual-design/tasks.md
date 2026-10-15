@@ -81,7 +81,8 @@ Verify at 375px and 1280px, in light and dark, for every group that changes what
 
 ## 9. Account, admin and the plain pages
 
-- [ ] 9.1 Restyle `/account` and `/account/edit/[category]` (course, photo, edit lists, `PhotoForm`, `CourseForm`). Verify: `tests/e2e/account.spec.ts` passes
+- [x] 9.1 Restyle `/account` and `/account/edit/[category]` (course, photo, edit lists, `PhotoForm`, `CourseForm`). Verify: `tests/e2e/account.spec.ts` passes
+  - Checked 15 Oct 2026: `/account` and `/account/edit/[category]` use the tokens, the display face and the shared form styles (`formStyles.ts`); `CourseForm`, `PhotoForm` and `PickStepStandIn` use the shared buttons, error text and links. The pick list keeps its `<button aria-pressed>` (slice 2's stand-in, tests find it that way) but looks like `OptionCard`: brand border, glow and a tick. `npm run lint`, `tsc --noEmit` and `account.spec.ts` (17, including both 375px no-sideways-scroll tests) pass. Not yet looked at by eye in Chrome, light or dark.
 - [ ] 9.2 Restyle `/admin` and its sections (menu, categories and tags, courses, users) on the same tokens; tables scroll inside their own box on a phone, never the page. Verify: `tests/e2e/admin.spec.ts` passes
 - [ ] 9.3 Restyle `/catalogue`, `/privacy` and `/terms`. Verify: `tests/e2e/catalogue.spec.ts` passes; the legal text is readable at 375px
 
