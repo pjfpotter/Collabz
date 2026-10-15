@@ -506,9 +506,15 @@ export default function CohortGraph({ nodes, links }: CohortGraphProps) {
   const selectedNode = nodes.find((node) => node.id === selectedId) ?? null;
 
   return (
-    // `relative` lets the panel be placed on top of the canvas, at its
-    // bottom edge. The colours class is what readColours() reads from.
-    <div ref={containerRef} className={`${styles.graphColours} relative w-full`}>
+    // The OUTER box holds the canvas and the panel side by side from the lg
+    // breakpoint (1024px, desktop layout, task 10.1). `relative` is what lets
+    // the panel sit over the bottom of the canvas below lg. The colours class
+    // is here too so the panel (outside the canvas box) can use the graph
+    // colour names.
+    <div className={`${styles.graphColours} relative lg:flex lg:items-stretch`}>
+    {/* The canvas box. The colours class is what readColours() reads from, so
+        it stays on this element. min-w-0 lets it shrink beside the panel. */}
+    <div ref={containerRef} className={`${styles.graphColours} relative w-full min-w-0 lg:flex-1`}>
       {isReady ? (
         <ForceGraph2D
           ref={graphRef}
@@ -611,9 +617,24 @@ export default function CohortGraph({ nodes, links }: CohortGraphProps) {
         <p className="p-4">Loading the graph…</p>
       )}
 
-      {selectedNode && (
-        <SelectedPersonPanel node={selectedNode} onClose={() => setSelectedId(null)} />
-      )}
+    </div>
+
+    {/* The panel. Below lg it floats over the canvas bottom (it is absolute,
+        and the outer box is its positioned parent, which is the same box as
+        the canvas on a phone). From lg it is a fixed side column. */}
+    {selectedNode ? (
+      <SelectedPersonPanel node={selectedNode} onClose={() => setSelectedId(null)} />
+    ) : (
+      // The side column is always there at lg, empty or not, so the canvas is
+      // the same width whether or not a dot is selected. If it came and went,
+      // every tap would resize the canvas and the graph would re-measure.
+      <div
+        className="hidden p-4 text-sm text-muted lg:block lg:w-80 lg:shrink-0 lg:border-l lg:border-line"
+        aria-hidden="true"
+      >
+        Tap a dot to see who it is.
+      </div>
+    )}
     </div>
   );
 }
@@ -638,7 +659,9 @@ function SelectedPersonPanel({ node, onClose }: SelectedPersonPanelProps) {
       // Sits over the bottom of the canvas. bg-surface gives it a solid
       // card colour so the graph doesn't show through, and shadow-sheet lifts
       // it off the canvas (design tokens, globals.css).
-      className="absolute inset-x-2 bottom-2 rounded-feature border border-line bg-surface p-3 shadow-sheet sm:right-auto sm:w-80"
+      // From lg (desktop layout) it stops floating: it becomes a full-height
+      // side column with a line on its left edge and no shadow.
+      className="absolute inset-x-2 bottom-2 rounded-feature border border-line bg-surface p-3 shadow-sheet sm:right-auto sm:w-80 lg:static lg:w-80 lg:shrink-0 lg:rounded-none lg:border-0 lg:border-l lg:p-4 lg:shadow-none"
       // Screen readers announce the panel's contents when it appears.
       role="status"
       data-testid="graph-panel"

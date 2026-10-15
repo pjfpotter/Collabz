@@ -60,7 +60,8 @@ export default async function GraphPage({ searchParams }: PageProps<"/graph">) {
   const matchingCount = graph.nodes.filter((node) => node.matchesFilter && !node.isViewer).length;
 
   return (
-    <main className="mx-auto w-full max-w-3xl px-4 py-8">
+    // Wider from lg (1024px) so the graph and its side panel have room.
+    <main className="mx-auto w-full max-w-3xl px-4 py-8 lg:max-w-6xl">
       <h1 className="text-4xl">Graph</h1>
       <p className="mt-2 text-muted">
         Everyone in the cohort, with a line for every pair&apos;s score. Tap a
