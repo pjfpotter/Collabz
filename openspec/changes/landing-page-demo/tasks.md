@@ -21,4 +21,4 @@ Before starting: `npm install`, `npx prisma generate`, and **read the relevant g
 
 - [x] 3.1 Add `tests/e2e/landing.spec.ts`: visitor sees Sign up and Sign in; a pretend student sees Go to matches only; the catalogue link and the four steps are present; no sideways scroll at 375px. Verify: `npx tsc --noEmit` passes now; Patrick runs the spec when the PR is open
 - [x] 3.2 Confirm `tests/e2e/navigation.spec.ts` and `phoneWidth.spec.ts` still describe `/` correctly, and fix any text they match on. Verify: `grep -n "Find people to work with" tests` shows nothing out of date
-- [ ] 3.3 Comment on #17 that the home page changed, and open the PR with a screenshot of each theme. Verify: comment posted and linked in the PR description
+- [x] 3.3 Comment on #17 that the home page changed, and open the PR with a screenshot of each theme. Verify: comment posted and linked in the PR description
