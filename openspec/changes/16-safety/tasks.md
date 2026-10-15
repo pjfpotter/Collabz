@@ -28,7 +28,8 @@ Groups build on each other: logic with tests first (1, 2), then the admin queue 
   - Built 15 Oct 2026; `tsc` and `eslint` are clean. The browser checks are written in `tests/e2e/safety.spec.ts` but NOT run: Patrick runs the full suites when the PR is open.
 - [x] 4.2 Show the same component in the message thread header (one line in slice 6's page). Verify: block from a thread, then the thread shows as closed and sending fails
   - Built 15 Oct 2026, one import and one line in the thread page. Browser check written (same spec as 4.1) but not run, as above.
-- [ ] 4.3 **(human)** Tell the owners of #11 and #13 that one line was added to their pages (4.1, 4.2), and post on #17 that blocked people are hidden through `getHiddenUserIds` so join-up should use it for any new list. Verify: both comments exist
+- [x] 4.3 **(human)** Tell the owners of #11 and #13 that one line was added to their pages (4.1, 4.2), and post on #17 that blocked people are hidden through `getHiddenUserIds` so join-up should use it for any new list. Verify: both comments exist
+  - Posted 15 Oct 2026: #11 (https://github.com/pjfpotter/Collabz/issues/11#issuecomment-6189882791), #13 (https://github.com/pjfpotter/Collabz/issues/13#issuecomment-6189883112), #17 (https://github.com/pjfpotter/Collabz/issues/17#issuecomment-6189883504).
 
 ## 5. End-to-end checks and docs
 
