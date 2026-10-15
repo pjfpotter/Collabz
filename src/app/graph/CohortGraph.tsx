@@ -36,6 +36,7 @@ import { SilhouetteStandIn } from "@/lib/cohort/SilhouetteStandIn";
 import { findSettledCircle, limitToCircle, type Circle } from "@/lib/cohort/dragLimit";
 
 import { CourseMark } from "@/components/CourseMark";
+import { TagChip } from "@/components/TagChip";
 import { secondaryButtonClasses, textLinkClasses } from "@/components/formStyles";
 import { courseLook } from "@/lib/course/courseLook";
 
@@ -218,9 +219,27 @@ const ROUNDED_SQUARE_CORNER_SHARE = 0.45;
 type DrawnNode = NodeObject<GraphNode>;
 type DrawnLink = LinkObject<GraphNode, GraphLink>;
 
+// Extra lines for the tap panel, for one person. Only the public graph demo
+// (/demo/graph) passes these: on the real /graph the same information is on
+// the person's profile page, which the demo does not have.
+export type PanelDetails = {
+  // The tags this person picked, by name.
+  tagNames: string[];
+  // "Why you match" sentences. Empty when there is nothing to say.
+  reasons: string[];
+};
+
 type CohortGraphProps = {
   nodes: GraphNode[];
   links: GraphLink[];
+  // graph-demo (task 4.1). BOTH ARE OPTIONAL AND DEFAULT TO TODAY'S BEHAVIOUR,
+  // so /graph is unchanged when they are left out.
+  //
+  // Show the "View profile" link in the tap panel. The demo turns it off
+  // because its invented people have no profile page to open.
+  showProfileLinks?: boolean;
+  // Extra panel content by node id (alias address). Left out on /graph.
+  panelDetails?: Record<string, PanelDetails>;
 };
 
 // Fits and centres the graph, returning the target zoom level, or null if
@@ -268,7 +287,12 @@ function fitGraphToCanvas(
 // The component
 // ---------------------------------------------------------------------------
 
-export default function CohortGraph({ nodes, links }: CohortGraphProps) {
+export default function CohortGraph({
+  nodes,
+  links,
+  showProfileLinks = true,
+  panelDetails,
+}: CohortGraphProps) {
   // The box the canvas sits in. We measure it to size the canvas, and read
   // the colours from it.
   const containerRef = useRef<HTMLDivElement>(null);
@@ -651,7 +675,12 @@ export default function CohortGraph({ nodes, links }: CohortGraphProps) {
         and the outer box is its positioned parent, which is the same box as
         the canvas on a phone). From lg it is a fixed side column. */}
     {selectedNode ? (
-      <SelectedPersonPanel node={selectedNode} onClose={() => setSelectedId(null)} />
+      <SelectedPersonPanel
+        node={selectedNode}
+        onClose={() => setSelectedId(null)}
+        showProfileLink={showProfileLinks}
+        details={panelDetails?.[selectedNode.id]}
+      />
     ) : (
       // The side column is always there at lg, empty or not, so the canvas is
       // the same width whether or not a dot is selected. If it came and went,
@@ -674,6 +703,10 @@ export default function CohortGraph({ nodes, links }: CohortGraphProps) {
 type SelectedPersonPanelProps = {
   node: GraphNode;
   onClose: () => void;
+  // False on the public demo, whose people have no profile page.
+  showProfileLink: boolean;
+  // Only the demo passes this (see PanelDetails).
+  details?: PanelDetails;
 };
 
 // The small panel shown when a dot is tapped (design decision 6).
@@ -681,7 +714,12 @@ type SelectedPersonPanelProps = {
 // WHY A PANEL AND NOT STRAIGHT TO THE PROFILE: on a touch screen people tap
 // while trying to drag. A panel is cheap to dismiss. Jumping to another page
 // would lose your place in the graph.
-function SelectedPersonPanel({ node, onClose }: SelectedPersonPanelProps) {
+function SelectedPersonPanel({
+  node,
+  onClose,
+  showProfileLink,
+  details,
+}: SelectedPersonPanelProps) {
   return (
     <div
       // Sits over the bottom of the canvas. bg-surface gives it a solid
@@ -689,7 +727,12 @@ function SelectedPersonPanel({ node, onClose }: SelectedPersonPanelProps) {
       // it off the canvas (design tokens, globals.css).
       // From lg (desktop layout) it stops floating: it becomes a full-height
       // side column with a line on its left edge and no shadow.
-      className="absolute inset-x-2 bottom-2 rounded-feature border border-line bg-surface p-3 shadow-sheet sm:right-auto sm:w-80 lg:static lg:w-80 lg:shrink-0 lg:rounded-none lg:border-0 lg:border-l lg:p-4 lg:shadow-none"
+      className={
+        "absolute inset-x-2 bottom-2 rounded-feature border border-line bg-surface p-3 shadow-sheet sm:right-auto sm:w-80 lg:static lg:w-80 lg:shrink-0 lg:rounded-none lg:border-0 lg:border-l lg:p-4 lg:shadow-none" +
+        // The demo's panel can be long (reasons and tags). On a phone it
+        // scrolls inside itself rather than covering the whole graph.
+        (details ? " max-h-[65%] overflow-y-auto lg:max-h-none" : "")
+      }
       // Screen readers announce the panel's contents when it appears.
       role="status"
       data-testid="graph-panel"
@@ -723,18 +766,42 @@ function SelectedPersonPanel({ node, onClose }: SelectedPersonPanelProps) {
             </p>
           )}
 
-          <p className="mt-2">
-            {/* The node's id IS its profile address (see aliasAddress.ts). */}
-            <Link href={`/people/${node.id}`} className={textLinkClasses}>
-              View profile
-            </Link>
-          </p>
+          {showProfileLink && (
+            <p className="mt-2">
+              {/* The node's id IS its profile address (see aliasAddress.ts). */}
+              <Link href={`/people/${node.id}`} className={textLinkClasses}>
+                View profile
+              </Link>
+            </p>
+          )}
         </div>
 
         <button type="button" onClick={onClose} className={secondaryButtonClasses}>
           Close
         </button>
       </div>
+
+      {/* Why this person fits the viewer, then what they picked. Only
+          present on the public demo (see PanelDetails). They sit BELOW the
+          header row, at the full width of the panel: inside the middle column
+          (beside the picture and the Close button) they were squeezed into a
+          narrow strip on a phone. */}
+      {details && details.reasons.length > 0 && (
+        <ul className="mt-3 list-disc space-y-1 pl-5 text-sm text-foreground">
+          {details.reasons.map((reason) => (
+            <li key={reason}>{reason}</li>
+          ))}
+        </ul>
+      )}
+      {details && details.tagNames.length > 0 && (
+        <ul className="mt-3 flex flex-wrap gap-1" aria-label="Picked tags">
+          {details.tagNames.map((tagName) => (
+            <li key={tagName}>
+              <TagChip>{tagName}</TagChip>
+            </li>
+          ))}
+        </ul>
+      )}
     </div>
   );
 }

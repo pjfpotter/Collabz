@@ -2,10 +2,15 @@
 // decision 11).
 //
 //   npm run qr -- https://collabz.example.com/signup
+//   npm run qr -- https://collabz.example.com/demo/graph public/qr-graph-demo.png
 //
-// It writes public/qr-code.png. Anything in public/ is served by the app, so
-// the picture can then be opened at <your site>/qr-code.png and printed from
-// any laptop.
+// With one argument it writes public/qr-code.png (the sign-up code). With a
+// second argument it writes there instead (graph-demo, task 6.1). Anything in
+// public/ is served by the app, so the picture can then be opened at
+// <your site>/qr-code.png and printed from any laptop.
+//
+// WHY A SECOND ARGUMENT: the graph demo needs its own QR code, and without it
+// making that one would overwrite the sign-up code people may have printed.
 //
 // Why a script rather than a QR website: anyone can make it again for a new
 // address with one command, and the repo shows exactly how it was made.
@@ -17,8 +22,10 @@ import path from "node:path";
 
 import QRCode from "qrcode";
 
-// Where the picture goes, relative to the project folder.
-const OUTPUT = path.join(process.cwd(), "public", "qr-code.png");
+// Where the picture goes when no second argument is given, relative to the
+// project folder. Unchanged from before, so `npm run qr -- <address>` still
+// remakes the sign-up code.
+const DEFAULT_OUTPUT = path.join(process.cwd(), "public", "qr-code.png");
 
 async function main(): Promise<void> {
   // process.argv holds: node's path, this script's path, then what you typed
@@ -31,7 +38,17 @@ async function main(): Promise<void> {
     process.exit(1);
   }
 
-  // Make the public/ folder if this project doesn't have one yet.
+  // The optional second item is where to write the picture. It is resolved
+  // against the project folder and must end in .png, so a typo can't write a
+  // file with some other name or type.
+  const requestedOutput = process.argv[3];
+  if (requestedOutput && !requestedOutput.toLowerCase().endsWith(".png")) {
+    console.error("The output file must end in .png, e.g. public/qr-graph-demo.png");
+    process.exit(1);
+  }
+  const OUTPUT = requestedOutput ? path.resolve(process.cwd(), requestedOutput) : DEFAULT_OUTPUT;
+
+  // Make the folder if this project doesn't have it yet.
   await mkdir(path.dirname(OUTPUT), { recursive: true });
 
   await QRCode.toFile(OUTPUT, address, {
@@ -46,7 +63,7 @@ async function main(): Promise<void> {
     errorCorrectionLevel: "H",
   });
 
-  console.log(`QR code for ${address} saved to public/qr-code.png`);
+  console.log(`QR code for ${address} saved to ${path.relative(process.cwd(), OUTPUT)}`);
 }
 
 main();

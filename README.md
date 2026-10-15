@@ -122,6 +122,7 @@ Every page the app will have already exists, so that two tracks can't invent the
 | `/onboarding`, `/onboarding/done` | 2 | #9 | built |
 | `/matches` | 3 | #10 | 3 |
 | `/graph`, `/people`, `/people/[alias]` | 4 | #11 | 4 |
+| `/demo/graph` | graph-demo | none yet | **Built.** A public, phone-friendly playground for the graph with 40 made-up people and a "be someone" picker. No sign-in, reads nothing from the database |
 | `/requests` | 5 | #12 | 5 |
 | `/messages`, `/messages/[conversationId]` | 6 | #13 | 5 |
 | `/account` | 7 | #14 | 1 |
@@ -400,6 +401,23 @@ Track 4 (slice 4, issue #11) builds the cohort graph, the people list and the pr
 The names for track 3 are track 4's proposal and aren't agreed yet. **If you are on track 2 or 3:** you don't need to do anything with this file. Build your real version under whatever name you settle on, and join-up does the swap.
 
 **No longer a stand-in:** `sendConnectionRequest(fromUserId, toUserId)`. Slice 5 (#12) built the real one in `src/lib/requests/sendRequest.ts`, and `standIns.ts` passes it on under the same name, so the Connect route needed no change.
+
+## Graph demo
+
+`/demo/graph` is a public page where anyone, signed in or not, can play with the graph on a phone. It is what the QR code at the next event points at.
+
+- **Who is on it:** 40 invented people written into `src/lib/graphDemo/demoCohort.ts`. The page never reads the database and never needs `PRETEND_COHORT`, so it works on the live site. Their aliases are built the real way ("The" + Vibe word + Energy word), and none says "Pretend".
+- **"Be someone":** a visitor picks tags from the real catalogue (same pick limits as onboarding), and `buildDemoGraph()` scores everyone against them with the real formula in the browser, then highlights a top 5 and a glitch match. Nothing is saved or sent anywhere.
+- **Where the code is:** `src/app/demo/graph/` (the page and the playable part) and `src/lib/graphDemo/` (the people and the re-scoring). The graph itself is the real `CohortGraph`; it got two optional props to hide the profile link and show extra lines in the tap panel.
+- **Changing the people:** edit `demoCohort.ts` and keep every tag id in the catalogue. `tests/unit/graphDemoCohort.test.ts` checks the ids, the pick limits and the aliases.
+
+The QR code for the page is `public/qr-graph-demo.png`, served at `/qr-graph-demo.png`. To make it again for a different address:
+
+```bash
+npm run qr -- https://<production address>/demo/graph public/qr-graph-demo.png
+```
+
+The second argument matters: without it the command writes `public/qr-code.png`, which is the **sign-up** code. Scan the picture with a phone before printing.
 
 ## Connection requests
 

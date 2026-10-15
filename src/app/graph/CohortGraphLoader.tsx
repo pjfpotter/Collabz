@@ -17,6 +17,7 @@
 import dynamic from "next/dynamic";
 
 import type { GraphLink, GraphNode } from "@/lib/cohort/graphData";
+import type { PanelDetails } from "./CohortGraph";
 
 const CohortGraph = dynamic(() => import("./CohortGraph"), {
   ssr: false,
@@ -27,9 +28,25 @@ const CohortGraph = dynamic(() => import("./CohortGraph"), {
 type CohortGraphLoaderProps = {
   nodes: GraphNode[];
   links: GraphLink[];
+  // Both are for the public graph demo (graph-demo, task 4.1) and can be left
+  // out. See CohortGraph.tsx.
+  showProfileLinks?: boolean;
+  panelDetails?: Record<string, PanelDetails>;
 };
 
 // Passes the data straight through to the real graph.
-export function CohortGraphLoader({ nodes, links }: CohortGraphLoaderProps) {
-  return <CohortGraph nodes={nodes} links={links} />;
+export function CohortGraphLoader({
+  nodes,
+  links,
+  showProfileLinks,
+  panelDetails,
+}: CohortGraphLoaderProps) {
+  return (
+    <CohortGraph
+      nodes={nodes}
+      links={links}
+      showProfileLinks={showProfileLinks}
+      panelDetails={panelDetails}
+    />
+  );
 }
