@@ -1,0 +1,316 @@
+/* THE LANDING PAGE DEMO TIMELINE (landing-page-demo, group 2, task 2.2).
+
+   WHY A SEPARATE FILE: design decision 6. These styles belong to the landing
+   page only, so they live next to it and are imported by DemoScene.tsx. Delete
+   this folder and the styles go with it; globals.css is untouched.
+
+   HOW IT WORKS: DemoScene.tsx draws the FINISHED picture, so with no CSS at
+   all a visitor already sees everything (design decision 2). Everything below
+   is an enhancement that starts each piece hidden and runs it up to that
+   finished look. Two safety nets keep the still frame honest:
+     1. All of it sits inside "prefers-reduced-motion: no-preference", so
+        people who ask for less motion never get an animation rule at all.
+     2. Every keyframe ENDS on the element's finished look and uses
+        animation-fill-mode: both, so even the 0.001ms squash in globals.css
+        would land on the finished frame.
+
+   THE TIMELINE: one 16-second loop. Every element uses the same duration, so
+   they stay in step. The percentages below are seconds / 16 * 100.
+
+     seconds   %        what happens                       hook
+     -------   ------   --------------------------------   ------------
+      0 - 1.5    0 -  9  the three picked tags light up     demo-tags
+      1.5 - 3.7  9 - 23  four people drift in, 0.4s apart   demo-person
+      4.5 - 5.5 28 - 34  the link between the pair draws    demo-link
+      5.4 - 6.4 34 - 40  the score pill fades up            demo-score
+      6.7 - 7.7 42 - 48  the "why" pills slide up           demo-reasons
+      9.6 - 10.2 60 - 64 the Approve button appears         demo-approve
+     10.2 - 11.8 64 - 74 ...and gives one pulse             demo-approve
+     12.2 - 13.0 76 - 81 the chat bubble opens              demo-chat
+     13.0 - 16   81 - 100 hold on the finished frame, then the loop restarts
+
+   WHY IT SNAPS AT THE LOOP POINT: a fade-out would have to END hidden, which
+   would make the reduced-motion frame empty. One cut every 16 seconds is far
+   slower than the once-a-second flash limit in the spec. */
+
+/* Captions (task 2.3) are off unless the animation is running: the list on the
+   page already says the same words. The block below turns them on. */
+.demo-caption {
+  display: none;
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  /* Shared settings. "both" = show the 0% look before the animation starts
+     and keep the 100% look after it ends. "infinite" = loop. */
+  .demo-tags,
+  .demo-person,
+  .demo-link,
+  .demo-score,
+  .demo-reasons,
+  .demo-approve,
+  .demo-chat {
+    animation-duration: 16s;
+    animation-iteration-count: infinite;
+    animation-fill-mode: both;
+    animation-timing-function: ease-out;
+    /* SVG shapes transform around the SVG's corner unless told otherwise.
+       fill-box + center = grow and shrink from the element's own middle. */
+    transform-box: fill-box;
+    transform-origin: center;
+  }
+
+  .demo-tags {
+    animation-name: demo-tags-light;
+  }
+  .demo-person {
+    animation-name: demo-person-in;
+  }
+  /* Each person starts 0.4s after the one before. Keeping the stagger as a
+     delay (not four sets of keyframes) is shorter and easier to read. */
+  .demo-person:nth-child(2) {
+    animation-delay: 0.4s;
+  }
+  .demo-person:nth-child(3) {
+    animation-delay: 0.8s;
+  }
+  .demo-person:nth-child(4) {
+    animation-delay: 1.2s;
+  }
+  .demo-link {
+    animation-name: demo-link-draw;
+  }
+  .demo-score {
+    animation-name: demo-score-in;
+  }
+  .demo-reasons {
+    animation-name: demo-reasons-in;
+  }
+  .demo-approve {
+    animation-name: demo-approve-pulse;
+  }
+  .demo-chat {
+    animation-name: demo-chat-open;
+  }
+
+  /* CAPTIONS (task 2.3, DemoCaption.tsx). Each caption is display:none by
+     default (rule above); this block un-hides it and gives it a window in
+     the timeline:
+
+       caption 1  Pick      0 -  28 %   (until the link starts to draw)
+       caption 2  Match    28 -  60 %   (link, score, reasons)
+       caption 3  Request  60 -  76 %   (Approve appears and pulses)
+       caption 4  Talk     76 - 100 %   (the chat bubble, then the hold)
+
+     All four share one grid cell so the box is as tall as the longest. */
+  .demo-caption-stack {
+    display: grid;
+  }
+  .demo-caption {
+    display: block;
+    grid-area: 1 / 1;
+    animation-duration: 16s;
+    animation-iteration-count: infinite;
+    animation-fill-mode: both;
+    animation-timing-function: linear;
+  }
+  .demo-caption-1 {
+    animation-name: demo-caption-1;
+  }
+  .demo-caption-2 {
+    animation-name: demo-caption-2;
+  }
+  .demo-caption-3 {
+    animation-name: demo-caption-3;
+  }
+  .demo-caption-4 {
+    animation-name: demo-caption-4;
+  }
+
+  /* Each caption fades over 2% (about 0.3s) at either end of its window, so
+     it never blinks and two captions never fully overlap. */
+  @keyframes demo-caption-1 {
+    0%,
+    26% {
+      opacity: 1;
+    }
+    28%,
+    100% {
+      opacity: 0;
+    }
+  }
+  @keyframes demo-caption-2 {
+    0%,
+    26% {
+      opacity: 0;
+    }
+    28%,
+    58% {
+      opacity: 1;
+    }
+    60%,
+    100% {
+      opacity: 0;
+    }
+  }
+  @keyframes demo-caption-3 {
+    0%,
+    58% {
+      opacity: 0;
+    }
+    60%,
+    74% {
+      opacity: 1;
+    }
+    76%,
+    100% {
+      opacity: 0;
+    }
+  }
+  @keyframes demo-caption-4 {
+    0%,
+    74% {
+      opacity: 0;
+    }
+    76%,
+    100% {
+      opacity: 1;
+    }
+  }
+
+  /* Tags: dim at first, then light up together. */
+  @keyframes demo-tags-light {
+    0% {
+      opacity: 0.15;
+    }
+    9% {
+      opacity: 1;
+    }
+    100% {
+      opacity: 1;
+    }
+  }
+
+  /* People: wait hidden, then drift up into place. The 9% hold is what keeps
+     them out of sight while the tags light up. */
+  @keyframes demo-person-in {
+    0%,
+    9% {
+      opacity: 0;
+      transform: translateY(14px);
+    }
+    16% {
+      opacity: 1;
+      transform: translateY(0);
+    }
+    100% {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+
+  /* Link: the line is "drawn" by sliding a dash along it. pathLength={1} on
+     the <line> (in DemoScene.tsx) makes the whole line count as length 1, so
+     the numbers here don't depend on the picture's real size. */
+  @keyframes demo-link-draw {
+    0%,
+    27.9% {
+      opacity: 0;
+      stroke-dasharray: 1;
+      stroke-dashoffset: 1;
+    }
+    28% {
+      opacity: 1;
+      stroke-dasharray: 1;
+      stroke-dashoffset: 1;
+    }
+    34% {
+      opacity: 1;
+      stroke-dasharray: 1;
+      stroke-dashoffset: 0;
+    }
+    100% {
+      opacity: 1;
+      stroke-dasharray: 1;
+      stroke-dashoffset: 0;
+    }
+  }
+
+  /* Score: fades up from slightly small. No counting up: changing digits
+     would be text that changes under the eye, and the spec says the number is
+     simply there (design: "score counts up by fading"). */
+  @keyframes demo-score-in {
+    0%,
+    34% {
+      opacity: 0;
+      transform: scale(0.7);
+    }
+    40% {
+      opacity: 1;
+      transform: scale(1);
+    }
+    100% {
+      opacity: 1;
+      transform: scale(1);
+    }
+  }
+
+  /* Reasons: slide up a little as they fade in. */
+  @keyframes demo-reasons-in {
+    0%,
+    42% {
+      opacity: 0;
+      transform: translateY(10px);
+    }
+    48% {
+      opacity: 1;
+      transform: translateY(0);
+    }
+    100% {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+
+  /* Approve: appears, then one pulse to say "this is the thing to press".
+     One pulse per 16 seconds, never a blink. */
+  @keyframes demo-approve-pulse {
+    0%,
+    60% {
+      opacity: 0;
+      transform: scale(1);
+    }
+    64% {
+      opacity: 1;
+      transform: scale(1);
+    }
+    69% {
+      opacity: 1;
+      transform: scale(1.08);
+    }
+    74% {
+      opacity: 1;
+      transform: scale(1);
+    }
+    100% {
+      opacity: 1;
+      transform: scale(1);
+    }
+  }
+
+  /* Chat: the bubble opens from small, like a conversation starting. */
+  @keyframes demo-chat-open {
+    0%,
+    76% {
+      opacity: 0;
+      transform: scale(0.6);
+    }
+    81% {
+      opacity: 1;
+      transform: scale(1);
+    }
+    100% {
+      opacity: 1;
+      transform: scale(1);
+    }
+  }
+}
