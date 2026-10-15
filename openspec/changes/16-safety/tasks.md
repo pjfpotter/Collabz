@@ -33,5 +33,7 @@ Groups build on each other: logic with tests first (1, 2), then the admin queue 
 ## 5. End-to-end checks and docs
 
 - [ ] 5.1 Add `tests/e2e/safety.spec.ts` for the four success checks of #16 (block closes and hides; report needs a reason; admin sees and acts; member can't see the queue). Then run the full `npm test` and `npm run test:e2e` once, when Patrick says. Verify: both pass
-- [ ] 5.2 Add a "Safety" section to `README.md` (what block and report do, that a block can't be undone, where the queue is, how to change the reasons list) and update `ARCHITECTURE.md` at archive time. Verify: every path and button name matches the code
+  - The spec is written (5 tests: signed-out redirect, member sees not found, admin resolves, report needs a reason, block closes and hides). **Not run**: Patrick runs both full suites when the PR is open, and ticks this task from that result.
+- [x] 5.2 Add a "Safety" section to `README.md` (what block and report do, that a block can't be undone, where the queue is, how to change the reasons list) and update `ARCHITECTURE.md` at archive time. Verify: every path and button name matches the code
+  - README "Safety" section added 15 Oct 2026, with the routes table and the shared-helpers table updated. Button names ("Report or block", "Send report", "Block", "Yes, block …", "Suspend", "Remove photo", "Resolve") checked against the components. `ARCHITECTURE.md` is updated at archive time, as CLAUDE.md says.
 - [ ] 5.3 Run the four success checks from #16 on the deployed preview and record the result under a "Checked" note at the top of this file. Verify: the note exists
