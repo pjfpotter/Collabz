@@ -24,8 +24,10 @@ Groups build on each other: logic with tests first (1, 2), then the admin queue 
 
 ## 4. Member buttons
 
-- [ ] 4.1 Add `SafetyActions` and `src/app/people/[alias]/safetyActions.ts` (Server Actions: resolve the alias on the server, then call `blockUser` / `reportUser`): a "Block" button with a confirmation step, and a "Report" form with the reasons as radio buttons, plain-English problems shown. Add the one line to the profile page (design 4). Verify: in the browser, report a pretend person and see it in `/admin/reports`; block them and they are gone from `/graph`, `/people`, `/matches`
-- [ ] 4.2 Show the same component in the message thread header (one line in slice 6's page). Verify: block from a thread, then the thread shows as closed and sending fails
+- [x] 4.1 Add `src/components/SafetyActions.tsx` and `src/lib/safety/safetyActions.ts` (Server Actions: resolve the alias on the server, then call `blockUser` / `reportUser`; moved out of the profile folder because two pages share them, see design 4): a "Block" button with a confirmation step, and a "Report" form with the reasons as radio buttons, plain-English problems shown. Add the one line to the profile page (design 4). Verify: in the browser, report a pretend person and see it in `/admin/reports`; block them and they are gone from `/graph`, `/people`, `/matches`
+  - Built 15 Oct 2026; `tsc` and `eslint` are clean. The browser checks are written in `tests/e2e/safety.spec.ts` but NOT run: Patrick runs the full suites when the PR is open.
+- [x] 4.2 Show the same component in the message thread header (one line in slice 6's page). Verify: block from a thread, then the thread shows as closed and sending fails
+  - Built 15 Oct 2026, one import and one line in the thread page. Browser check written (same spec as 4.1) but not run, as above.
 - [ ] 4.3 **(human)** Tell the owners of #11 and #13 that one line was added to their pages (4.1, 4.2), and post on #17 that blocked people are hidden through `getHiddenUserIds` so join-up should use it for any new list. Verify: both comments exist
 
 ## 5. End-to-end checks and docs

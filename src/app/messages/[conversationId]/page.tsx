@@ -13,6 +13,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 
 import { noticeClasses, textLinkClasses } from "@/components/formStyles";
+import { SafetyActions } from "@/components/SafetyActions";
 import { StateMessage } from "@/components/StateMessage";
 import { SilhouetteStandIn } from "@/lib/cohort/SilhouetteStandIn";
 import { requireFinishedProfile } from "@/lib/cohort/standIns";
@@ -141,6 +142,10 @@ export default async function ConversationPage({
             <SendMessageForm conversationId={conversation.conversationId} />
           )}
         </div>
+
+        {/* Slice 9 (#16): report or block this person. Shown on a closed
+            conversation too, since that is when someone may want to. */}
+        <SafetyActions address={conversation.address} alias={conversation.alias} />
       </div>
     </main>
   );
