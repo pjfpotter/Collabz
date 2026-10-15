@@ -10,6 +10,7 @@
 // rescored since either person changed (scoreUser does that on every save).
 
 import { prisma } from "@/lib/db";
+import { getHiddenUserIds } from "@/lib/safety/hiddenPeople";
 
 import { getEligiblePeople } from "./eligiblePeople";
 import { explainScore, type MatchExplanation } from "./explain";
@@ -31,6 +32,12 @@ export async function explainMatch(
   secondUserId: string,
 ): Promise<MatchExplanation | null> {
   if (firstUserId === secondUserId) {
+    return null;
+  }
+
+  // Slice 9 (#16): nothing to explain between two people where one blocked
+  // the other.
+  if ((await getHiddenUserIds(firstUserId)).has(secondUserId)) {
     return null;
   }
 

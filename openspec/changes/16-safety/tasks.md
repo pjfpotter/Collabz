@@ -6,9 +6,9 @@ Groups build on each other: logic with tests first (1, 2), then the admin queue 
 
 ## 1. Blocking
 
-- [ ] 1.1 Add `src/lib/safety/hiddenPeople.ts` with `getHiddenUserIds(viewerId)` (moved from `findBlockedCounterpartIds` in `listRequests.ts`, which now imports it). Integration test in `tests/integration/hiddenPeople.test.ts`: both directions, nobody blocked gives an empty set. Verify: `npx vitest run tests/integration/hiddenPeople.test.ts tests/integration/listRequests.test.ts` passes
-- [ ] 1.2 Add `src/lib/safety/blockUser.ts`: `blockUser(blockerId, blockedId)` per design 2. Tests in `tests/integration/blockUser.test.ts`: stores the row; refuses yourself; blocking twice is fine; an existing conversation is closed and `sendMessage` then refuses; no conversation is created when there was none; a photo is no longer visible (`canSeePhoto`); a request can't be sent either way. Verify: that file passes
-- [ ] 1.3 Make the graph data, people list, profile lookup, top 5 and glitch match leave out `getHiddenUserIds(viewer)`. Tests: a blocked person is absent from each, for both the blocker and the blocked, and a third person still sees them. Verify: `npx vitest run` on the touched cohort/matching test files passes
+- [x] 1.1 Add `src/lib/safety/hiddenPeople.ts` with `getHiddenUserIds(viewerId)` (moved from `findBlockedCounterpartIds` in `listRequests.ts`, which now imports it). Integration test in `tests/integration/hiddenPeople.test.ts`: both directions, nobody blocked gives an empty set. Verify: `npx vitest run tests/integration/hiddenPeople.test.ts tests/integration/listRequests.test.ts` passes
+- [x] 1.2 Add `src/lib/safety/blockUser.ts`: `blockUser(blockerId, blockedId)` per design 2. Tests in `tests/integration/blockUser.test.ts`: stores the row; refuses yourself; blocking twice is fine; an existing conversation is closed and `sendMessage` then refuses; no conversation is created when there was none; a photo is no longer visible (`canSeePhoto`); a request can't be sent either way. Verify: that file passes
+- [x] 1.3 Make the graph data, people list, profile lookup, top 5 and glitch match leave out `getHiddenUserIds(viewer)`. Tests: a blocked person is absent from each, for both the blocker and the blocked, and a third person still sees them. Verify: `npx vitest run` on the touched cohort/matching test files passes
 
 ## 2. Reporting
 

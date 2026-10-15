@@ -24,6 +24,8 @@ import { prisma } from "@/lib/db";
 
 import { aliasToAddress } from "./aliasAddress";
 import { filterPeople, hasAnyFilter, type PeopleFilters } from "./search";
+import { getHiddenUserIds } from "@/lib/safety/hiddenPeople";
+
 import { getTopFive } from "./standIns";
 import { getVisiblePeople, type VisiblePerson } from "./visiblePeople";
 
@@ -326,7 +328,11 @@ export async function buildGraphData(
   viewerId: string,
   filters?: PeopleFilters,
 ): Promise<GraphData> {
-  const people = await getVisiblePeople();
+  // Slice 9 (#16): people who blocked the viewer, or were blocked by them,
+  // are not drawn at all. buildGraph already skips edges to anyone missing
+  // from `people`, so their lines go too.
+  const hiddenIds = await getHiddenUserIds(viewerId);
+  const people = (await getVisiblePeople()).filter((person) => !hiddenIds.has(person.userId));
 
   // The ids of the people who fit the filters, or null for "no filter on,
   // everyone fits". filterPeople is the same function /people uses, so the
