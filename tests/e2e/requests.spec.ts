@@ -213,3 +213,18 @@ test("a request that was answered elsewhere says so instead of failing silently"
   );
   expect(await prisma!.conversation.count()).toBe(0);
 });
+
+// A request must remain noticeable without opening the phone menu.
+test("phone header shows a pending-request shortcut only when requests are waiting", async ({ page }) => {
+  await page.setViewportSize({ width: 375, height: 700 });
+  await signInAs(page, member);
+  await page.goto("/requests");
+  await expect(mainNav(page).getByTestId("mobile-waiting-count")).toHaveCount(0);
+  await prisma!.connectionRequest.create({
+    data: { fromUserId: sender, toUserId: member, status: "PENDING" },
+  });
+  await page.reload();
+  await expect(mainNav(page).getByTestId("mobile-waiting-count")).toBeVisible();
+  await expect(mainNav(page).getByTestId("mobile-waiting-count")).toHaveText(/^1\b/);
+  await expect(mainNav(page).getByRole("button", { name: "Menu" })).toHaveAttribute("aria-expanded", "false");
+});

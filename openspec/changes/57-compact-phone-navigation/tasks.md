@@ -1,0 +1,7 @@
+- [x] Add the mobile dropdown and keep desktop navigation available.
+- [x] Move account controls inside the mobile dropdown.
+- [x] Show a positive pending count outside the closed dropdown.
+- [x] Refresh request data while visible and on return.
+- [x] Validate isolated phone/desktop rendering and keyboard interaction.
+- [x] Type-check and lint.
+- [ ] Patrick reviews and verifies on the affected phone.
