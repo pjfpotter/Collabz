@@ -69,7 +69,7 @@ You don't need to create any tables: the shared `dev` database already has them,
 npm run dev
 ```
 
-Then open <http://localhost:3000>. The home page links to the one feature so far, the tag catalogue at <http://localhost:3000/catalogue>: every profile category with its tags and descriptions, read from the database on each request.
+Then open <http://localhost:3000>. The home page explains the idea and sends you to Sign up. The tag catalogue is at <http://localhost:3000/catalogue>: every profile category with its tags and descriptions, read from the database on each request.
 
 ## Running the tests
 
@@ -116,7 +116,8 @@ Every page the app will have already exists, so that two tracks can't invent the
 
 | Route | Slice | Issue | Track |
 |---|---|---|---|
-| `/`, `/catalogue` | 0 | #6 | built |
+| `/` | landing-page-demo | none yet | **Built.** The home page: what Collabz is, an animated demo of the idea, the four steps in words, and Sign up / Sign in (or Go to matches when signed in). Reads nothing from the database |
+| `/catalogue` | 0 | #6 | built |
 | `/signup`, `/signin` | 1 | #8 | 1 |
 | `/onboarding`, `/onboarding/done` | 2 | #9 | built |
 | `/matches` | 3 | #10 | 3 |
