@@ -16,8 +16,9 @@ Verify at 375px and 1280px, in light and dark, for every group that changes what
   - Checked 14 Oct 2026 on a production build (`next start`): the page head has the manifest, both theme-colour tags, the share image tags, `icon.svg`, `favicon.ico`, `apple-touch-icon` and `mask-icon` links, and `/manifest.webmanifest`, the three PNG icons, `/favicon.ico`, `/icon.svg`, `/apple-icon.png`, `/opengraph-image.png` and `/mask-icon.svg` all return 200. `public/collabz-brand-assets/` is gone.
 - [x] 1.4 Add `reduced-motion` handling in `globals.css` (no transitions or animation under `prefers-reduced-motion: reduce`). Verify: with the emulation on, chips and panels don't animate
   - The rule is in `globals.css` and compiled into the CSS. There are no chips or panels yet to see it work, so it gets looked at for real in groups 4 and 7.
-- [ ] 1.5 Run `npm test`, `npm run lint` and `npm run test:e2e`. Verify: all pass (nothing in this group should change behaviour)
+- [x] 1.5 Run `npm test`, `npm run lint` and `npm run test:e2e`. Verify: all pass (nothing in this group should change behaviour)
   - Result 14 Oct 2026: `npm run lint` and `npm run build` pass; `npm run test:e2e` passes (127 of 127). `npm test` had **43 failures in 6 files, all foreign-key errors in `Edge` and `TagPairing`** (e.g. `TagPairing_qualityTagId_fkey` during `emptyDatabase`), which is the pattern of two runs sharing the one test database. This group changes only CSS, fonts and icons, so it is not the cause. Left unticked until `npm test` is run again on a quiet database.
+  - Closed 15 Oct 2026: `npm test` on a quiet database passes (64 files, 639 tests). `npm run test:e2e` passed (127) when this group was built; the final full run is task 10.4.
 
 ## 2. Silhouettes and course mark
 
