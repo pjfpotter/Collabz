@@ -190,3 +190,54 @@ describe("isUserVisible agrees with getVisiblePeople", () => {
     expect(await isUserVisible(suspended)).toBe(false);
   });
 });
+
+// Regression: an accepted incoming request used to vanish from both lists.
+describe("getRequestsPage: accepted connections", () => {
+  it("shows the same accepted pair to sender and recipient", async () => {
+    const anna = await createPerson(prisma, "anna");
+    const ben = await createPerson(prisma, "ben");
+    await addRequest(anna, ben, "APPROVED");
+    expect((await getRequestsPage(anna)).connected.map(p => p.alias)).toEqual(["The Test ben"]);
+    const recipient = await getRequestsPage(ben);
+    expect(recipient.connected.map(p => p.alias)).toEqual(["The Test anna"]);
+    expect(recipient.waiting).toEqual([]);
+    expect(recipient.sent).toEqual([]);
+    expect(await countWaitingRequests(ben)).toBe(0);
+    expect(JSON.stringify(recipient.connected)).not.toContain("test-user-");
+    expect(JSON.stringify(recipient.connected)).not.toContain("@");
+  });
+
+  it("does not turn pending or declined requests into connections", async () => {
+    const viewer = await createPerson(prisma, "viewer");
+    const anna = await createPerson(prisma, "anna");
+    const ben = await createPerson(prisma, "ben");
+    await addRequest(anna, viewer, "PENDING");
+    await addRequest(viewer, ben, "DECLINED");
+    expect((await getRequestsPage(viewer)).connected).toEqual([]);
+    expect(await countWaitingRequests(viewer)).toBe(1);
+  });
+
+  it("hides blocked, suspended and unfinished people in either direction", async () => {
+    const viewer = await createPerson(prisma, "viewer");
+    const suspended = await createPerson(prisma, "suspended", { suspended: true });
+    const unfinished = await createPerson(prisma, "unfinished", { finishedAt: null });
+    const blocked = await createPerson(prisma, "blocked");
+    const blocker = await createPerson(prisma, "blocker");
+    await addRequest(suspended, viewer, "APPROVED");
+    await addRequest(viewer, unfinished, "APPROVED");
+    await addRequest(blocked, viewer, "APPROVED");
+    await addRequest(viewer, blocker, "APPROVED");
+    await prisma.block.create({ data: { blockerId: viewer, blockedId: blocked } });
+    await prisma.block.create({ data: { blockerId: blocker, blockedId: viewer } });
+    expect((await getRequestsPage(viewer)).connected).toEqual([]);
+  });
+
+  it("shows one person when legacy data contains reverse duplicate approvals", async () => {
+    const anna = await createPerson(prisma, "anna");
+    const ben = await createPerson(prisma, "ben");
+    await addRequest(anna, ben, "APPROVED");
+    await addRequest(ben, anna, "APPROVED");
+    expect((await getRequestsPage(anna)).connected).toHaveLength(1);
+    expect((await getRequestsPage(ben)).connected).toHaveLength(1);
+  });
+});

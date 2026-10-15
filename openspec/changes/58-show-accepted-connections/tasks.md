@@ -1,0 +1,7 @@
+- [x] Query accepted request pairs in either direction with visibility/block rules.
+- [x] Render accepted connections for recipients as well as senders.
+- [x] Add regression cases for both directions, non-approved requests, hidden people, duplicates and public output.
+- [x] Validate isolated logic/rendering, TypeScript and lint.
+- [ ] Run database-backed regression tests in an agreed test window.
+- [ ] Confirm Patrick's deployment, recipient alias and actual live request status.
+- [ ] Patrick reviews before merge.
