@@ -556,10 +556,18 @@ src/
     catalogue/page.tsx #   /catalogue   the tag catalogue
     <route>/page.tsx   #   one placeholder per planned route (see Routes)
     api/dev/           #   the dev sign-in switcher's API route
+  app/globals.css      # the design tokens: colours (light and dark), radii, shadows
   components/
     NavBar.tsx         # the nav bar and the list of routes it links to
+    NavLinks.tsx       # the link row, marks the current page (client component)
     DevUserSwitcher.tsx  # the "Dev sign-in as" list (dev only)
     PlaceholderPage.tsx  # what an unbuilt page shows
+    LegalPage.tsx      # the shared look of /terms and /privacy
+    formStyles.ts      # the class strings for inputs, buttons and errors
+    PersonRow.tsx, PersonCard.tsx  # a person in a list / as a card
+    StatusPill.tsx, ScoreBadge.tsx, TagChip.tsx, OptionCard.tsx, ReasonsList.tsx
+    StateMessage.tsx, LoadingState.tsx  # empty, error and loading states
+    CourseMark.tsx     # a course's shape, colour and name
   lib/
     db.ts              # the one shared database client
     catalogue.ts       # getCatalogue(): reads categories and tags in order
@@ -569,6 +577,7 @@ src/
     conversations.ts   # openConversation(), closeConversation() (shared helpers)
     userPair.ts        # orderUserPair(): one agreed order for a pair of users
     pretendCohort.ts   # the on/off switch for pretend students and the dev switcher
+    course/            # slice 10: which shape and colour each course gets
     cohort/            # slice 4: who is visible, alias addresses, and the stand-ins
     account/           # slice 7: photos (storage, rules), course, editing answers, and its stand-ins
   generated/prisma/    # Prisma's generated client (not committed)

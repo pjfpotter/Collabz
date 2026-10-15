@@ -35,8 +35,8 @@ export default async function EditCategoryPage({ params }: PageProps<"/account/e
 
   return (
     <main className="mx-auto w-full max-w-2xl px-4 py-8">
-      <h1 className="text-3xl font-semibold">{toEdit.category.name}</h1>
-      <p className="mt-2 text-zinc-600 dark:text-zinc-400">
+      <h1 className="text-4xl">{toEdit.category.name}</h1>
+      <p className="mt-2 text-muted">
         Change your picks, then save. Your alias, connections and conversations stay as they are.
       </p>
 

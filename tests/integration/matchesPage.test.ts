@@ -75,7 +75,7 @@ describe("getMatchesPage", () => {
     }
   });
 
-  it("contains nothing but alias, silhouette, address, score and reasons: no email, no user id", async () => {
+  it("contains nothing but alias, silhouette, course, address, score and reasons: no email, no user id", async () => {
     const [viewer] = await makeScoredCohort(9);
 
     const page = await getMatchesPage(viewer);
@@ -84,6 +84,8 @@ describe("getMatchesPage", () => {
     expect(Object.keys(card).sort()).toEqual([
       "address",
       "alias",
+      "courseId",
+      "courseName",
       "score",
       "sentences",
       "sharedInterests",

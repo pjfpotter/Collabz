@@ -28,8 +28,10 @@ import {
 } from "@/lib/cohort/search";
 import { requireFinishedProfile } from "@/lib/cohort/standIns";
 
+import { CourseMark } from "@/components/CourseMark";
+import { textLinkClasses } from "@/components/formStyles";
+
 import { CohortGraphLoader } from "./CohortGraphLoader";
-import { courseColourName } from "./graphColours";
 import styles from "./graphColours.module.css";
 
 // Sets the browser tab title for this page.
@@ -58,9 +60,10 @@ export default async function GraphPage({ searchParams }: PageProps<"/graph">) {
   const matchingCount = graph.nodes.filter((node) => node.matchesFilter && !node.isViewer).length;
 
   return (
-    <main className="mx-auto w-full max-w-3xl px-4 py-8">
-      <h1 className="text-3xl font-semibold">Graph</h1>
-      <p className="mt-2 text-zinc-600 dark:text-zinc-400">
+    // Wider from lg (1024px) so the graph and its side panel have room.
+    <main className="mx-auto w-full max-w-3xl px-4 py-8 lg:max-w-6xl">
+      <h1 className="text-4xl">Graph</h1>
+      <p className="mt-2 text-muted">
         Everyone in the cohort, with a line for every pair&apos;s score. Tap a
         dot to see who it is, or pull it to move it. Drag the background to
         move around, and pinch to zoom.
@@ -69,21 +72,21 @@ export default async function GraphPage({ searchParams }: PageProps<"/graph">) {
       {filtersAreOn ? (
         // Says in words what the dimming means, since a dimmed dot on a
         // canvas tells a screen reader nothing.
-        <p className="mt-4 text-sm" data-testid="graph-filters">
+        <p className="mt-4 text-sm text-muted" data-testid="graph-filters">
           Showing {describeFilters(filters, options).join(" · ")}:{" "}
           {matchingCount === 1 ? "1 person fits" : `${matchingCount} people fit`}, and everyone
           else is dimmed.{" "}
-          <Link href={`/people${query}`} className="underline underline-offset-4">
+          <Link href={`/people${query}`} className={textLinkClasses}>
             Back to the list
           </Link>
           {" · "}
-          <Link href="/graph" className="underline underline-offset-4">
+          <Link href="/graph" className={textLinkClasses}>
             Clear the filters
           </Link>
         </p>
       ) : (
         <p className="mt-4 text-sm">
-          <Link href="/people" className="underline underline-offset-4">
+          <Link href="/people" className={textLinkClasses}>
             See everyone as a list
           </Link>
           , with filters.
@@ -96,7 +99,7 @@ export default async function GraphPage({ searchParams }: PageProps<"/graph">) {
           person in dev tools) can read them, because nothing inside the
           canvas can be counted from outside. */}
       <div
-        className="mt-4 rounded border border-current/30"
+        className="mt-4 overflow-hidden rounded-feature border border-line bg-surface"
         data-testid="cohort-graph"
         data-node-count={graph.nodes.length}
         data-edge-count={graph.links.length}
@@ -114,7 +117,7 @@ export default async function GraphPage({ searchParams }: PageProps<"/graph">) {
       </div>
 
       <section className="mt-8" aria-labelledby="top-five-heading">
-        <h2 id="top-five-heading" className="text-xl font-semibold">
+        <h2 id="top-five-heading" className="text-3xl">
           Your top 5
         </h2>
         {graph.topFive.length === 0 ? (
@@ -133,10 +136,10 @@ export default async function GraphPage({ searchParams }: PageProps<"/graph">) {
       </section>
 
       <section className="mt-8" aria-labelledby="glitch-heading">
-        <h2 id="glitch-heading" className="text-xl font-semibold">
+        <h2 id="glitch-heading" className="text-3xl">
           Your glitch match
         </h2>
-        <p className="mt-1 text-sm text-zinc-600 dark:text-zinc-400">
+        <p className="mt-1 text-sm text-muted">
           One person picked at random from outside your top 5.
         </p>
         {graph.glitchMatch === null ? (
@@ -156,10 +159,10 @@ function PersonLink({ person }: { person: GraphNode }) {
   return (
     <>
       {/* A node's id is its profile address (see aliasAddress.ts). */}
-      <Link href={`/people/${person.id}`} className="underline underline-offset-4">
+      <Link href={`/people/${person.id}`} className={textLinkClasses}>
         {person.alias}
       </Link>
-      <span className="text-sm text-zinc-600 dark:text-zinc-400">
+      <span className="text-sm text-muted">
         {" "}
         · {person.courseName ?? "No course"}
         {person.scoreWithViewer !== null && ` · score ${person.scoreWithViewer}`}
@@ -193,8 +196,9 @@ function GraphLegend({ nodes }: { nodes: GraphNode[] }) {
     >
       {courses.map((course) => (
         <li key={course.id} className="flex items-center gap-2">
-          <LegendDot fill={`var(${courseColourName(course.id)})`} />
-          {course.name}
+          {/* The shape, the colour and the name together, from the same
+              component the course badges use. */}
+          <CourseMark courseId={course.id} name={course.name} variant="plain" />
         </li>
       ))}
       <li className="flex items-center gap-2">

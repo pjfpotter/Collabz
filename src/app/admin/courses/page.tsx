@@ -8,6 +8,12 @@ import { requireAdmin } from "@/lib/currentUser";
 
 import { AdminMenu } from "../AdminMenu";
 import {
+  adminButtonClasses,
+  adminCardClasses,
+  adminProblemClasses,
+  adminRowInputClasses,
+} from "../adminStyles";
+import {
   addCourseAction,
   moveCourseAction,
   renameCourseAction,
@@ -42,30 +48,30 @@ export default async function AdminCoursesPage({
     <main className="mx-auto w-full max-w-md px-4 py-12">
       <AdminMenu />
 
-      <h1 className="mt-6 text-3xl font-semibold">Courses</h1>
-      <p className="mt-2 text-sm">
+      <h1 className="mt-6 text-4xl">Courses</h1>
+      <p className="mt-2 text-sm text-muted">
         A retired course is no longer offered on the sign-up form. People already on
         it keep it.
       </p>
 
       {problemText && (
-        <p role="alert" className="mt-4 rounded border border-current p-3 text-sm">
+        <p role="alert" className={`mt-4 ${adminProblemClasses}`}>
           {problemText}
         </p>
       )}
 
       <ul className="mt-6 space-y-4">
         {courses.map((course, index) => (
-          <li key={course.id} className="rounded border border-current/30 p-3">
+          <li key={course.id} className={adminCardClasses}>
             <p className="font-semibold">
               {course.name}
               {course.retiredAt && <span className="font-normal"> (retired)</span>}
             </p>
-            <p className="text-sm">
+            <p className="text-sm text-muted">
               {course._count.users} {course._count.users === 1 ? "person" : "people"}
             </p>
 
-            <form action={renameCourseAction} className="mt-2 flex gap-2">
+            <form action={renameCourseAction} className="mt-3 flex gap-2">
               <input type="hidden" name="id" value={course.id} />
               <label className="sr-only" htmlFor={`name-${course.id}`}>
                 New name for {course.name}
@@ -74,9 +80,9 @@ export default async function AdminCoursesPage({
                 id={`name-${course.id}`}
                 name="name"
                 defaultValue={course.name}
-                className="min-w-0 flex-1 rounded border border-current/40 px-2 py-1"
+                className={adminRowInputClasses}
               />
-              <button type="submit" className="rounded border border-current px-3 py-1">
+              <button type="submit" className={adminButtonClasses}>
                 Rename
               </button>
             </form>
@@ -88,7 +94,7 @@ export default async function AdminCoursesPage({
                 <button
                   type="submit"
                   disabled={index === 0}
-                  className="rounded border border-current px-3 py-1 disabled:opacity-40"
+                  className={adminButtonClasses}
                 >
                   Move up
                 </button>
@@ -99,7 +105,7 @@ export default async function AdminCoursesPage({
                 <button
                   type="submit"
                   disabled={index === courses.length - 1}
-                  className="rounded border border-current px-3 py-1 disabled:opacity-40"
+                  className={adminButtonClasses}
                 >
                   Move down
                 </button>
@@ -111,7 +117,7 @@ export default async function AdminCoursesPage({
                   name="retired"
                   value={course.retiredAt ? "false" : "true"}
                 />
-                <button type="submit" className="rounded border border-current px-3 py-1">
+                <button type="submit" className={adminButtonClasses}>
                   {course.retiredAt ? "Un-retire" : "Retire"}
                 </button>
               </form>
@@ -128,9 +134,9 @@ export default async function AdminCoursesPage({
           id="new-course"
           name="name"
           placeholder="New course name"
-          className="min-w-0 flex-1 rounded border border-current/40 px-2 py-1"
+          className={adminRowInputClasses}
         />
-        <button type="submit" className="rounded border border-current px-3 py-1">
+        <button type="submit" className={adminButtonClasses}>
           Add course
         </button>
       </form>

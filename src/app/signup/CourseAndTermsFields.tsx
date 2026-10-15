@@ -9,6 +9,7 @@
 import Link from "next/link";
 
 import type { CourseChoice } from "@/lib/auth/courses";
+import { checkboxClasses, errorTextClasses, inputClasses, textLinkClasses } from "@/components/formStyles";
 
 type CourseAndTermsFieldsProps = {
   courses: CourseChoice[];
@@ -39,7 +40,7 @@ export function CourseAndTermsFields({
         required
         defaultValue={courseId}
         aria-describedby={courseProblem ? "course-problem" : undefined}
-        className="rounded border border-current/40 bg-transparent px-3 py-2"
+        className={inputClasses}
       >
         {/* An empty first choice, so nobody ends up on a course by accident
             just because it was first in the list. */}
@@ -51,14 +52,14 @@ export function CourseAndTermsFields({
         ))}
       </select>
       {courseProblem && (
-        <p id="course-problem" role="alert" className="text-sm text-red-700 dark:text-red-400">
+        <p id="course-problem" role="alert" className={errorTextClasses}>
           {courseProblem}
         </p>
       )}
 
       {/* One tick box covers both documents, as the brief asks for "a T&C
           and a data policy" accepted together at sign-up. */}
-      <div className="mt-2 flex items-start gap-3">
+      <div className="mt-2 flex min-h-11 items-start gap-3">
         <input
           id="acceptedTerms"
           name="acceptedTerms"
@@ -67,24 +68,24 @@ export function CourseAndTermsFields({
           defaultChecked={acceptedTerms}
           aria-describedby={termsProblem ? "terms-problem" : undefined}
           // A bigger box is easier to tap on a phone.
-          className="mt-1 h-5 w-5 shrink-0"
+          className={`mt-0.5 ${checkboxClasses}`}
         />
         <label htmlFor="acceptedTerms">
           I accept the{" "}
           {/* target="_blank" opens them in a new tab, so reading them doesn't
               lose what you've filled in. */}
-          <Link href="/terms" target="_blank" className="underline underline-offset-4">
+          <Link href="/terms" target="_blank" className={textLinkClasses}>
             Terms &amp; Conditions
           </Link>{" "}
           and the{" "}
-          <Link href="/privacy" target="_blank" className="underline underline-offset-4">
+          <Link href="/privacy" target="_blank" className={textLinkClasses}>
             data policy
           </Link>
           .
         </label>
       </div>
       {termsProblem && (
-        <p id="terms-problem" role="alert" className="text-sm text-red-700 dark:text-red-400">
+        <p id="terms-problem" role="alert" className={errorTextClasses}>
           {termsProblem}
         </p>
       )}

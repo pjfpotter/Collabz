@@ -17,6 +17,7 @@ import { isAccountFinished } from "@/lib/auth/accountState";
 import { getSessionUser } from "@/lib/auth/session";
 
 import { SignInForm } from "./SignInForm";
+import { noticeClasses, textLinkClasses } from "@/components/formStyles";
 
 // Sets the browser tab title for this page.
 export const metadata = {
@@ -49,15 +50,15 @@ export default async function SignInPage({ searchParams }: PageProps<"/signin">)
 
   return (
     <main className="mx-auto w-full max-w-md px-4 py-8">
-      <h1 className="text-3xl font-semibold">Sign in</h1>
-      <p className="mt-2 text-zinc-600 dark:text-zinc-400">
+      <h1 className="text-4xl">Sign in</h1>
+      <p className="mt-2 text-muted">
         Enter the email you signed up with and we&apos;ll send you a link. No
         password needed.
       </p>
 
       {message && (
         <p
-          className="mt-6 rounded border border-current/20 p-4"
+          className={`mt-6 ${noticeClasses}`}
           role="alert"
           data-testid="signin-message"
         >
@@ -71,7 +72,7 @@ export default async function SignInPage({ searchParams }: PageProps<"/signin">)
 
       <p className="mt-8 text-sm">
         New here?{" "}
-        <Link href="/signup" className="underline underline-offset-4">
+        <Link href="/signup" className={textLinkClasses}>
           Sign up
         </Link>
       </p>

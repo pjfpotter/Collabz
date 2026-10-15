@@ -22,6 +22,7 @@ import { getCurrentUser } from "@/lib/currentUser";
 import { signOutFromAccount } from "./actions";
 import { CourseForm } from "./CourseForm";
 import { PhotoForm } from "./PhotoForm";
+import { noticeClasses, secondaryButtonClasses, textLinkClasses } from "@/components/formStyles";
 
 // Sets the browser tab title for this page.
 export const metadata = {
@@ -41,13 +42,13 @@ export default async function AccountPage() {
 
   return (
     <main className="mx-auto w-full max-w-2xl px-4 py-8">
-      <h1 className="text-3xl font-semibold">Your account</h1>
-      <p className="mt-2 text-zinc-600 dark:text-zinc-400">
+      <h1 className="text-4xl">Your account</h1>
+      <p className="mt-2 text-muted">
         Signed in as <strong>{account.email}</strong>. Only you can see your email.
       </p>
 
       <section className="mt-8" aria-labelledby="course-heading">
-        <h2 id="course-heading" className="text-xl font-semibold">
+        <h2 id="course-heading" className="text-3xl">
           Your course
         </h2>
         <CourseForm activeCourses={activeCourses} current={account.course} />
@@ -56,16 +57,16 @@ export default async function AccountPage() {
       {account.profile ? (
         <>
           <section className="mt-8" aria-labelledby="profile-heading">
-            <h2 id="profile-heading" className="text-xl font-semibold">
+            <h2 id="profile-heading" className="text-3xl">
               Your profile
             </h2>
             <div className="mt-3 flex items-center gap-4">
               <SilhouettePlaceholder silhouette={account.profile.silhouette} />
               <div>
-                <p className="text-lg" data-testid="account-alias">
+                <p className="font-display text-2xl leading-7 [overflow-wrap:anywhere]" data-testid="account-alias">
                   {account.profile.alias}
                 </p>
-                <Link href="/account/edit/silhouette" className="text-sm underline underline-offset-4">
+                <Link href="/account/edit/silhouette" className={`text-sm ${textLinkClasses}`}>
                   Change silhouette
                 </Link>
               </div>
@@ -87,20 +88,20 @@ export default async function AccountPage() {
                 rounded "pill". Cards make each category read as its own
                 thing; pills make separate picks read as separate items rather
                 than one long comma-joined sentence. */}
-            <h3 className="mt-6 text-sm font-semibold tracking-wide text-zinc-600 uppercase dark:text-zinc-400">
+            <h3 className="mt-6 text-xs font-bold tracking-[0.08em] text-muted uppercase">
               Your answers
             </h3>
             <dl className="mt-3 flex flex-col gap-3" data-testid="account-picks">
               {account.profile.picks.map((group) => (
                 <div
                   key={group.categoryId}
-                  className="rounded-lg border border-current/15 px-4 py-3"
+                  className="rounded-feature border border-line bg-surface px-4 py-3"
                 >
                   <div className="flex items-start justify-between gap-3">
                     <dt className="font-semibold">{group.categoryName}</dt>
                     <Link
                       href={`/account/edit/${group.categoryId}`}
-                      className="shrink-0 text-sm underline underline-offset-4"
+                      className={`shrink-0 text-sm ${textLinkClasses}`}
                       // Says WHICH thing is edited, for screen readers.
                       aria-label={`Edit ${group.categoryName}`}
                     >
@@ -113,10 +114,10 @@ export default async function AccountPage() {
                         key={tag.id}
                         // A retired tag gets a dashed outline, so it stands
                         // out at a glance as well as in words.
-                        className={`rounded-full border px-3 py-1 text-sm ${
+                        className={`inline-flex min-h-8 items-center rounded-full border px-3 text-sm ${
                           tag.retired
-                            ? "border-dashed border-current/40 text-zinc-500"
-                            : "border-current/20 bg-current/5 text-zinc-800 dark:text-zinc-200"
+                            ? "border-dashed border-line-strong text-muted"
+                            : "border-line bg-surface-2 text-foreground"
                         }`}
                       >
                         {tag.name}
@@ -130,7 +131,7 @@ export default async function AccountPage() {
           </section>
 
           <section className="mt-8" aria-labelledby="photo-heading">
-            <h2 id="photo-heading" className="text-xl font-semibold">
+            <h2 id="photo-heading" className="text-3xl">
               Your photo
             </h2>
             <PhotoForm userId={user.id} photoVersion={photoVersion(account.profile.photoKey)} />
@@ -139,19 +140,19 @@ export default async function AccountPage() {
       ) : (
         // Spec "No profile yet": course and sign out still work, but there
         // are no answers to edit and nowhere to put a photo.
-        <section className="mt-8 rounded border border-current/20 p-4" data-testid="no-profile">
+        <section className={`mt-8 ${noticeClasses}`} data-testid="no-profile">
           <p>
             You haven&apos;t set up your profile yet. Once you have, you can edit your
             answers and add a photo here.
           </p>
-          <Link href="/onboarding" className="mt-2 inline-block underline underline-offset-4">
+          <Link href="/onboarding" className={`mt-2 inline-block ${textLinkClasses}`}>
             Set up your profile
           </Link>
         </section>
       )}
 
       <form action={signOutFromAccount} className="mt-10">
-        <button type="submit" className="rounded border border-current/40 px-4 py-2">
+        <button type="submit" className={secondaryButtonClasses}>
           Sign out
         </button>
       </form>

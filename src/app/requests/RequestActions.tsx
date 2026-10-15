@@ -12,6 +12,7 @@
 
 import { useRouter } from "next/navigation";
 import { useState } from "react";
+import { primaryButtonClasses, secondaryButtonClasses } from "@/components/formStyles";
 
 type RequestActionsProps = {
   // The request's id. It is what the routes are addressed by, and it is not a
@@ -69,7 +70,7 @@ export function RequestActions({ requestId, alias }: RequestActionsProps) {
           // aria-label gives each button its own name on a page with several
           // requests. The visible word stays "Approve".
           aria-label={`Approve request from ${alias}`}
-          className="rounded border border-current px-4 py-2 font-semibold disabled:opacity-50"
+          className={primaryButtonClasses}
         >
           Approve
         </button>
@@ -78,7 +79,7 @@ export function RequestActions({ requestId, alias }: RequestActionsProps) {
           onClick={() => answer("decline")}
           disabled={busy}
           aria-label={`Decline request from ${alias}`}
-          className="rounded border border-current/40 px-4 py-2 disabled:opacity-50"
+          className={secondaryButtonClasses}
         >
           Decline
         </button>
@@ -87,7 +88,7 @@ export function RequestActions({ requestId, alias }: RequestActionsProps) {
       {/* role="status" makes a screen reader read the answer out when it
           appears. */}
       {state.step === "refused" && (
-        <p className="mt-2 text-sm" role="status" data-testid="answer-message">
+        <p className="mt-2 text-sm text-muted" role="status" data-testid="answer-message">
           {state.message}
         </p>
       )}

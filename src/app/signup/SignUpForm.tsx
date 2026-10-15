@@ -12,6 +12,7 @@ import type { CourseChoice } from "@/lib/auth/courses";
 
 import { requestSignUpLink, type SignUpFormState } from "./actions";
 import { CourseAndTermsFields } from "./CourseAndTermsFields";
+import { errorTextClasses, inputClasses, noticeClasses, primaryButtonClasses } from "@/components/formStyles";
 
 const startingState: SignUpFormState = { step: "ready" };
 
@@ -20,9 +21,9 @@ export function SignUpForm({ courses }: { courses: CourseChoice[] }) {
 
   if (state.step === "sent") {
     return (
-      <div className="mt-6 rounded border border-current/20 p-4" role="status" data-testid="check-email">
+      <div className={`mt-6 ${noticeClasses}`} role="status" data-testid="check-email">
         <p className="font-semibold">Check your email</p>
-        <p className="mt-1 text-zinc-600 dark:text-zinc-400">
+        <p className="mt-1 text-muted">
           We sent a link to <strong>{state.email}</strong>. Open it to finish
           signing up. It works once and expires in 24 hours. If it isn&apos;t
           there, check your spam folder.
@@ -57,10 +58,10 @@ export function SignUpForm({ courses }: { courses: CourseChoice[] }) {
         required
         defaultValue={values.email}
         aria-describedby={problems.email ? "email-problem" : undefined}
-        className="rounded border border-current/40 bg-transparent px-3 py-2"
+        className={inputClasses}
       />
       {problems.email && (
-        <p id="email-problem" role="alert" className="text-sm text-red-700 dark:text-red-400">
+        <p id="email-problem" role="alert" className={errorTextClasses}>
           {problems.email}
         </p>
       )}
@@ -76,7 +77,7 @@ export function SignUpForm({ courses }: { courses: CourseChoice[] }) {
       <button
         type="submit"
         disabled={pending}
-        className="mt-2 rounded border border-current px-4 py-2 font-semibold disabled:opacity-50"
+        className={`mt-2 ${primaryButtonClasses}`}
       >
         {pending ? "Sending…" : "Sign up"}
       </button>

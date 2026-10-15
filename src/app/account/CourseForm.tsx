@@ -8,6 +8,7 @@
 import { useActionState } from "react";
 
 import { saveCourse, type CourseFormState } from "./actions";
+import { errorTextClasses, primaryButtonClasses } from "@/components/formStyles";
 
 type CourseFormProps = {
   // The courses on offer now.
@@ -43,7 +44,7 @@ export function CourseForm({ activeCourses, current }: CourseFormProps) {
         // background picture, 0.75rem in from the right, with pr-10 keeping
         // the course name clear of it. A mid-grey chevron reads on both
         // light and dark backgrounds.
-        className="appearance-none rounded border border-current/40 bg-transparent bg-[length:1rem] bg-[right_0.75rem_center] bg-no-repeat py-2 pr-10 pl-3"
+        className="min-h-11 appearance-none rounded-control border border-line-strong bg-surface bg-[length:1rem] bg-[right_0.75rem_center] bg-no-repeat pr-10 pl-3 text-foreground focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary-text"
         style={{ backgroundImage: CHEVRON }}
       >
         {!current && <option value="">Choose your course…</option>}
@@ -63,7 +64,7 @@ export function CourseForm({ activeCourses, current }: CourseFormProps) {
       <button
         type="submit"
         disabled={pending}
-        className="rounded border border-current px-4 py-2 font-semibold disabled:opacity-50"
+        className={primaryButtonClasses}
       >
         {pending ? "Saving…" : "Save course"}
       </button>
@@ -71,12 +72,12 @@ export function CourseForm({ activeCourses, current }: CourseFormProps) {
       {/* role="status" and role="alert" make a screen reader read the answer
           out when it appears. */}
       {state.step === "saved" && (
-        <p role="status" className="w-full text-sm" data-testid="course-saved">
+        <p role="status" className="w-full text-sm font-medium text-primary-text" data-testid="course-saved">
           Course saved.
         </p>
       )}
       {state.step === "problem" && (
-        <p role="alert" className="w-full text-sm text-red-700 dark:text-red-400">
+        <p role="alert" className={`w-full ${errorTextClasses}`}>
           {state.message}
         </p>
       )}

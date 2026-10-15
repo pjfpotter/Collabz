@@ -105,7 +105,7 @@ export async function DevUserSwitcher() {
 function DevStrip({ children }: { children: React.ReactNode }) {
   return (
     <div className="border-b-2 border-dashed border-business bg-surface-2 text-business-text">
-      <div className="mx-auto flex w-full max-w-5xl flex-wrap items-center gap-2 px-4 py-1">
+      <div className="mx-auto flex w-full max-w-7xl flex-wrap items-center gap-2 px-4 py-1">
         <span className="rounded-control border border-business px-1.5 text-xs font-bold tracking-wider">
           DEV
         </span>

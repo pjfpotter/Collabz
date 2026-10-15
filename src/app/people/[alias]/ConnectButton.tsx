@@ -8,6 +8,7 @@
 // refused (slice 5, #12, src/lib/requests/messages.ts).
 
 import { useState } from "react";
+import { primaryButtonClasses } from "@/components/formStyles";
 
 type ConnectButtonProps = {
   // The person's address (the last part of the profile's own address).
@@ -47,7 +48,7 @@ export function ConnectButton({ address }: ConnectButtonProps) {
         type="button"
         onClick={sendRequest}
         disabled={state.step === "sending"}
-        className="rounded border border-current px-4 py-2 font-semibold disabled:opacity-50"
+        className={primaryButtonClasses}
       >
         {state.step === "sending" ? "Sending…" : "Connect"}
       </button>
@@ -55,7 +56,7 @@ export function ConnectButton({ address }: ConnectButtonProps) {
       {/* role="status" makes a screen reader read the answer out when it
           appears. */}
       {state.step === "answered" && (
-        <p className="mt-2 text-sm" role="status" data-testid="connect-message">
+        <p className="mt-2 text-sm text-muted" role="status" data-testid="connect-message">
           {state.message}
         </p>
       )}

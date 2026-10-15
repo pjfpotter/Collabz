@@ -11,6 +11,13 @@ import {
   setTagRetiredAction,
   updateTagDescriptionAction,
 } from "./actions";
+import {
+  adminButtonClasses,
+  adminCardClasses,
+  adminMetaClasses,
+  adminRowInputClasses,
+} from "../adminStyles";
+import { checkboxClasses } from "@/components/formStyles";
 
 // A tag this one can be paired with, and whether it is currently paired.
 export type PartnerOption = {
@@ -33,16 +40,15 @@ export type TagCardProps = {
   partnerKind: "Quality" | "Seeking" | null;
 };
 
-const BUTTON = "rounded border border-current px-3 py-1";
-
 export function TagCard({ tag, isFirst, isLast, partnerOptions, partnerKind }: TagCardProps) {
   return (
-    <li className={`rounded border border-current/30 p-3 ${tag.retired ? "opacity-60" : ""}`}>
+    // A retired tag is faded AND says "(retired)", so it never relies on fading alone.
+    <li className={`${adminCardClasses} ${tag.retired ? "opacity-60" : ""}`}>
       <p className="font-semibold">
         {tag.name}
         {tag.retired && <span className="font-normal"> (retired)</span>}
       </p>
-      <p className="text-xs">id: {tag.id}</p>
+      <p className={adminMetaClasses}>id: {tag.id}</p>
 
       <form action={renameTagAction} className="mt-2 flex gap-2">
         <input type="hidden" name="id" value={tag.id} />
@@ -53,9 +59,9 @@ export function TagCard({ tag, isFirst, isLast, partnerOptions, partnerKind }: T
           id={`name-${tag.id}`}
           name="name"
           defaultValue={tag.name}
-          className="min-w-0 flex-1 rounded border border-current/40 px-2 py-1"
+          className={adminRowInputClasses}
         />
-        <button type="submit" className={BUTTON}>
+        <button type="submit" className={adminButtonClasses}>
           Rename
         </button>
       </form>
@@ -69,9 +75,9 @@ export function TagCard({ tag, isFirst, isLast, partnerOptions, partnerKind }: T
           id={`description-${tag.id}`}
           name="description"
           defaultValue={tag.description}
-          className="min-w-0 flex-1 rounded border border-current/40 px-2 py-1"
+          className={adminRowInputClasses}
         />
-        <button type="submit" className={BUTTON}>
+        <button type="submit" className={adminButtonClasses}>
           Save description
         </button>
       </form>
@@ -80,21 +86,21 @@ export function TagCard({ tag, isFirst, isLast, partnerOptions, partnerKind }: T
         <form action={moveTagAction}>
           <input type="hidden" name="id" value={tag.id} />
           <input type="hidden" name="direction" value="up" />
-          <button type="submit" disabled={isFirst} className={`${BUTTON} disabled:opacity-40`}>
+          <button type="submit" disabled={isFirst} className={adminButtonClasses}>
             Move up
           </button>
         </form>
         <form action={moveTagAction}>
           <input type="hidden" name="id" value={tag.id} />
           <input type="hidden" name="direction" value="down" />
-          <button type="submit" disabled={isLast} className={`${BUTTON} disabled:opacity-40`}>
+          <button type="submit" disabled={isLast} className={adminButtonClasses}>
             Move down
           </button>
         </form>
         <form action={setTagRetiredAction}>
           <input type="hidden" name="id" value={tag.id} />
           <input type="hidden" name="retired" value={tag.retired ? "false" : "true"} />
-          <button type="submit" className={BUTTON}>
+          <button type="submit" className={adminButtonClasses}>
             {tag.retired ? "Un-retire" : "Retire"}
           </button>
         </form>
@@ -103,20 +109,20 @@ export function TagCard({ tag, isFirst, isLast, partnerOptions, partnerKind }: T
       {partnerOptions && partnerKind && (
         // <details> is the browser's own show/hide, so no JavaScript is needed.
         <details className="mt-3">
-          <summary className="cursor-pointer text-sm underline">
+          <summary className="inline-flex min-h-11 cursor-pointer items-center text-sm font-medium text-primary-text underline underline-offset-4">
             Pairs with {partnerKind} tags (
             {partnerOptions.filter((option) => option.paired).length})
           </summary>
-          <form action={setTagPairingsAction} className="mt-2 space-y-1">
+          <form action={setTagPairingsAction} className="mt-2">
             <input type="hidden" name="id" value={tag.id} />
             {partnerOptions.map((option) => (
-              <label key={option.id} className="flex items-start gap-2 text-sm">
+              <label key={option.id} className="flex min-h-11 items-center gap-3 text-sm">
                 <input
                   type="checkbox"
                   name="paired"
                   value={option.id}
                   defaultChecked={option.paired}
-                  className="mt-1"
+                  className={checkboxClasses}
                 />
                 <span>
                   {option.name}
@@ -124,10 +130,10 @@ export function TagCard({ tag, isFirst, isLast, partnerOptions, partnerKind }: T
                 </span>
               </label>
             ))}
-            <button type="submit" className={`${BUTTON} mt-2`}>
+            <button type="submit" className={`${adminButtonClasses} mt-2`}>
               Save pairings
             </button>
-            <p className="text-xs">
+            <p className="mt-1 text-xs text-muted">
               Scores don&apos;t change until you press &ldquo;Rescore everyone&rdquo; at
               the bottom of this page.
             </p>

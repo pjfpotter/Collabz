@@ -9,6 +9,7 @@
 import { useActionState } from "react";
 
 import { requestSignInLink, type SignInFormState } from "./actions";
+import { errorTextClasses, inputClasses, noticeClasses, primaryButtonClasses } from "@/components/formStyles";
 
 const startingState: SignInFormState = { step: "ready" };
 
@@ -23,9 +24,9 @@ export function SignInForm() {
   // again would invite pressing the button twice.
   if (state.step === "sent") {
     return (
-      <div className="mt-6 rounded border border-current/20 p-4" role="status" data-testid="check-email">
+      <div className={`mt-6 ${noticeClasses}`} role="status" data-testid="check-email">
         <p className="font-semibold">Check your email</p>
-        <p className="mt-1 text-zinc-600 dark:text-zinc-400">
+        <p className="mt-1 text-muted">
           We sent a sign-in link to <strong>{state.email}</strong>. It works once and
           expires in 24 hours. If it isn&apos;t there, check your spam folder.
         </p>
@@ -49,12 +50,12 @@ export function SignInForm() {
         // Keep what they typed if there was a problem, so they only fix it.
         defaultValue={state.step === "problem" ? state.email : ""}
         aria-describedby={state.step === "problem" ? "email-problem" : undefined}
-        className="rounded border border-current/40 bg-transparent px-3 py-2"
+        className={inputClasses}
       />
 
       {state.step === "problem" && (
         // role="alert" makes a screen reader read the problem out at once.
-        <p id="email-problem" role="alert" className="text-sm text-red-700 dark:text-red-400">
+        <p id="email-problem" role="alert" className={errorTextClasses}>
           {state.message}
         </p>
       )}
@@ -62,7 +63,7 @@ export function SignInForm() {
       <button
         type="submit"
         disabled={pending}
-        className="rounded border border-current px-4 py-2 font-semibold disabled:opacity-50"
+        className={primaryButtonClasses}
       >
         {pending ? "Sending…" : "Email me a sign-in link"}
       </button>

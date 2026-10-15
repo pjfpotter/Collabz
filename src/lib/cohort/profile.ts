@@ -149,6 +149,10 @@ export type ProfileView = {
   alias: string;
   address: string;
   silhouette: string;
+  // The course's id (not just its name) so the page can draw its shape and
+  // colour (slice 10, #45). A course id is not private: it is the same value
+  // the people list and the graph already carry.
+  courseId: string | null;
   courseName: string | null;
   bio: string;
   tagGroups: TagGroup[];
@@ -201,6 +205,7 @@ export async function getProfileLookup(
     alias: person.alias,
     address: aliasToAddress(person.alias),
     silhouette: person.silhouette,
+    courseId: person.courseId,
     courseName: person.courseName,
     bio: profileBio(tagNamesByCategory),
     tagGroups,
