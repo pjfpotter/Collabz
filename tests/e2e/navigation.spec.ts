@@ -192,3 +192,25 @@ test("at phone width every nav link is at least 44 pixels high and wide", async 
     expect(box?.width, `${label} is wide enough`).toBeGreaterThanOrEqual(44);
   }
 });
+
+// Slice 10 (#45), task 10.1: the bar shows which page you are on, and only
+// one link at a time. /catalogue and /admin/reports are public-or-redirect
+// free, so no sign-in is needed.
+test("the link for the current page is marked, and only that one", async ({ page }) => {
+  await page.goto("/catalogue");
+
+  const current = mainNav(page).locator('a[aria-current="page"]');
+  await expect(current).toHaveCount(1);
+  await expect(current).toHaveText("Catalogue");
+});
+
+// At desktop width the whole bar fits on one row (the board's desktop layout),
+// so the wordmark and the last link sit at the same height.
+test("at desktop width the nav links sit on one row", async ({ page }) => {
+  await page.setViewportSize({ width: 1280, height: 800 });
+  await page.goto("/catalogue");
+
+  const firstTop = (await mainNav(page).getByRole("link").first().boundingBox())?.y;
+  const lastTop = (await mainNav(page).getByRole("link").last().boundingBox())?.y;
+  expect(lastTop).toBe(firstTop);
+});

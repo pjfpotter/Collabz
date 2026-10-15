@@ -12,10 +12,9 @@
 // sign-in exists. The admin PAGES are already protected by requireAdmin();
 // only the link is visible.
 
-// Next.js's <Link> moves between pages without a full page reload.
-import Link from "next/link";
-
 import { DevUserSwitcher } from "@/components/DevUserSwitcher";
+// The link row itself is a Client Component so it can highlight the current page.
+import { NavLinks, type NavLinkItem } from "@/components/NavLinks";
 // Slice 1 (#8): "Signed in as … / Sign out", or "Not signed in".
 import { SignedInStatus } from "@/components/SignedInStatus";
 // Slice 5 (#12): the number of requests waiting for you, beside the Requests link.
@@ -27,7 +26,7 @@ import { WaitingRequestsCount } from "@/components/WaitingRequestsCount";
 //
 // Each route belongs to one slice. The full table, with owners, is in the
 // README under "Routes". If you add a page, add it here too.
-const navLinks = [
+const navLinks: NavLinkItem[] = [
   { href: "/catalogue", label: "Catalogue" }, // slice 0
   { href: "/signup", label: "Sign up" }, // slice 1
   { href: "/signin", label: "Sign in" }, // slice 1
@@ -52,61 +51,25 @@ export function NavBar() {
           (e.g. the live site). */}
       <DevUserSwitcher />
 
-      <div className="mx-auto w-full max-w-5xl px-4 py-2">
-        {/* aria-label names this set of links for screen readers. */}
-        <nav
-          aria-label="Main"
-          // flex-wrap is what makes this work on a phone: when the links
-          // don't fit on one line they carry on underneath, instead of
-          // pushing the page wider than the screen. EVERY link stays here,
-          // because the app-navigation spec says the bar links to each page
-          // (the design's smaller tab set was not adopted).
-          className="flex flex-wrap items-center gap-x-1 gap-y-1"
-        >
-          {/* The wordmark: "Collab" in the display face and an italic "z",
-              the one mischievous letter (brand board). The two parts sit in
-              ONE inner span: the link is a flex box, and flex would treat
-              them as separate items, so a screen reader would read
-              "Collab z" instead of "Collabz". */}
-          <Link
-            href="/"
-            className={`${linkShape} mr-2 font-display text-2xl leading-none`}
-          >
-            <span>
-              Collab<span className="italic text-primary-text">z</span>
-            </span>
-          </Link>
-
-          {navLinks.map((link) => (
-            <Link
-              key={link.href}
-              href={link.href}
-              className={`${linkShape} text-sm font-medium`}
-            >
-              {link.label}
-              {/* Only the Requests link carries a count. It draws nothing
-                  when you are signed out or nothing is waiting. */}
-              {link.href === "/requests" && <WaitingRequestsCount />}
-            </Link>
-          ))}
-        </nav>
+      {/* max-w-7xl (1280px) so all twelve links fit on one row on a desktop.
+          On a phone the row wraps instead (see NavLinks). The sign-in status
+          shares the row: ml-auto pushes it to the right when there is room,
+          and it drops underneath when there is not. */}
+      <div className="mx-auto flex w-full max-w-7xl flex-wrap items-center gap-x-4 px-4 py-2">
+        <NavLinks
+          links={navLinks.map((link) => ({
+            ...link,
+            // Only the Requests link carries a count. It draws nothing when
+            // you are signed out or nothing is waiting.
+            badge: link.href === "/requests" ? <WaitingRequestsCount /> : undefined,
+          }))}
+        />
 
         {/* Slice 1 (#8): the real sign-in state, with a Sign out button. */}
-        <div className="mt-1">
+        <div className="ml-auto">
           <SignedInStatus />
         </div>
       </div>
     </header>
   );
 }
-
-// What every link in the bar shares:
-// - min-h-11 and min-w-11 are 44px, the smallest comfortable touch target
-//   (visual-design spec "Every screen works at phone width first");
-// - rounded-control and hover:bg-surface-2 give the soft tab look;
-// - the focus-visible outline is the keyboard focus ring: it only shows for
-//   keyboard users, in the readable accent colour.
-const linkShape =
-  "inline-flex min-h-11 min-w-11 items-center justify-center rounded-control px-3 " +
-  "hover:bg-surface-2 focus-visible:outline-2 focus-visible:outline-offset-2 " +
-  "focus-visible:outline-primary-text";
