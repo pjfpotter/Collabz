@@ -12,8 +12,8 @@ Groups build on each other: logic with tests first (1, 2), then the admin queue 
 
 ## 2. Reporting
 
-- [ ] 2.1 Add `src/lib/safety/reasons.ts` with `REPORT_REASONS` and `isReportReason()` (list from design 5, confirmed at approval). Unit test: each listed reason accepted, empty and unknown refused. Verify: `npx vitest run tests/unit/reportReasons.test.ts` passes
-- [ ] 2.2 Add `src/lib/safety/reportUser.ts`: `reportUser(reporterId, reportedId, reason)` refusing yourself, an unlisted reason, and a second report while one is open (design 6). Tests in `tests/integration/reportUser.test.ts`, including that a new report is allowed after the first is resolved. Verify: that file passes
+- [x] 2.1 Add `src/lib/safety/reasons.ts` with `REPORT_REASONS` and `isReportReason()` (list from design 5, confirmed at approval). Unit test: each listed reason accepted, empty and unknown refused. Verify: `npx vitest run tests/unit/reportReasons.test.ts` passes
+- [x] 2.2 Add `src/lib/safety/reportUser.ts`: `reportUser(reporterId, reportedId, reason)` refusing yourself, an unlisted reason, and a second report while one is open (design 6). Tests in `tests/integration/reportUser.test.ts`, including that a new report is allowed after the first is resolved. Verify: that file passes
 
 ## 3. Moderation queue
 
