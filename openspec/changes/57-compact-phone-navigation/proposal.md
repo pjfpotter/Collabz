@@ -15,3 +15,8 @@ Use a disclosure button and ordinary links for keyboard accessibility. Keep a si
 
 ## Validation evidence
 The real NavLinks component and compiled project CSS were bundled outside the repository with sample account/count data and a stub router. At 375px the closed nav measured 44px high (the header adds 16px padding); counts 0 and 2 behaved correctly, all links and account controls appeared on expansion, Escape closed it and restored button focus, and choosing People closed the dropdown. A 30-second tick invoked refresh. Desktop routes remained available at 1280px; wordmark alignment was corrected after visual inspection. TypeScript and ESLint passed. Database-backed end-to-end tests were updated but not run because their setup empties the team's shared database. Authenticated production and real-device checks remain for review.
+
+## Signed-in navigation follow-up
+The user additionally requested that authenticated people not see Sign in. Use the real session (the same source as SignedInStatus) to omit Sign in and Sign up. Keep the existing "Signed in as â€¦" account status and Sign out inside the dropdown. Signed-out people retain both entry links; this does not change authorization or the development switcher.
+
+Signed-in follow-up validation: actual NavBar and SignedInStatus checked with isolated session/count providers for signed-in/out and counts 0/2. Correct entry-link visibility, Signed in as wording, account access and count propagation passed. TypeScript and lint passed. Real magic-link browser assertions added but not run against the shared database.

@@ -5,3 +5,4 @@
 - [x] Validate isolated phone/desktop rendering and keyboard interaction.
 - [x] Type-check and lint.
 - [ ] Patrick reviews and verifies on the affected phone.
+- [x] Hide Sign in and Sign up for real sessions; retain Signed in as and Sign out.
