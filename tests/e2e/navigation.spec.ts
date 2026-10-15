@@ -2,10 +2,19 @@
 // One test per scenario in the app-navigation spec
 // (openspec/specs/app-navigation/spec.md).
 //
-// None of these change any data or need anyone to be signed in, so they also
-// run against a deployed site when BASE_URL is set.
+// All but one of these change no data and need nobody signed in, so they also
+// run against a deployed site when BASE_URL is set. The exception is the
+// placeholder test, which signs in as the pretend admin and skips itself there.
 
 import { expect, test } from "@playwright/test";
+
+import { seedCatalogue } from "../../prisma/seed";
+import {
+  createTestDatabaseClient,
+  emptyDatabase,
+  loadPretendCohortForTests,
+} from "../helpers/database";
+import { signInAs } from "../helpers/devSignIn";
 
 // Every link in the nav bar, with the heading its page should show.
 //
@@ -22,7 +31,8 @@ const publicLinks = [
   { label: "Catalogue", path: "/catalogue", heading: "Tag catalogue" },
   { label: "Sign up", path: "/signup", heading: "Sign up" },
   { label: "Sign in", path: "/signin", heading: "Sign in" },
-  { label: "Onboarding", path: "/onboarding", heading: "Onboarding" },
+  // Slice 2 (#9) built /onboarding: signed out, it leads to the sign-in page.
+  { label: "Onboarding", path: "/onboarding", heading: "Onboarding", needsSignIn: true },
   { label: "Matches", path: "/matches", heading: "Matches", needsProfile: true },
   { label: "Graph", path: "/graph", heading: "Graph", needsProfile: true },
   { label: "People", path: "/people", heading: "People", needsProfile: true },
@@ -98,15 +108,28 @@ test("the Collabz link goes back to the home page", async ({ page }) => {
 });
 
 // Spec scenario: "A planned page that isn't built yet"
+// /admin/reports is the last placeholder (slice 9 builds it). It is for
+// admins only, so this test signs in as the pretend admin, which needs the
+// pretend cohort: it loads it into the test database first, and is skipped
+// against a deployed site. (Slice 2, #9, replaced /onboarding, the page this
+// test used before; /messages and /account were used before that.)
 test("a page that isn't built yet says so and names who will build it", async ({ page }) => {
-  // /onboarding is still a placeholder (slice 2 builds it). Slice 6 (#13)
-  // replaced /messages and slice 7 (#14) replaced /account, the two pages
-  // this test used before.
-  await page.goto("/onboarding");
+  test.skip(Boolean(process.env.BASE_URL), "Needs the pretend admin, so only runs against the test database");
 
-  await expect(page.getByRole("heading", { level: 1, name: "Onboarding" })).toBeVisible();
+  const prisma = createTestDatabaseClient();
+  try {
+    await emptyDatabase(prisma);
+    await seedCatalogue(prisma);
+    await loadPretendCohortForTests(prisma);
+  } finally {
+    await prisma.$disconnect();
+  }
+  await signInAs(page, "pretend-user-01");
+  await page.goto("/admin/reports");
+
+  await expect(page.getByRole("heading", { level: 1, name: "Reports" })).toBeVisible();
   await expect(page.getByText("This page is a placeholder.")).toBeVisible();
-  await expect(page.getByText("Slice 2 (issue #9) will build it.")).toBeVisible();
+  await expect(page.getByText("Slice 9 (issue #16) will build it.")).toBeVisible();
 });
 
 // Spec scenario: "A page with a person in its address"

@@ -8,7 +8,7 @@ Update this as the last step whenever `/opsx:archive-change` lands a change that
 
 Collabz is our version of the course brief "Bootcamp Connect". It matches software-course and business-course students by **chemistry**, not CVs. People build a profile by picking tags from fixed lists, the app scores every pair, and everyone sees the whole cohort as a live graph. Two people who both agree to connect get a private conversation.
 
-> **Status (14 Oct 2026):** slice 0, the foundation (#7), slice 1 (#8, sign-up and sign-in), slice 3 (#10, chemistry matching), slice 4 (#11, the graph, the people list and profile pages), slice 5 (#12, connection requests), slice 6 (#13, messaging) and slice 8 (#15, the admin screens) are built and live. The app runs on Vercel, talks to Neon through Prisma, and shows the tag catalogue at `/catalogue`. The foundation added every MVP database table, a placeholder page for every route, a cohort of pretend students and a dev-only way to act as any of them. Slice 4 then added the cohort graph, the people list with its filters and the profile pages. They run on the pretend cohort and on stand-ins for other tracks' work (see below). Slice 5 then made the Connect button real and added the requests page, and slice 3 replaced the pretend scores with the real chemistry formula and added `/matches`. Slice 1 then added real sign-up and sign-in by emailed magic link, with the course and terms accepted at sign-up. Slice 6 then made `/messages` real, so two connected people can talk. Slice 8 then made `/admin` real, so admins can manage the tag lists, courses and users without touching the database. The other real feature (onboarding) is not built yet: the tracks are building those in parallel on top of the foundation (slice map: issue #18). The per-capability specs are in `openspec/specs/`. The reasoning behind them is `openspec/changes/archive/2026-10-01-2-mvp-overview/` as amended by `openspec/changes/archive/2026-10-01-4-brief-alignment/`. Where the two disagree, #4 wins.
+> **Status (15 Oct 2026):** slice 0, the foundation (#7), slice 1 (#8, sign-up and sign-in), slice 2 (#9, onboarding), slice 3 (#10, chemistry matching), slice 4 (#11, the graph, the people list and profile pages), slice 5 (#12, connection requests), slice 6 (#13, messaging) and slice 8 (#15, the admin screens) are built and live. The app runs on Vercel, talks to Neon through Prisma, and shows the tag catalogue at `/catalogue`. The foundation added every MVP database table, a placeholder page for every route, a cohort of pretend students and a dev-only way to act as any of them. Slice 4 then added the cohort graph, the people list with its filters and the profile pages. They run on the pretend cohort and on stand-ins for other tracks' work (see below). Slice 5 then made the Connect button real and added the requests page, and slice 3 replaced the pretend scores with the real chemistry formula and added `/matches`. Slice 1 then added real sign-up and sign-in by emailed magic link, with the course and terms accepted at sign-up. Slice 6 then made `/messages` real, so two connected people can talk. Slice 8 then made `/admin` real, so admins can manage the tag lists, courses and users without touching the database. Slice 2 then made `/onboarding` real, so a new user builds their profile by picking from lists and gets an alias, a silhouette and a bio. What's left is safety (slice 9) and join-up (#17) (slice map: issue #18). The per-capability specs are in `openspec/specs/`. The reasoning behind them is `openspec/changes/archive/2026-10-01-2-mvp-overview/` as amended by `openspec/changes/archive/2026-10-01-4-brief-alignment/`. Where the two disagree, #4 wins.
 
 ## The pieces
 
@@ -46,7 +46,7 @@ Collabz is our version of the course brief "Bootcamp Connect". It matches softwa
 - **One helper holds every send rule** (`sendRequest.ts`): not yourself, not someone suspended or unfinished, not a blocked pair, not a pair that already has a request, and only top 5 or glitch match. Because the rules live inside the helper and not in a route or the button, they hold even when something calls it directly.
 - **Answering** (`answerRequest.ts`, behind `POST /api/requests/[id]/approve` and `/decline`): only the person asked, only once, and only while the sender is still allowed.
 - **The requests page and the nav count** (`/requests`, `src/components/WaitingRequestsCount.tsx`): waiting and sent lists, built from one filter that also drives the number beside the Requests link, so they can't disagree.
-- **`areConnected(a, b)`** (`areConnected.ts`): the rule for who may see a photo, for slice 7. An approved request and no block. No photo code was built here.
+- **`areConnected(a, b)`** (`areConnected.ts`): the rule for who may see a photo. An approved request and no block. Slice 7's photo code calls it.
 
 **Built (slice 6, #13):**
 
@@ -55,6 +55,14 @@ Collabz is our version of the course brief "Bootcamp Connect". It matches softwa
 - **Someone else's conversation is "not found", not "forbidden"** (`getConversation.ts`, `POST /api/messages/[conversationId]`): a 403 would confirm that the id is real. Reading uses the same rule as sending, so only the two people can ever read a conversation.
 - **Closed means closed for good**: `closeConversation` only records the time, `sendMessage` refuses to send in a closed conversation, and `openConversation` returns a closed one still closed. A block (slice 9) is therefore final. A closed conversation can still be read.
 - **`openConversation` survives two calls at the same moment**: the database's one-conversation-per-pair rule lets one insert win, and the loser reads the winner's row back instead of failing.
+
+**Built (slice 7, #14):**
+
+- **The account page** (`/account`, `src/app/account/`): your alias, silhouette, bio and picks, your course, your photo and Sign out. The course can be changed straight away; it isn't scored, so nobody is rescored.
+- **Editing answers, one category at a time** (`/account/edit/[category]`, `src/lib/account/editAnswers.ts`): the same pick-from-list limits as onboarding, then the server rescores only that person with `scoreUser`. Alias, requests and conversations don't change. Slice 2's real pick screen isn't built, so the pieces it will own sit in clearly marked stand-ins (`src/lib/account/standIns.ts`) to be swapped when it lands.
+- **An optional photo** (`src/lib/account/photos.ts`, `photoStore.ts`, `photoRules.ts`): JPEG, PNG or WebP up to 4 MB, kept privately in Vercel Blob (or the gitignored `.photo-store/` folder locally and in tests) and only ever served through `/api/account/photo/[userId]`, which checks the viewer on every request.
+- **`ProfilePhoto`** (`src/components/ProfilePhoto.tsx`): the one component slice 4's profile page uses to show a photo. It draws nothing for anyone not allowed to see it, so a stranger can't tell whether a photo exists.
+- **`removeProfilePhoto(userId)`** (`@/lib/account/photos`): the shared helper that deletes the stored file and clears the key, used by the account page and by admin remove-photo.
 
 **Built (slice 8, #15):**
 
@@ -76,10 +84,19 @@ Collabz is our version of the course brief "Bootcamp Connect". It matches softwa
 - **First admins from `ADMIN_EMAILS`** (`src/lib/auth/signInRules.ts`): applied once, when an account is created.
 - **`/terms` and `/privacy`** in plain English, and **`npm run qr`** for the printable QR code (`public/qr-code.png`).
 
+**Built (slice 2, #9):**
+
+- **Onboarding** (`/onboarding`, `src/app/onboarding/`): one screen per step, one step per catalogue category in catalogue order, then a silhouette, then a summary. The picks stay in the browser until **Finish**. No text boxes. A finished user is sent to `/onboarding/done`, which shows their `ProfileCard`.
+- **One save, all or nothing** (`POST /api/onboarding`, `src/lib/profile/saveOnboarding.ts`): the server checks every answer again (`validateOnboardingAnswers`), writes the `Profile` and all its `ProfileTag` rows in one transaction, then calls `scoreUser`. So there's never a half-made profile.
+- **The alias** (`src/lib/profile/alias.ts`): "The" + the Vibe tag's alias word + the Energy tag's alias word (`Tag.aliasWord`), with II, III… when taken. The database's unique rule on `Profile.alias`, plus a retry, is what keeps it unique when two people finish at the same moment.
+- **The bio** (`src/lib/profile/bio.ts`): plain sentences built from the picked tag names each time it's shown. Never stored.
+- **Shared pieces for join-up**: `redirectIfOnboardingIncomplete()`, `generateBio()`, `ProfileCard` (it can't show an email or photo) and `Silhouette`, which shows slice 10's designed pictures (`public/silhouettes/`).
+- **The seed adds Skills and Interests** (12 tags each, 1 to 4 picks) and fills in empty alias words, never overwriting one that's set.
+
 **Planned:**
 
 
-- **Private file storage (proposed: Vercel Blob)**: optional profile photos. Photos are only served through the app, after a permission check.
+Nothing is left in the planned list except safety (slice 9) and join-up (#17).
 
 ## How a request flows through the system
 
@@ -103,11 +120,11 @@ Collabz is our version of the course brief "Bootcamp Connect". It matches softwa
 
 The flows below are planned, not built yet.
 
-**Joining:** scan QR → sign up (email, course, accept terms) → magic link → onboarding (7 pick-from-list exercises) → the server scores the new user against everyone and stores the edges → graph.
+**Joining (built):** scan QR → sign up (email, course, accept terms) → magic link → `/onboarding`: 7 pick-from-list steps and a silhouette, kept in the browser → **Finish** → `POST /api/onboarding` checks the answers again, saves the profile and tags in one transaction with a unique alias → `scoreUser` scores the new user against everyone and stores the edges → `/onboarding/done` → graph.
 
-**Editing answers:** account page → save → the server deletes and recalculates *only that user's* edges. Nobody else's scores change. (The recalculation, `scoreUser`, is built. The account page that calls it is not.)
+**Editing answers (built):** `/account` → pick a category → `/account/edit/[category]` → save → a Server Action checks the pick limits, stores the picks, and the server deletes and recalculates *only that user's* edges with `scoreUser`. Nobody else's scores change. If the edit moves the glitch match into the user's new top 5, the glitch match is replaced.
 
-**Seeing a photo:** browser asks the app for a photo → the app checks the viewer is the owner, a connected user or an admin → only then fetches it from private storage.
+**Seeing a photo (built):** the profile page asks `ProfilePhoto`, which draws an image only if the person has one and the viewer is the owner, someone connected to them or an admin → the browser asks `/api/account/photo/[userId]` → the route checks the viewer again and only then fetches the file from private storage. Anyone else, even with the direct link, gets "not found".
 
 ## Key decisions and why
 
@@ -145,7 +162,8 @@ The flows below are planned, not built yet.
 - **A decline is final for the pair, in both directions:** it protects the person who said no and makes the rule easy to state, check and test. Loosening it is one check.
 - **Blocked and suspended look the same to the sender:** "this person blocked you" would be a safety leak, so both answer "You can't send a request to this person."
 - **The waiting count and the page's list come from one filter:** a count of 3 over a list of 2, or an Approve button that answers 409, would look broken.
-- **The photo rule is a function, with no photo code** (`areConnected`): slice 7 owns upload and serving, and a block makes the rule false by itself, so slice 9 needs no extra code here.
+- **The photo rule is a function** (`areConnected`, used by `canSeePhoto`): upload and serving are slice 7's, and a block makes the rule false by itself, so slice 9 needs no extra code here.
+- **Photos are checked twice, and never go through Next.js's image cache:** the page checks so it never shows a broken image, and the photo address checks on every request. `<Image>` would copy a private photo into a shared cache, so a plain `<img>` is used.
 - **A member who opens an admin page gets "page not found", not "access denied":** it gives nothing away, and Next.js's "forbidden" page is still experimental.
 - **Admin actions check for an admin themselves, not just the page:** a Server Action can be posted to directly, so the page's check protects nothing. Each action calls `requireAdmin()` first, and one test calls every action as a member.
 - **A new tag's id is `<category>-<name>`, made once:** it matches the seeded ids and is readable. A name that would make an existing id is refused rather than numbered, and a rename never touches the id.
@@ -154,23 +172,28 @@ The flows below are planned, not built yet.
 - **"Rescore everyone" reuses slice 3's one-transaction bulk function, not a loop of `scoreUser`:** a loop makes a database round trip per person, which is too slow even for 30 and could pass a Vercel function's time limit.
 - **Suspending rescores the person after saving:** a scoring problem must never undo the suspension, and rescoring is what removes them from everyone's top 5 and glitch match.
 - **Admin "remove photo" calls slice 7's helper rather than clearing the key:** clearing the key alone would leave a private photo in storage that nobody can reach or delete.
+- **Onboarding saves once, at the end:** the database never holds a half-made profile that matching or the graph would have to work around. The cost, accepted: refreshing mid-way loses the picks.
+- **Alias words live on the tags, not in code:** they stay with the data they describe and an admin can edit them. The seed fills only empty ones.
+- **The answer check is a pure function the server always runs:** the browser's limits only guide, and the same check can be tested without a database.
 
-Full reasoning: `openspec/changes/archive/2026-10-01-2-mvp-overview/design.md` and `openspec/changes/archive/2026-10-01-4-brief-alignment/design.md`. For slice 0: `openspec/changes/archive/2026-10-08-6-tag-catalogue/design.md`. For the foundation: `openspec/changes/archive/2026-10-08-7-foundation/design.md`. For the graph, people list and profile pages: `openspec/changes/archive/2026-10-12-11-graph-search/design.md`. For connection requests: `openspec/changes/archive/2026-10-12-12-connection-requests/design.md`. For chemistry matching: `openspec/changes/archive/2026-10-13-10-matching/design.md`. For sign-up and sign-in: `openspec/changes/archive/2026-10-14-8-user-auth/design.md`.
+Full reasoning: `openspec/changes/archive/2026-10-01-2-mvp-overview/design.md` and `openspec/changes/archive/2026-10-01-4-brief-alignment/design.md`. For slice 0: `openspec/changes/archive/2026-10-08-6-tag-catalogue/design.md`. For the foundation: `openspec/changes/archive/2026-10-08-7-foundation/design.md`. For the graph, people list and profile pages: `openspec/changes/archive/2026-10-12-11-graph-search/design.md`. For connection requests: `openspec/changes/archive/2026-10-12-12-connection-requests/design.md`. For chemistry matching: `openspec/changes/archive/2026-10-13-10-matching/design.md`. For sign-up and sign-in: `openspec/changes/archive/2026-10-14-8-user-auth/design.md`. For onboarding: `openspec/changes/archive/2026-10-15-9-onboarding/design.md`.
 
 ## Open questions / known gaps
 
-- Only slice 0, the foundation, slices 1, 3, 4, 5, 6 and 8 are built. Real sign-up and sign-in exist, but there are no real profiles yet (onboarding, slice 2, isn't built). The graph, people list, profile pages and requests work on the pretend cohort, and messaging works between connected pretend people, and the remaining pages are placeholders.
+- Slice 0, the foundation and slices 1 to 8 are built. Real people can now sign up and onboard, alongside the pretend cohort. The only placeholder left is `/admin/reports` (slice 9).
 - The five stand-ins in `src/lib/cohort/standIns.ts` are temporary, and the real `getTopFive` and `explainMatch` now exist in `src/lib/matching/` under the same names, so join-up (#17) swaps them and the two "finished and not suspended" rules (written twice on purpose) get merged. `sendConnectionRequest` was agreed and is real.
-- The profile page (slice 4's) is still rough in two places: after a decline it still shows Connect, though pressing it is refused with a clear sentence, and a waiting request doesn't say who asked. Join-up (#17) tidies both. The graph and list don't yet hide people who have blocked you, and profiles don't show photos yet. Photos need slice 7, which will call `areConnected`.
+- The profile page (slice 4's) is still rough in two places: after a decline it still shows Connect, though pressing it is refused with a clear sentence, and a waiting request doesn't say who asked. Join-up (#17) tidies both. The graph and list don't yet hide people who have blocked you, The profile page now shows a photo to connected people (slice 7).
 - Requests can't be withdrawn, and there is no email when one arrives. Both were left out on purpose.
 - Sign-in on production needs `AUTH_SECRET`, `GMAIL_USER`, `GMAIL_APP_PASSWORD`, `EMAIL_FROM` and `ADMIN_EMAILS` in Vercel; until they are set it fails with a server configuration error. Magic-link delivery was only checked into Gmail, not Outlook or iCloud.
 - The pretend cohort, the dev switcher and their switch are temporary. Join-up (#17) deletes them once real sign-in and real profiles exist.
-- The 23 Seeking↔Quality pairings are a draft that was assumed approved so slice 3 could be built. If the team changes them, edit `prisma/seed-data.ts` and run `npm run rescore:all`. Skills and Interests are not scored and are empty until slice 2 adds those categories.
+- The 23 Seeking↔Quality pairings are a draft that was assumed approved so slice 3 could be built. If the team changes them, edit `prisma/seed-data.ts` and run `npm run rescore:all`. Skills and Interests are not scored (B5); slice 2 seeds them, and the pretend cohort gives every pretend person some at random.
 - The pretend requests and conversations were built from the old invented ranking, so a few may sit between people who are no longer in each other's top 5.
 - Tests empty the tables on the shared `dev` database and refill them at the end. Two people running tests at the same moment can trip each other up, and anything changed by hand on `dev` is lost on the next test run.
 - Still to be recorded on #7: Tom's check of the `User` and sign-in tables, and the team's agreement on who creates migrations.
 - Email-sending service for magic links: not chosen (slice 1).
-- File storage provider: proposed, confirmed in slice 7.
+- File storage provider: Vercel Blob, private. Production needs `BLOB_READ_WRITE_TOKEN`, which Vercel adds when a Blob store is connected to the project.
+- The account page's answer editing, and slice 4's pages, still run on stand-ins for slice 2's pick screen, bio, rules, silhouette and onboarding check. Slice 2 has landed, so join-up (#17) can now swap each one for the real piece it names.
+- Onboarding isn't saved part-way: leaving or refreshing mid-way starts again. It takes about two minutes, so this was accepted.
 - Messages refresh on page load, and there are no unread markers. Real-time chat is a stretch goal. A conversation loads all its messages at once, which is fine at cohort size.
 - A suspended person is treated as no longer connected for sending, but the conversation stays readable and listed. Slice 8 did not change this, so hiding them from the list is still a follow-up.
 - The admin screens (slice 8) have no dashboard stats, and cannot view a profile or reset someone's onboarding: all three are MVP Later. A users list has no search, which is fine at cohort size. Whether a first real admin account exists on production depends on `ADMIN_EMAILS` being set before that person signs up.

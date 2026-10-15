@@ -1,5 +1,7 @@
-// The starting content of the tag catalogue: 5 categories x 12 tags, and the
+// The starting content of the tag catalogue: 7 categories x 12 tags, and the
 // 2 courses. prisma/seed.ts reads this and inserts any rows that are missing.
+// The first 5 categories come from the brief; Skills and Interests were added
+// by onboarding (slice 2, #9, design decision 8).
 //
 // Why this isn't "hard-coding tags in the app": the app never imports this
 // file. It's only the first input for the database, and the app always reads
@@ -21,6 +23,10 @@ export type SeedTag = {
   id: string;
   name: string;
   description: string;
+  // The short word this tag adds to a person's alias, e.g. "Feral" or
+  // "Sea Captain" -> "The Feral Sea Captain" (slice 2, #9, design decision 4).
+  // Only Energy and Vibe Diagnosis tags have one, hence optional.
+  aliasWord?: string;
 };
 
 export type SeedCategory = {
@@ -136,72 +142,84 @@ export const seedCategories: SeedCategory[] = [
     tags: [
       {
         id: "energy-mad-inventor",
+        aliasWord: "Inventor",
         name: "Giving Mad Inventor Energy",
         description:
           "Chaotic, brilliant, mildly explosive. Great whiteboard, terrible time-keeping.",
       },
       {
         id: "energy-binder-for-everything",
+        aliasWord: "Planner",
         name: "Giving Binder-For-Everything Energy",
         description:
           "A plan for every contingency. Will out-enthusiasm your doubts.",
       },
       {
         id: "energy-vanishes-when-real",
+        aliasWord: "Escape Artist",
         name: "Giving Vanishes-When-It-Gets-Real Energy",
         description:
           "Warm, whimsical, first out the door the second things get intense.",
       },
       {
         id: "energy-villain-monologue",
+        aliasWord: "Mastermind",
         name: "Giving Villain-Monologue Energy",
         description:
           "Big vision, bigger plan, needs someone to say \"okay but how.\"",
       },
       {
         id: "energy-sea-captain",
+        aliasWord: "Sea Captain",
         name: "Giving Sea Captain Energy",
         description:
           "Calm in the storm. Everyone else is panicking; they're checking the compass.",
       },
       {
         id: "energy-feral-gremlin",
+        aliasWord: "Gremlin",
         name: "Giving Feral Gremlin Energy",
         description:
           "Unpredictable, a little destructive, somehow always right in the end.",
       },
       {
         id: "energy-wise-hermit",
+        aliasWord: "Hermit",
         name: "Giving Wise Hermit Energy",
         description:
           "Off in the corner with a strange theory. The theory is usually correct.",
       },
       {
         id: "energy-golden-retriever-ceo",
+        aliasWord: "Golden Retriever",
         name: "Giving Golden Retriever CEO Energy",
         description:
           "Relentlessly positive, weirdly good at closing deals.",
       },
       {
         id: "energy-plot-twist",
+        aliasWord: "Plot Twist",
         name: "Giving Plot Twist Energy",
         description:
           "You think you know where this is going. You do not.",
       },
       {
         id: "energy-group-project-mum",
+        aliasWord: "Project Mum",
         name: "Giving Group Project Mum Energy",
         description:
           "Will quietly carry the whole thing and never say so.",
       },
       {
         id: "energy-mad-scientist",
+        aliasWord: "Mad Scientist",
         name: "Giving Mad Scientist Energy",
         description:
           "Ethics: pending. Results: undeniable.",
       },
       {
         id: "energy-secret-chosen-one",
+        aliasWord: "Chosen One",
         name: "Giving Background-Character-Who's-Actually-The-Chosen-One Energy",
         description:
           "Underestimated. Temporarily.",
@@ -216,72 +234,84 @@ export const seedCategories: SeedCategory[] = [
     tags: [
       {
         id: "vibe-diagnosis-main-character",
+        aliasWord: "Main-Character",
         name: "Certified Main Character",
         description:
           "Everyone else is supporting cast today. Apologies in advance.",
       },
       {
         id: "vibe-diagnosis-chaotic-neutral-spreadsheet",
+        aliasWord: "Chaotic",
         name: "Chaotic Neutral, But With A Spreadsheet",
         description:
           "The chaos is real. So is the colour-coding.",
       },
       {
         id: "vibe-diagnosis-mercury-retrograde",
+        aliasWord: "Retrograde",
         name: "Mercury In Retrograde, Permanently",
         description:
           "Nothing's their fault. Everything's an omen.",
       },
       {
         id: "vibe-diagnosis-visionary-untreated",
+        aliasWord: "Visionary",
         name: "Diagnosed: Visionary, Untreated",
         description:
           "Big ideas, no follow-through plan, refuses medication for it.",
       },
       {
         id: "vibe-diagnosis-rising-feral",
+        aliasWord: "Feral",
         name: "Rising Sign: Feral",
         description:
           "Whatever the chart says, the moon made them do it.",
       },
       {
         id: "vibe-diagnosis-type-a-recovering",
+        aliasWord: "Recovering",
         name: "Type A, Recovering",
         description:
           "Used to colour-code their sock drawer. Working on it. Still colour-codes the sock drawer.",
       },
       {
         id: "vibe-diagnosis-trust-the-process",
+        aliasWord: "Vibes-Based",
         name: "Big \"Trust The Process\" Energy, No Evidence Of A Process",
         description:
           "Vibes-based project management. Somehow it lands.",
       },
       {
         id: "vibe-diagnosis-enmeshed-with-deadline",
+        aliasWord: "Deadline-Driven",
         name: "Attachment Style: Enmeshed With A Deadline",
         description:
           "Cannot relax until the thing is finished. Then immediately starts another thing.",
       },
       {
         id: "vibe-diagnosis-certified-overthinker",
+        aliasWord: "Overthinking",
         name: "Certified Overthinker, Field-Tested",
         description:
           "Will spiral for a week. The spiral produces excellent work.",
       },
       {
         id: "vibe-diagnosis-secretly-cancer",
+        aliasWord: "Starcrossed",
         name: "Secretly A Cancer, Publicly A Sagittarius",
         description:
           "Soft interior, chaotic exterior. Do not test the exterior.",
       },
       {
         id: "vibe-diagnosis-its-complicated",
+        aliasWord: "Complicated",
         name: "Personality Test Result: \"It's Complicated\"",
         description:
           "Took the quiz four times. Got four different answers. All correct.",
       },
       {
         id: "vibe-diagnosis-villain-era",
+        aliasWord: "Villainous",
         name: "Currently In Their Villain Era",
         description:
           "Boundaries, finally. Mildly terrifying to everyone who knew the old version.",
@@ -445,6 +475,147 @@ export const seedCategories: SeedCategory[] = [
         name: "Someone who's done this before",
         description:
           "I don't want a mentor. I want a scar-tissue-having accomplice.",
+      },
+    ],
+  },
+  // Skills and Interests are NOT in the brief's five exercises. Onboarding
+  // (slice 2, #9) added them so profiles say what people can do and care
+  // about (the brief's "skills, interests"). They're shown on profiles and
+  // shared ones are listed "for information", but they aren't scored (B5).
+  // The lists are the ones the team approved in #9's design (decision 8).
+  {
+    id: "skills",
+    name: "Skills",
+    pickMin: 1, // team decision, 1 Oct 2026: no empty categories
+    pickMax: 4,
+    tags: [
+      {
+        id: "skills-front-end",
+        name: "Front-end",
+        description: "The buttons, the screens, the bits people actually touch.",
+      },
+      {
+        id: "skills-back-end",
+        name: "Back-end",
+        description: "Servers and databases, the plumbing nobody sees until it leaks.",
+      },
+      {
+        id: "skills-data",
+        name: "Data",
+        description: "Turns a pile of numbers into a sentence someone believes.",
+      },
+      {
+        id: "skills-mobile",
+        name: "Mobile",
+        description: "Thinks in thumbs and small screens.",
+      },
+      {
+        id: "skills-design",
+        name: "Design",
+        description: 'Asks "but who is this for?" and means it.',
+      },
+      {
+        id: "skills-ai-automation",
+        name: "AI & Automation",
+        description: "Teaches computers to do the boring bit.",
+      },
+      {
+        id: "skills-marketing",
+        name: "Marketing",
+        description: "Gets the right people to notice, then to care.",
+      },
+      {
+        id: "skills-sales",
+        name: "Sales",
+        description: "Turns a good conversation into a signed deal.",
+      },
+      {
+        id: "skills-finance",
+        name: "Finance",
+        description: "Knows what it costs, what it earns and what's left.",
+      },
+      {
+        id: "skills-operations",
+        name: "Operations",
+        description: "Timelines, owners, next steps. The plan behind the plan.",
+      },
+      {
+        id: "skills-strategy",
+        name: "Strategy",
+        description: "Knows the market, the rivals and the gap between them.",
+      },
+      {
+        id: "skills-writing",
+        name: "Writing",
+        description: "Finds the words that make the idea land.",
+      },
+    ],
+  },
+  {
+    id: "interests",
+    name: "Interests",
+    pickMin: 1, // team decision, 1 Oct 2026: no empty categories
+    pickMax: 4,
+    tags: [
+      {
+        id: "interests-climate",
+        name: "Climate",
+        description: "Wants the planet to still be here for the sequel.",
+      },
+      {
+        id: "interests-health",
+        name: "Health",
+        description: "Bodies, minds and the apps that look after both.",
+      },
+      {
+        id: "interests-education",
+        name: "Education",
+        description: "Believes anyone can learn anything with the right nudge.",
+      },
+      {
+        id: "interests-money",
+        name: "Money",
+        description: "Fintech, budgets and making cash less confusing.",
+      },
+      {
+        id: "interests-games",
+        name: "Games",
+        description: "Play is serious business.",
+      },
+      {
+        id: "interests-music",
+        name: "Music",
+        description: "Lives with headphones on.",
+      },
+      {
+        id: "interests-film-video",
+        name: "Film & Video",
+        description: "Thinks in shots, cuts and thumbnails.",
+      },
+      {
+        id: "interests-fashion",
+        name: "Fashion",
+        description: "Knows what people will wear before they do.",
+      },
+      {
+        id: "interests-food",
+        name: "Food",
+        description: "Every good idea started over a meal.",
+      },
+      {
+        id: "interests-community",
+        name: "Community",
+        description: "Local, social, the people next door.",
+      },
+      {
+        id: "interests-travel",
+        name: "Travel",
+        description: "Happiest somewhere they've never been.",
+      },
+      {
+        id: "interests-sport",
+        name: "Sport",
+        description: "Training, teams and the numbers behind them.",
       },
     ],
   },

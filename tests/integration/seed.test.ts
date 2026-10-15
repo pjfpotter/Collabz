@@ -24,7 +24,7 @@ describe("seedCatalogue", () => {
   });
 
   // Spec scenario: "Fresh database is seeded"
-  it("fills an empty database with 5 categories of 12 tags, in order, plus 2 courses", async () => {
+  it("fills an empty database with 7 categories of 12 tags, in order, plus 2 courses", async () => {
     await seedCatalogue(prisma);
 
     const categories = await prisma.category.findMany({
@@ -32,13 +32,16 @@ describe("seedCatalogue", () => {
       include: { tags: { orderBy: { order: "asc" } } },
     });
 
-    // The five categories from the brief, in the brief's order.
+    // The five categories from the brief, in the brief's order, then the two
+    // onboarding added (slice 2, #9).
     expect(categories.map((category) => category.name)).toEqual([
       "Hero Story",
       "Energy",
       "Vibe Diagnosis",
       "Qualities",
       "Seeking",
+      "Skills",
+      "Interests",
     ]);
 
     // Each category has its 12 tags with names and descriptions, in the same
@@ -80,6 +83,7 @@ describe("seedCatalogue", () => {
       tagsCreated: 0,
       coursesCreated: 0,
       pairingsCreated: 0,
+      aliasWordsFilled: 0,
     });
 
     // ...and the tables hold exactly the same ids as before.
