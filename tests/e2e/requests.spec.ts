@@ -228,3 +228,18 @@ test("phone header shows a pending-request shortcut only when requests are waiti
   await expect(mainNav(page).getByTestId("mobile-waiting-count")).toHaveText(/^1\b/);
   await expect(mainNav(page).getByRole("button", { name: "Menu" })).toHaveAttribute("aria-expanded", "false");
 });
+
+// Approved incoming requests remain visible after leaving the waiting list.
+test("recipient sees an accepted incoming connection", async ({ page }) => {
+  await prisma!.connectionRequest.create({
+    data: { fromUserId: sender, toUserId: member, status: "APPROVED" },
+  });
+  await signInAs(page, member);
+  await page.goto("/requests");
+  const connected = page.getByTestId("connected-list");
+  await expect(connected).toContainText(await aliasOf(sender));
+  await expect(connected).toContainText("Connected");
+  await expect(connected.getByRole("link", { name: "Go to messages" })).toBeVisible();
+  await expect(page.getByTestId("no-waiting")).toBeVisible();
+  await expect(page.getByTestId("no-sent")).toBeVisible();
+});

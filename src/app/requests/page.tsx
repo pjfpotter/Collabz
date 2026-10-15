@@ -27,14 +27,14 @@ import { RequestActions } from "./RequestActions";
 
 // Sets the browser tab title for this page.
 export const metadata = {
-  title: "Requests · Collabz",
+  title: "Requests Â· Collabz",
 };
 
 export default async function RequestsPage() {
   // Not signed in -> /signin. No finished profile -> /onboarding.
   const viewer = await requireFinishedProfile();
 
-  const { waiting, sent } = await getRequestsPage(viewer.id);
+  const { waiting, sent, connected } = await getRequestsPage(viewer.id);
 
   return (
     <main className="mx-auto w-full max-w-2xl px-4 py-8">
@@ -67,6 +67,29 @@ export default async function RequestsPage() {
               ))}
             </ul>
           </>
+        )}
+      </section>
+
+      <section className="mt-10" aria-labelledby="connected-heading">
+        <h2 id="connected-heading" className="text-3xl">Connected</h2>
+        {connected.length === 0 ? (
+          <div className="mt-3" data-testid="no-connections">
+            <StateMessage title="No accepted connections yet." />
+          </div>
+        ) : (
+          <ul className="mt-2 divide-y divide-line" data-testid="connected-list">
+            {connected.map((person) => (
+              <li key={person.requestId} className="py-4">
+                <PersonRow alias={person.alias} silhouette={person.silhouette}
+                  courseId={null} courseName={null} href={`/people/${person.address}`}>
+                  <span className="mt-2 inline-block"><StatusPill status="connected">Connected</StatusPill></span>
+                  <p className="mt-1 text-sm">
+                    <Link href="/messages" className={textLinkClasses}>Go to messages</Link>
+                  </p>
+                </PersonRow>
+              </li>
+            ))}
+          </ul>
         )}
       </section>
 

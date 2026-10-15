@@ -1,7 +1,7 @@
 // WHAT THE /requests PAGE AND THE NAV COUNT SHOW (slice 5, #12, design
 // decision 5).
 //
-// getRequestsPage() returns the two lists the page draws, and
+// getRequestsPage() returns pending, sent and accepted-connection lists, and
 // countWaitingRequests() returns how many are waiting. They are built from
 // ONE filter (waitingWhere below) so the count in the nav bar can never be
 // bigger than the list, which would mean an Approve button that can't work.
@@ -46,9 +46,18 @@ export type SentRequest = {
   createdAt: Date;
 };
 
+// Accepted requests are a connection for BOTH people, regardless of sender.
+export type ConnectedPerson = {
+  requestId: string;
+  alias: string;
+  address: string;
+  silhouette: string;
+};
+
 export type RequestsPage = {
   waiting: WaitingRequest[];
   sent: SentRequest[];
+  connected: ConnectedPerson[];
 };
 
 // The one filter behind "waiting for your answer": pending, sent to this
@@ -96,7 +105,49 @@ function toSentStatus(status: "PENDING" | "APPROVED" | "DECLINED"): SentRequestS
   return "waiting";
 }
 
-// Both lists for the /requests page.
+// Read approved pairs in either direction. An incoming approval must not
+// disappear just because it is neither pending nor "sent by you".
+async function findConnected(userId: string): Promise<ConnectedPerson[]> {
+  const [rows, blockedIds] = await Promise.all([
+    prisma.connectionRequest.findMany({
+      where: {
+        status: "APPROVED",
+        OR: [
+          { fromUserId: userId, toUser: visibleUserFilter },
+          { toUserId: userId, fromUser: visibleUserFilter },
+        ],
+      },
+      orderBy: { createdAt: "desc" },
+      select: {
+        id: true,
+        fromUserId: true,
+        toUserId: true,
+        fromUser: { select: { profile: { select: { alias: true, silhouette: true } } } },
+        toUser: { select: { profile: { select: { alias: true, silhouette: true } } } },
+      },
+    }),
+    getHiddenUserIds(userId),
+  ]);
+  const connected: ConnectedPerson[] = [];
+  const seen = new Set<string>();
+  for (const row of rows) {
+    const viewerSent = row.fromUserId === userId;
+    const otherId = viewerSent ? row.toUserId : row.fromUserId;
+    const profile = (viewerSent ? row.toUser : row.fromUser).profile;
+    // Legacy/demo data may contain multiple rows for a pair: show one person.
+    if (!profile || blockedIds.has(otherId) || seen.has(otherId)) continue;
+    seen.add(otherId);
+    connected.push({
+      requestId: row.id,
+      alias: profile.alias,
+      address: aliasToAddress(profile.alias),
+      silhouette: profile.silhouette,
+    });
+  }
+  return connected;
+}
+
+// Pending incoming requests, sent requests and accepted connections.
 export async function getRequestsPage(userId: string): Promise<RequestsPage> {
   const waitingRows = await findWaiting(userId);
 
@@ -145,5 +196,6 @@ export async function getRequestsPage(userId: string): Promise<RequestsPage> {
     });
   }
 
-  return { waiting, sent };
+  const connected = await findConnected(userId);
+  return { waiting, sent, connected };
 }
