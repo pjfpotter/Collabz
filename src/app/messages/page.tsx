@@ -9,15 +9,11 @@
 import Link from "next/link";
 
 import { textLinkClasses } from "@/components/formStyles";
-import { PersonRow } from "@/components/PersonRow";
 import { StateMessage } from "@/components/StateMessage";
-import { StatusPill } from "@/components/StatusPill";
 import { requireFinishedProfile } from "@/lib/cohort/standIns";
-import { formatMessageTime } from "@/lib/messages/formatMessageTime";
-import {
-  listConversations,
-  type ConversationSummary,
-} from "@/lib/messages/listConversations";
+import { listConversations } from "@/lib/messages/listConversations";
+
+import { ConversationRow } from "./ConversationRow";
 
 // Sets the browser tab title for this page.
 export const metadata = {
@@ -61,36 +57,5 @@ export default async function MessagesPage() {
         </ul>
       )}
     </main>
-  );
-}
-
-// One conversation in the list.
-function ConversationRow({ conversation }: { conversation: ConversationSummary }) {
-  return (
-    <PersonRow
-      alias={conversation.alias}
-      silhouette={conversation.silhouette}
-      courseId={null}
-      courseName={null}
-      href={`/messages/${conversation.conversationId}`}
-    >
-      {conversation.closed && (
-        <p className="mt-1">
-          <StatusPill status="declined">
-            <span data-testid="closed-marker">(closed)</span>
-          </StatusPill>
-        </p>
-      )}
-
-      {conversation.latestPreview !== null && conversation.latestAt !== null ? (
-        <>
-          {/* truncate keeps a long preview on one line on a phone. */}
-          <p className="mt-1 truncate text-sm">{conversation.latestPreview}</p>
-          <p className="text-sm text-muted">{formatMessageTime(conversation.latestAt)}</p>
-        </>
-      ) : (
-        <p className="mt-1 text-sm text-muted">No messages yet.</p>
-      )}
-    </PersonRow>
   );
 }
