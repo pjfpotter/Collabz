@@ -122,6 +122,8 @@ const MAX_HEIGHT_SHARE_OF_WIDTH = 1.2;
 // as a share of the canvas's width. A share, not a fixed number of pixels,
 // so a phone doesn't lose a third of its small canvas to padding.
 const FIT_PADDING_SHARE_OF_WIDTH = 0.07;
+// Keep automatically fitted dots readable when the cohort is very small.
+const MAX_AUTO_FIT_ZOOM = 2;
 
 // A canvas narrower than this (in pixels) counts as "phone sized". Lines are
 // drawn thinner there: the same thickness that looks fine on a laptop fills
@@ -221,8 +223,8 @@ type CohortGraphProps = {
   links: GraphLink[];
 };
 
-// Zooms so the whole graph is in view, and returns the zoom level before the
-// move, or null if the graph isn't on screen yet. A plain function outside
+// Fits and centres the graph, returning the target zoom level, or null if
+// the canvas or node positions are not ready yet. A plain function outside
 // the component, so every place that needs it can call it.
 //
 // `glideTime` is how long the move takes, in thousandths of a second. 0 means
@@ -230,11 +232,36 @@ type CohortGraphProps = {
 function fitGraphToCanvas(
   graph: ForceGraphMethods<DrawnNode, DrawnLink> | undefined,
   canvasWidth: number,
+  canvasHeight: number,
   glideTime: number,
 ): number | null {
-  if (!graph) return null;
-  graph.zoomToFit(glideTime, canvasWidth * FIT_PADDING_SHARE_OF_WIDTH);
-  return graph.zoom();
+  if (!graph || canvasWidth <= 0 || canvasHeight <= 0) return null;
+
+  const bounds = graph.getGraphBbox();
+  // No nodes, or the layout has not assigned finite positions yet.
+  if (!bounds || ![...bounds.x, ...bounds.y].every(Number.isFinite)) return null;
+
+  const graphWidth = bounds.x[1] - bounds.x[0];
+  const graphHeight = bounds.y[1] - bounds.y[0];
+  if (graphWidth <= 0 || graphHeight <= 0) return null;
+
+  const padding = canvasWidth * FIT_PADDING_SHARE_OF_WIDTH;
+  // A tiny cohort must not turn one dot into a canvas-sized circle.
+  // Only automatic fitting is capped; people can still pinch to zoom further.
+  const fittedZoom = Math.min(
+    MAX_AUTO_FIT_ZOOM,
+    (canvasWidth - padding * 2) / graphWidth,
+    (canvasHeight - padding * 2) / graphHeight,
+  );
+  if (!Number.isFinite(fittedZoom) || fittedZoom <= 0) return null;
+
+  graph.centerAt(
+    (bounds.x[0] + bounds.x[1]) / 2,
+    (bounds.y[0] + bounds.y[1]) / 2,
+    glideTime,
+  );
+  graph.zoom(fittedZoom, glideTime);
+  return fittedZoom;
 }
 
 // ---------------------------------------------------------------------------
@@ -361,7 +388,7 @@ export default function CohortGraph({ nodes, links }: CohortGraphProps) {
   // --- Keep the whole graph in view when the canvas changes size ---
   useEffect(() => {
     if (!size) return;
-    fittedZoomRef.current = fitGraphToCanvas(graphRef.current, size.width, 0);
+    fittedZoomRef.current = fitGraphToCanvas(graphRef.current, size.width, size.height, 0);
   }, [size]);
 
   // ---------------------------------------------------------------------------
@@ -545,7 +572,7 @@ export default function CohortGraph({ nodes, links }: CohortGraphProps) {
           // is never half off the canvas while it drifts.
           onEngineTick={() => {
             if (!hasSettledRef.current) {
-              fittedZoomRef.current = fitGraphToCanvas(graphRef.current, size.width, 0);
+              fittedZoomRef.current = fitGraphToCanvas(graphRef.current, size.width, size.height, 0);
             }
           }}
           // Runs each time the movement stops. The FIRST time, glide to a
@@ -566,6 +593,7 @@ export default function CohortGraph({ nodes, links }: CohortGraphProps) {
               fittedZoomRef.current = fitGraphToCanvas(
                 graphRef.current,
                 size.width,
+                size.height,
                 FIT_GLIDE_TIME,
               );
             }
