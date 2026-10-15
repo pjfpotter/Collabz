@@ -6,6 +6,8 @@
 
 import Link from "next/link";
 
+import { textLinkClasses } from "@/components/formStyles";
+
 const SECTIONS = [
   { href: "/admin/categories", label: "Categories & tags" },
   { href: "/admin/courses", label: "Courses" },
@@ -16,12 +18,16 @@ const SECTIONS = [
 export function AdminMenu() {
   return (
     // Wraps onto a second line on a narrow phone instead of scrolling sideways.
-    <nav aria-label="Admin sections" className="flex flex-wrap gap-x-4 gap-y-2 text-sm">
-      <Link href="/admin" className="font-semibold underline">
+    <nav aria-label="Admin sections" className="flex flex-wrap gap-x-4 gap-y-1 text-sm">
+      <Link href="/admin" className={`inline-flex min-h-11 items-center font-bold ${textLinkClasses}`}>
         Admin
       </Link>
       {SECTIONS.map((section) => (
-        <Link key={section.href} href={section.href} className="underline">
+        <Link
+          key={section.href}
+          href={section.href}
+          className={`inline-flex min-h-11 items-center ${textLinkClasses}`}
+        >
           {section.label}
         </Link>
       ))}

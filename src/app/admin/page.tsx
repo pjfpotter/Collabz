@@ -21,9 +21,9 @@ export default async function AdminPage() {
     <main className="mx-auto w-full max-w-md px-4 py-12">
       <AdminMenu />
 
-      <h1 className="mt-6 text-3xl font-semibold">Admin</h1>
+      <h1 className="mt-6 text-4xl">Admin</h1>
 
-      <p className="mt-4 text-lg">
+      <p className="mt-4 text-lg text-muted">
         Keep the lists up to date without editing the database by hand.
       </p>
 
@@ -39,7 +39,7 @@ export default async function AdminPage() {
         </li>
       </ul>
 
-      <p className="mt-6 text-sm">
+      <p className="mt-6 text-sm text-muted">
         Nothing is ever deleted. Retiring something hides it from new choices, and
         everyone who already has it keeps it.
       </p>

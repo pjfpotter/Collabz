@@ -10,6 +10,14 @@ import { CATEGORY_IDS } from "@/lib/matching/eligiblePeople";
 
 import { AdminMenu } from "../AdminMenu";
 import {
+  adminButtonClasses,
+  adminCardClasses,
+  adminMetaClasses,
+  adminNoteClasses,
+  adminProblemClasses,
+  adminRowInputClasses,
+} from "../adminStyles";
+import {
   addCategoryAction,
   addTagAction,
   moveCategoryAction,
@@ -17,6 +25,7 @@ import {
   rescoreEveryoneAction,
   setCategoryRetiredAction,
 } from "./actions";
+import { checkboxClasses, inputClasses } from "@/components/formStyles";
 import { TagCard, type PartnerOption } from "./TagCard";
 
 export const metadata = {
@@ -25,8 +34,6 @@ export const metadata = {
 
 // Always read fresh, so a change shows straight away.
 export const dynamic = "force-dynamic";
-
-const BUTTON = "rounded border border-current px-3 py-1";
 
 export default async function AdminCategoriesPage({
   searchParams,
@@ -92,19 +99,19 @@ export default async function AdminCategoriesPage({
     <main className="mx-auto w-full max-w-md px-4 py-12">
       <AdminMenu />
 
-      <h1 className="mt-6 text-3xl font-semibold">Categories &amp; tags</h1>
-      <p className="mt-2 text-sm">
+      <h1 className="mt-6 text-4xl">Categories &amp; tags</h1>
+      <p className="mt-2 text-sm text-muted">
         Renaming never changes an id or a score. A retired tag is no longer offered
         in onboarding or on the catalogue, but people who already picked it keep it.
       </p>
 
       {problemText && (
-        <p role="alert" className="mt-4 rounded border border-current p-3 text-sm">
+        <p role="alert" className={`mt-4 ${adminProblemClasses}`}>
           {problemText}
         </p>
       )}
       {noteText && (
-        <p role="status" className="mt-4 rounded border border-current p-3 text-sm">
+        <p role="status" className={`mt-4 ${adminNoteClasses}`}>
           {noteText}
         </p>
       )}
@@ -123,22 +130,22 @@ export default async function AdminCategoriesPage({
             <section
               key={category.id}
               aria-labelledby={`heading-${category.id}`}
-              className="rounded border border-current/30 p-3"
+              className={adminCardClasses}
             >
-              <h2 id={`heading-${category.id}`} className="text-xl font-semibold">
+              <h2 id={`heading-${category.id}`} className="text-3xl">
                 {category.name}
                 {retired && <span className="text-base font-normal"> (retired)</span>}
               </h2>
-              <p className="text-xs">
+              <p className={adminMetaClasses}>
                 id: {category.id} · picks {category.pickMin}–{category.pickMax}
               </p>
               {retired && (
-                <p className="mt-1 text-sm">
+                <p className="mt-1 text-sm text-muted">
                   This category is retired, so all its tags are hidden while it is.
                 </p>
               )}
 
-              <form action={renameCategoryAction} className="mt-2 flex gap-2">
+              <form action={renameCategoryAction} className="mt-3 flex gap-2">
                 <input type="hidden" name="id" value={category.id} />
                 <label className="sr-only" htmlFor={`name-${category.id}`}>
                   New name for {category.name}
@@ -147,9 +154,9 @@ export default async function AdminCategoriesPage({
                   id={`name-${category.id}`}
                   name="name"
                   defaultValue={category.name}
-                  className="min-w-0 flex-1 rounded border border-current/40 px-2 py-1"
+                  className={adminRowInputClasses}
                 />
-                <button type="submit" className={BUTTON}>
+                <button type="submit" className={adminButtonClasses}>
                   Rename
                 </button>
               </form>
@@ -161,7 +168,7 @@ export default async function AdminCategoriesPage({
                   <button
                     type="submit"
                     disabled={index === 0}
-                    className={`${BUTTON} disabled:opacity-40`}
+                    className={adminButtonClasses}
                   >
                     Move up
                   </button>
@@ -172,7 +179,7 @@ export default async function AdminCategoriesPage({
                   <button
                     type="submit"
                     disabled={index === categories.length - 1}
-                    className={`${BUTTON} disabled:opacity-40`}
+                    className={adminButtonClasses}
                   >
                     Move down
                   </button>
@@ -180,7 +187,7 @@ export default async function AdminCategoriesPage({
                 <form action={setCategoryRetiredAction}>
                   <input type="hidden" name="id" value={category.id} />
                   <input type="hidden" name="retired" value={retired ? "false" : "true"} />
-                  <button type="submit" className={BUTTON}>
+                  <button type="submit" className={adminButtonClasses}>
                     {retired ? "Un-retire" : "Retire"}
                   </button>
                 </form>
@@ -205,28 +212,30 @@ export default async function AdminCategoriesPage({
               </ul>
 
               <details className="mt-4">
-                <summary className="cursor-pointer text-sm underline">Add a tag</summary>
-                <form action={addTagAction} className="mt-2 space-y-2">
+                <summary className="inline-flex min-h-11 cursor-pointer items-center text-sm font-medium text-primary-text underline underline-offset-4">
+                  Add a tag
+                </summary>
+                <form action={addTagAction} className="mt-2 space-y-3">
                   <input type="hidden" name="categoryId" value={category.id} />
-                  <label className="block text-sm" htmlFor={`new-tag-${category.id}`}>
+                  <label className="block text-sm font-medium" htmlFor={`new-tag-${category.id}`}>
                     Name
                   </label>
                   <input
                     id={`new-tag-${category.id}`}
                     name="name"
-                    className="w-full rounded border border-current/40 px-2 py-1"
+                    className={inputClasses}
                   />
-                  <label className="block text-sm" htmlFor={`new-desc-${category.id}`}>
+                  <label className="block text-sm font-medium" htmlFor={`new-desc-${category.id}`}>
                     Short description
                   </label>
                   <input
                     id={`new-desc-${category.id}`}
                     name="description"
-                    className="w-full rounded border border-current/40 px-2 py-1"
+                    className={inputClasses}
                   />
                   {partnerKind && (
-                    <fieldset className="space-y-1">
-                      <legend className="text-sm">
+                    <fieldset>
+                      <legend className="text-sm font-medium">
                         Pairs with these {partnerKind} tags (pick at least one)
                       </legend>
                       {tagsIn(
@@ -236,14 +245,14 @@ export default async function AdminCategoriesPage({
                       )
                         .filter((other) => other.retiredAt === null)
                         .map((other) => (
-                          <label key={other.id} className="flex items-start gap-2 text-sm">
-                            <input type="checkbox" name="paired" value={other.id} className="mt-1" />
+                          <label key={other.id} className="flex min-h-11 items-center gap-3 text-sm">
+                            <input type="checkbox" name="paired" value={other.id} className={checkboxClasses} />
                             <span>{other.name}</span>
                           </label>
                         ))}
                     </fieldset>
                   )}
-                  <button type="submit" className={BUTTON}>
+                  <button type="submit" className={adminButtonClasses}>
                     Add tag
                   </button>
                 </form>
@@ -261,21 +270,21 @@ export default async function AdminCategoriesPage({
           id="new-category"
           name="name"
           placeholder="New category name"
-          className="min-w-0 flex-1 rounded border border-current/40 px-2 py-1"
+          className={adminRowInputClasses}
         />
-        <button type="submit" className={BUTTON}>
+        <button type="submit" className={adminButtonClasses}>
           Add category
         </button>
       </form>
 
-      <section className="mt-10 rounded border border-current/30 p-3">
-        <h2 className="text-xl font-semibold">Rescore everyone</h2>
-        <p className="mt-1 text-sm">
+      <section className={`mt-10 ${adminCardClasses}`}>
+        <h2 className="text-3xl">Rescore everyone</h2>
+        <p className="mt-1 text-sm text-muted">
           Changing a pairing doesn&apos;t change anyone&apos;s stored score. Press this
           after changing pairings to recalculate every finished, active person.
         </p>
         <form action={rescoreEveryoneAction} className="mt-2">
-          <button type="submit" className={BUTTON}>
+          <button type="submit" className={adminButtonClasses}>
             Rescore everyone
           </button>
         </form>

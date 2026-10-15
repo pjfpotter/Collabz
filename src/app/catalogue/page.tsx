@@ -8,6 +8,7 @@
 
 import Link from "next/link";
 
+import { textLinkClasses } from "@/components/formStyles";
 import { getCatalogue } from "@/lib/catalogue";
 
 // Render this page fresh on every request.
@@ -33,26 +34,32 @@ export default async function CataloguePage() {
     // the screen edges on a phone.
     <main className="mx-auto w-full max-w-md px-4 py-8">
       <p>
-        <Link href="/" className="text-sm underline underline-offset-4">
+        {/* inline-flex + min-h-11 makes the link a 44px-high tap target. */}
+        <Link href="/" className={`inline-flex min-h-11 items-center text-sm ${textLinkClasses}`}>
           ← Collabz
         </Link>
       </p>
 
-      <h1 className="mt-4 text-3xl font-semibold">Tag catalogue</h1>
-      <p className="mt-2 text-zinc-600 dark:text-zinc-400">
+      <h1 className="mt-2 text-4xl">Tag catalogue</h1>
+      <p className="mt-2 text-muted">
         Every tag you can pick to build a Collabz profile.
       </p>
 
       {/* One section per category: its name as a heading, then its tags. */}
       {catalogue.map((category) => (
         <section key={category.id} className="mt-10">
-          <h2 className="text-xl font-semibold">{category.name}</h2>
+          <h2 className="text-2xl">{category.name}</h2>
 
-          <ul className="mt-3 space-y-4">
+          {/* Each tag is a small card, so the name and its description read
+              as one unit and long descriptions wrap inside the card. */}
+          <ul className="mt-3 space-y-3">
             {category.tags.map((tag) => (
-              <li key={tag.id}>
+              <li
+                key={tag.id}
+                className="rounded-feature border border-line bg-surface p-4"
+              >
                 <p className="font-medium">{tag.name}</p>
-                <p className="text-sm text-zinc-600 dark:text-zinc-400">
+                <p className="mt-1 text-sm text-muted">
                   {tag.description}
                 </p>
               </li>
