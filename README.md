@@ -125,7 +125,7 @@ Every page the app will have already exists, so that two tracks can't invent the
 | `/messages`, `/messages/[conversationId]` | 6 | #13 | 5 |
 | `/account` | 7 | #14 | 1 |
 | `/admin` (and anything under it except reports) | 8 | #15 | 2 |
-| `/admin/reports` | 9 | #16 | 3 |
+| `/admin/reports` | 9 | #16 | built |
 | `/api/dev/*`, the nav bar, the shared helpers | foundation | #7 | all |
 
 **What you own.** Your slice owns its routes in the table, anything nested under them (for example `/onboarding/done`), and the API routes of the same name (for example `/api/onboarding/*`). Only change files inside your own routes.
@@ -257,6 +257,7 @@ Five of us build different parts at the same time. To stop one track depending o
 | `redirectIfOnboardingIncomplete()` | `src/lib/profile/onboardingRedirect.ts` | For pages that need a finished profile. Sends a signed-out visitor to `/signin` and someone who hasn't finished onboarding to `/onboarding`; otherwise returns the user | Slice 2 (#9), built |
 | `generateBio(tagsByCategory)`, `generateBioLines(...)` | `src/lib/profile/bio.ts` | A person's bio, built from the names of the tags they picked. Never stored | Slice 2 (#9), built |
 | `ProfileCard`, `Silhouette` | `src/components/` | The public profile card (alias, silhouette, bio, skills, interests: never an email or photo) and one silhouette picture | Slice 2 (#9), built |
+| `getHiddenUserIds(viewerId)` | `src/lib/safety/hiddenPeople.ts` | The ids of everyone in a block with the viewer, either way round. Any list that shows people must leave these out, so a block hides the pair everywhere | Slice 9 (#16) |
 | `orderUserPair(a, b)` | `src/lib/userPair.ts` | Puts two user ids in the agreed order (lower first) for the `Edge` and `Conversation` tables, which store each pair once | Foundation (#7) |
 
 Each file starts with a comment that says the same in more detail, including what the helper will do once its owner has built it.
@@ -476,7 +477,7 @@ Slice 8 (#15). Admins (Patrick and Tom) keep the lists up to date, and suspend p
 
 | Route | What it does |
 |---|---|
-| `/admin` | The admin home, with a menu to the sections below (and a link to `/admin/reports`, which is slice 9's) |
+| `/admin` | The admin home, with a menu to the sections below (and a link to `/admin/reports`, see [Safety](#safety)) |
 | `/admin/categories` | Categories and tags: add, rename, reorder, retire and un-retire. Edit a tag's description. Seeking and Quality tags also have their pairings and a **Rescore everyone** button |
 | `/admin/courses` | Courses: add, rename, reorder, retire and un-retire. Shows how many people are on each |
 | `/admin/users` | Everyone, with their course, role and alias. **Suspend** and **Unsuspend** (not on your own row), and **Remove photo** for anyone who has one |
@@ -498,6 +499,37 @@ Slice 8 (#15). Admins (Patrick and Tom) keep the lists up to date, and suspend p
 | The pages and their Server Actions | `src/app/admin/` (`categories/`, `courses/`, `users/`; each `actions.ts` starts every action with `requireAdmin()`) |
 | The rules, one small function per change | `src/lib/admin/` (`categories.ts`, `tags.ts`, `pairings.ts`, `courses.ts`, `users.ts`, `rescoreEveryone.ts`, `slugify.ts`, `reorder.ts`) |
 | Tests | `tests/integration/admin*.test.ts` (rules, and `adminActions.test.ts` for the "refused even when called directly" check), `tests/unit/slugify.test.ts`, `tests/e2e/admin.spec.ts` |
+
+## Safety
+
+Slice 9 (#16). Because messages are free text, anyone can block or report another person, and admins have one place to act on reports.
+
+**What people can do** (on a profile, and under a conversation, in a closed **Report or block** section):
+
+| Action | What happens |
+|---|---|
+| **Report** | Pick one reason from the list and press **Send report**. It goes to the admin queue as *open*. You can't report yourself, and you can't report the same person again while your first report is still open |
+| **Block** | Press **Block**, then **Yes, block …**. Neither of you can send the other a request or a message, any conversation between you closes for good, photos are hidden again, and you vanish from each other's graph, people list, matches and requests |
+
+**What admins can do** (`/admin/reports`, admin-only like the rest of `/admin`): open reports first (oldest at the top), then resolved ones. Each open report has three separate buttons: **Suspend** the reported person, **Remove photo**, and **Resolve**. Suspending or removing a photo does not resolve the report by itself.
+
+**The rules, in plain words:**
+
+- **A block can't be undone** in the MVP (unblocking is not in the issue). A mistaken block is fixed by an admin in the database. That's why Block asks twice.
+- **The blocked person isn't told.** Their view of the other person just becomes "not found", the same as for a suspended person, so nobody can tell who blocked whom.
+- **Reporting doesn't hide anyone.** Someone who wants both reports and blocks.
+- **The reasons are a fixed list** in `src/lib/safety/reasons.ts` (`REPORT_REASONS`). To change one, edit that list: nothing in the database changes, and old reports keep the words they were made with. The server refuses any reason that isn't on the list.
+- **Hiding is done when reading.** Scores stay stored for every pair. Every list asks `getHiddenUserIds(viewerId)`, so **a new list that shows people must use it too**.
+- **Not built yet:** unblock, a list of who you blocked, notes on a report (all outside the MVP).
+
+**Where the code is:**
+
+| What | Where |
+|---|---|
+| Block, report, hiding and the queue's rules | `src/lib/safety/` (`blockUser.ts`, `reportUser.ts`, `reasons.ts`, `hiddenPeople.ts`, `reports.ts`) |
+| The Report and Block buttons and their Server Actions | `src/components/SafetyActions.tsx`, `src/lib/safety/safetyActions.ts` (used by `/people/[alias]` and `/messages/[conversationId]`) |
+| The moderation queue | `src/app/admin/reports/` (`page.tsx`, `actions.ts`; every action starts with `requireAdmin()`) |
+| Tests | `tests/integration/` (`blockUser`, `blockHiding`, `hiddenPeople`, `reportUser`, `reports`, and `adminActions` for the refused-when-called-directly check), `tests/unit/reportReasons.test.ts`, `tests/e2e/safety.spec.ts` |
 
 ## Account and photos
 

@@ -11,6 +11,7 @@
 // getConnectPermission() below, and the rule is written once.
 
 import { prisma } from "@/lib/db";
+import { getHiddenUserIds } from "@/lib/safety/hiddenPeople";
 
 import { aliasToAddress, findPersonByAddress } from "./aliasAddress";
 import { getTopFive, explainMatch, profileBio, type MatchExplanation } from "./standIns";
@@ -47,9 +48,10 @@ export async function getConnectPermission(
   if (glitch?.matchedUserId === otherUserId) {
     // A glitch match is only usable while the person is still visible.
     // getTopFive leaves suspended people out the same way.
-    const stillVisible = (await getVisiblePeople()).some(
-      (person) => person.userId === otherUserId,
-    );
+    // Slice 9 (#16): a stored glitch match who is now blocked isn't usable.
+    const isHidden = (await getHiddenUserIds(viewerId)).has(otherUserId);
+    const stillVisible =
+      !isHidden && (await getVisiblePeople()).some((person) => person.userId === otherUserId);
     return stillVisible ? "glitch" : null;
   }
 
@@ -182,7 +184,11 @@ export async function getProfileLookup(
   viewerId: string,
   address: string,
 ): Promise<ProfileLookup> {
-  const people = await getVisiblePeople();
+  // Slice 9 (#16): a blocked person's profile is "not found", the same as a
+  // suspended one, so a blocked person can't tell they were blocked. (The
+  // viewer's own id is never in the hidden set.)
+  const hiddenIds = await getHiddenUserIds(viewerId);
+  const people = (await getVisiblePeople()).filter((person) => !hiddenIds.has(person.userId));
   const person = findPersonByAddress(people, address);
   if (!person) {
     return { kind: "not-found" };

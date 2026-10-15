@@ -57,6 +57,11 @@ import {
   unsuspendUserAction,
 } from "@/app/admin/users/actions";
 import {
+  removeReportedPhotoAction,
+  resolveReportAction,
+  suspendReportedUserAction,
+} from "@/app/admin/reports/actions";
+import {
   addCourseAction,
   moveCourseAction,
   renameCourseAction,
@@ -91,6 +96,7 @@ async function snapshot() {
     }),
     edges: await prisma.edge.findMany(),
     users: await prisma.user.findMany({ orderBy: { id: "asc" } }),
+    reports: await prisma.report.findMany({ orderBy: { id: "asc" } }),
   };
 }
 
@@ -101,6 +107,18 @@ beforeEach(async () => {
   await seedCatalogue(prisma);
   // Someone the suspend actions could act on.
   await prisma.user.create({ data: { id: "test-victim", email: "victim@example.com" } });
+  // A report about them, for the moderation queue actions (slice 9, #16).
+  const reporter = await prisma.user.create({
+    data: { id: "test-reporter", email: "reporter@example.com" },
+  });
+  await prisma.report.create({
+    data: {
+      id: "test-report",
+      reporterId: reporter.id,
+      reportedId: "test-victim",
+      reason: "Inappropriate messages",
+    },
+  });
 });
 
 afterAll(async () => {
@@ -139,6 +157,9 @@ const allAdminActions: [string, (f: FormData) => Promise<void>, Record<string, s
   ["suspend user", suspendUserAction, { id: "test-victim" }],
   ["unsuspend user", unsuspendUserAction, { id: "test-victim" }],
   ["remove photo", removePhotoAction, { id: "test-victim" }],
+  ["suspend reported user", suspendReportedUserAction, { reportId: "test-report" }],
+  ["remove reported photo", removeReportedPhotoAction, { reportId: "test-report" }],
+  ["resolve report", resolveReportAction, { reportId: "test-report" }],
 ];
 
 describe("admin actions refuse anyone who isn't an admin", () => {
@@ -213,5 +234,28 @@ describe("admin actions refuse anyone who isn't an admin", () => {
     const self = await prisma.user.findUniqueOrThrow({ where: { id: admin.id } });
     expect(victim.suspendedAt).not.toBeNull();
     expect(self.suspendedAt).toBeNull();
+  });
+
+  it("lets an admin act on a report: suspend, remove the photo, resolve", async () => {
+    const admin = await prisma.user.create({
+      data: {
+        email: "admin4@example.com",
+        role: "ADMIN",
+        courseId: "software",
+        acceptedTermsAt: new Date(),
+      },
+    });
+    signedInAs.userId = admin.id;
+
+    await callAction(suspendReportedUserAction, { reportId: "test-report" });
+    await callAction(removeReportedPhotoAction, { reportId: "test-report" });
+    await callAction(resolveReportAction, { reportId: "test-report" });
+
+    const victim = await prisma.user.findUniqueOrThrow({ where: { id: "test-victim" } });
+    const report = await prisma.report.findUniqueOrThrow({ where: { id: "test-report" } });
+    expect(victim.suspendedAt).not.toBeNull();
+    expect(removeProfilePhoto).toHaveBeenCalledWith("test-victim");
+    expect(report.status).toBe("RESOLVED");
+    expect(report.resolvedById).toBe(admin.id);
   });
 });

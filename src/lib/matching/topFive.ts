@@ -16,6 +16,7 @@
 // pretend cohort through this file, and a seed script and Playwright's test
 // runner don't understand the "@/" shortcut the Next.js app uses.
 import { prisma } from "../db";
+import { getHiddenUserIds } from "../safety/hiddenPeople";
 
 import { getEligiblePeople } from "./eligiblePeople";
 
@@ -100,6 +101,13 @@ export async function getTopFive(userId: string): Promise<TopMatch[]> {
 
   if (!finishedAtByUserId.has(userId)) {
     return [];
+  }
+
+  // Slice 9 (#16): take blocked people out BEFORE ranking, so the next best
+  // person moves up instead of leaving a gap. The viewer's own id isn't in
+  // the hidden set, so the check above stays correct.
+  for (const hiddenId of await getHiddenUserIds(userId)) {
+    finishedAtByUserId.delete(hiddenId);
   }
 
   // A pair's score is stored ONCE, with the lower user id in userAId, so this

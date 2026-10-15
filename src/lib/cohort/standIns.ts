@@ -37,6 +37,7 @@ import { redirect } from "next/navigation";
 
 import { getCurrentUser } from "@/lib/currentUser";
 import { prisma } from "@/lib/db";
+import { getHiddenUserIds } from "@/lib/safety/hiddenPeople";
 import { orderUserPair } from "@/lib/userPair";
 
 import type { User } from "@/generated/prisma/client";
@@ -73,12 +74,18 @@ export type TopMatch = {
 export async function getTopFive(userId: string): Promise<TopMatch[]> {
   const visiblePeople = await getVisiblePeople();
 
+  // Slice 9 (#16): someone blocked either way round can't be a match. Leaving
+  // them out HERE (and not after taking five) lets the next best person move
+  // up, so a block doesn't leave a gap in the top 5.
+  const hiddenIds = await getHiddenUserIds(userId);
+
   // A lookup from user id to "when they finished their profile". A Map is
   // like a dictionary: give it an id and it hands back the date. Its second
   // job is the visibility check: if an id isn't in the map, that person is
   // not visible.
   const finishedAtByUserId = new Map<string, Date>();
   for (const person of visiblePeople) {
+    if (hiddenIds.has(person.userId)) continue;
     finishedAtByUserId.set(person.userId, person.completedAt);
   }
 
@@ -156,6 +163,12 @@ export async function explainMatch(
   firstUserId: string,
   secondUserId: string,
 ): Promise<MatchExplanation | null> {
+  // Slice 9 (#16): no explanation between two people where one blocked the
+  // other, the same as "no score stored".
+  if ((await getHiddenUserIds(firstUserId)).has(secondUserId)) {
+    return null;
+  }
+
   // orderUserPair puts the two ids in the order the Edge table stores them.
   const pair = orderUserPair(firstUserId, secondUserId);
 

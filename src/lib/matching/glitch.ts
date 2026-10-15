@@ -24,6 +24,7 @@
 // pretend cohort through this file, and a seed script and Playwright's test
 // runner don't understand the "@/" shortcut the Next.js app uses.
 import { prisma } from "../db";
+import { getHiddenUserIds } from "../safety/hiddenPeople";
 
 import { getEligiblePeople, type DbClient } from "./eligiblePeople";
 import { findTopFiveIds } from "./topFive";
@@ -137,7 +138,13 @@ export async function ensureGlitchMatch(
   random: RandomSource = Math.random,
   db: DbClient = prisma,
 ): Promise<string | null> {
-  const people = await getEligiblePeople(db);
+  const everyone = await getEligiblePeople(db);
+
+  // Slice 9 (#16): a blocked person can't be anyone's surprise match. Also
+  // taken out of the "is the stored one still valid" check below, so a match
+  // who is blocked later is replaced on the next visit.
+  const hiddenIds = await getHiddenUserIds(userId);
+  const people = everyone.filter((person) => !hiddenIds.has(person.userId));
 
   // Someone who isn't eligible has no glitch match. We don't delete one here
   // (that is scoreUser's job); we just don't make a new one.

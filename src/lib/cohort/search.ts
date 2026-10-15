@@ -23,6 +23,8 @@ import { getCatalogue } from "@/lib/catalogue";
 import { prisma } from "@/lib/db";
 
 import { aliasToAddress } from "./aliasAddress";
+import { getHiddenUserIds } from "@/lib/safety/hiddenPeople";
+
 import { getTopFive } from "./standIns";
 import { getVisiblePeople, type VisiblePerson } from "./visiblePeople";
 
@@ -220,7 +222,9 @@ export type PersonListing = VisiblePerson & {
 // VisiblePerson). That is fine on the server, but a page must only put the
 // alias, the address and the other display fields on screen.
 export async function getPeopleForViewer(viewerId: string): Promise<PersonListing[]> {
-  const people = await getVisiblePeople();
+  // Slice 9 (#16): leave out anyone in a block with the viewer, either way.
+  const hiddenIds = await getHiddenUserIds(viewerId);
+  const people = (await getVisiblePeople()).filter((person) => !hiddenIds.has(person.userId));
 
   // The viewer's scores. A pair is stored once, lower id first, so the viewer
   // can be on either side of the row.

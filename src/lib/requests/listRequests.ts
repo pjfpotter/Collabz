@@ -19,6 +19,7 @@
 
 import { aliasToAddress } from "@/lib/cohort/aliasAddress";
 import { prisma } from "@/lib/db";
+import { getHiddenUserIds } from "@/lib/safety/hiddenPeople";
 
 import { visibleUserFilter } from "./pairRules";
 
@@ -50,21 +51,6 @@ export type RequestsPage = {
   sent: SentRequest[];
 };
 
-// Everyone who has blocked `userId`, or been blocked by them. One query, and
-// then each list is filtered against the answer.
-async function findBlockedCounterpartIds(userId: string): Promise<Set<string>> {
-  const blocks = await prisma.block.findMany({
-    where: { OR: [{ blockerId: userId }, { blockedId: userId }] },
-    select: { blockerId: true, blockedId: true },
-  });
-  const ids = new Set<string>();
-  for (const block of blocks) {
-    // Whichever side of the block ISN'T this user is the other person.
-    ids.add(block.blockerId === userId ? block.blockedId : block.blockerId);
-  }
-  return ids;
-}
-
 // The one filter behind "waiting for your answer": pending, sent to this
 // user, and the sender is visible.
 //
@@ -91,7 +77,7 @@ async function findWaiting(userId: string) {
         fromUser: { select: { profile: { select: { alias: true, silhouette: true } } } },
       },
     }),
-    findBlockedCounterpartIds(userId),
+    getHiddenUserIds(userId),
   ]);
   return requests.filter((request) => !blockedIds.has(request.fromUserId));
 }
@@ -141,7 +127,7 @@ export async function getRequestsPage(userId: string): Promise<RequestsPage> {
         toUser: { select: { profile: { select: { alias: true, silhouette: true } } } },
       },
     }),
-    findBlockedCounterpartIds(userId),
+    getHiddenUserIds(userId),
   ]);
 
   const sent: SentRequest[] = [];

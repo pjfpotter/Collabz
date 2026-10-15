@@ -23,6 +23,7 @@ import { CourseMark } from "@/components/CourseMark";
 import { textLinkClasses } from "@/components/formStyles";
 import { ProfilePhoto } from "@/components/ProfilePhoto";
 import { ReasonsList } from "@/components/ReasonsList";
+import { SafetyActions } from "@/components/SafetyActions";
 import { ScoreBadge } from "@/components/ScoreBadge";
 import { TagChip } from "@/components/TagChip";
 
@@ -90,7 +91,11 @@ export default async function PersonProfilePage({
           {lookup.kind === "own" ? (
             <OwnProfileNote />
           ) : (
-            <MatchSection address={lookup.profile.address} match={lookup.match} />
+            <>
+              <MatchSection address={lookup.profile.address} match={lookup.match} />
+              {/* Slice 9 (#16): report or block this person. */}
+              <SafetyActions address={lookup.profile.address} alias={lookup.profile.alias} />
+            </>
           )}
         </div>
       </div>
