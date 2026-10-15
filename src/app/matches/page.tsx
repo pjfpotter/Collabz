@@ -25,7 +25,9 @@ export default async function MatchesPage() {
   const { topFive, glitch } = await getMatchesPage(viewer.id);
 
   return (
-    <main className="mx-auto w-full max-w-2xl px-4 py-8">
+    // Wider from lg (1024px): the cards have room for the reasons to sit on
+    // fewer, longer lines (Desktop layouts board).
+    <main className="mx-auto w-full max-w-2xl px-4 py-8 lg:max-w-4xl">
       <h1 className="text-4xl">Matches</h1>
       <p className="mt-2 text-muted">
         Your five best fits, and one surprise. You can ask any of them to connect.

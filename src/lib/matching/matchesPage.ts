@@ -23,6 +23,11 @@ export type MatchCardData = {
   alias: string;
   // The id of their silhouette picture, e.g. "silhouette-07".
   silhouette: string;
+  // Their course, so the card can draw its shape and colour (slice 10, #45).
+  // A course id and name are public: the people list and the graph already
+  // show them, and neither identifies anyone. Null if they have no course.
+  courseId: string | null;
+  courseName: string | null;
   score: number;
   // One sentence per reason, ready to show.
   sentences: string[];
@@ -56,7 +61,13 @@ export async function getMatchesPage(viewerId: string): Promise<MatchesPageData>
   const profiles = await prisma.profile.findMany({
     where: { userId: { in: wantedIds } },
     // `select` names exactly what we want: no email, no photo key.
-    select: { userId: true, alias: true, silhouette: true },
+    // The course comes through the user. Only its id and name are selected.
+    select: {
+      userId: true,
+      alias: true,
+      silhouette: true,
+      user: { select: { course: { select: { id: true, name: true } } } },
+    },
   });
   const profileByUserId = new Map(profiles.map((profile) => [profile.userId, profile]));
 
@@ -70,6 +81,8 @@ export async function getMatchesPage(viewerId: string): Promise<MatchesPageData>
       address: aliasToAddress(profile.alias),
       alias: profile.alias,
       silhouette: profile.silhouette,
+      courseId: profile.user.course?.id ?? null,
+      courseName: profile.user.course?.name ?? null,
       // The stored score is what the graph draws, so use it when we have it.
       score: storedScore ?? explanation.score,
       sentences: explanation.sentences,

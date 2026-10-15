@@ -4,7 +4,7 @@
 // Slice 10 (#45) restyled it on the shared pieces: PersonCard draws the
 // frame, silhouette and alias (and wraps a long alias), ScoreBadge the
 // number, ReasonsList the sentences. What it SHOWS is unchanged: alias,
-// silhouette, score, reasons and any shared skills and interests. Never an
+// silhouette, course, score, reasons and any shared skills and interests. Never an
 // email or a user id (the matchesPage test checks the data has nothing else).
 
 import { PersonCard } from "@/components/PersonCard";
@@ -34,10 +34,10 @@ export function MatchCard({ card, kind, rank }: MatchCardProps) {
       }}
       alias={card.alias}
       silhouette={card.silhouette}
-      // This page has never shown a course (the match data carries none), so
-      // none is shown now.
-      courseId={null}
-      courseName={null}
+      // The course badge, as on the people list (task 10.1: the Desktop
+      // layouts board shows it on every match).
+      courseId={card.courseId}
+      courseName={card.courseName}
       score={card.score}
       scoreLabel="Chemistry score"
       href={`/people/${card.address}`}
