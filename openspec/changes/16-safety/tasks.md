@@ -17,9 +17,10 @@ Groups build on each other: logic with tests first (1, 2), then the admin queue 
 
 ## 3. Moderation queue
 
-- [ ] 3.1 Add `src/lib/safety/reports.ts`: `listReports()` (open first, with alias, email, reason, date, suspended and photo state) and `resolveReport(adminId, reportId)` (keeps the first resolver). Tests: ordering, resolve sets status and `resolvedById`, resolving twice changes nothing. Verify: `npx vitest run tests/integration/reports.test.ts` passes
-- [ ] 3.2 Add `src/app/admin/reports/actions.ts` (suspend, remove photo, resolve; each starts with `requireAdmin()` and calls slice 8's `suspendUser` / `removePhoto`) and extend `tests/integration/adminActions.test.ts` so a member and nobody are refused and nothing changes (design 7). Verify: that file passes
-- [ ] 3.3 Replace the `/admin/reports` placeholder: open and resolved sections with the three forms per report, keeping `await requireAdmin()` as the first line. Verify: `npm run dev`; as the pretend admin the sample report shows with the three buttons, as a pretend member "page not found", signed out goes to `/signin`
+- [x] 3.1 Add `src/lib/safety/reports.ts`: `listReports()` (open first, with alias, email, reason, date, suspended and photo state) and `resolveReport(adminId, reportId)` (keeps the first resolver). Tests: ordering, resolve sets status and `resolvedById`, resolving twice changes nothing. Verify: `npx vitest run tests/integration/reports.test.ts` passes
+- [x] 3.2 Add `src/app/admin/reports/actions.ts` (suspend, remove photo, resolve; each starts with `requireAdmin()` and calls slice 8's `suspendUser` / `removePhoto`) and extend `tests/integration/adminActions.test.ts` so a member and nobody are refused and nothing changes (design 7). Verify: that file passes
+- [x] 3.3 Replace the `/admin/reports` placeholder: open and resolved sections with the three forms per report, keeping `await requireAdmin()` as the first line. Verify: `npm run dev`; as the pretend admin the sample report shows with the three buttons, as a pretend member "page not found", signed out goes to `/signin`
+  - Checked 15 Oct 2026 with `tests/e2e/safety.spec.ts` (local, against the pretend cohort): signed out goes to `/signin`, a pretend member gets 404, the pretend admin sees the sample report with Suspend and Resolve, and Resolve moves it to the resolved list. Not clicked through by hand in Chrome.
 
 ## 4. Member buttons
 
