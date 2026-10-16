@@ -1,0 +1,170 @@
+<section class="module" id="module-4" style="background: var(--color-bg-warm)">
+  <div class="module-content">
+    <header class="module-header animate-in">
+      <span class="module-number">04</span>
+      <h1 class="module-title">One Place for Every Rule</h1>
+      <p class="module-subtitle">Why hiding a button is not security, and what to do instead.</p>
+    </header>
+
+    <div class="module-body">
+
+      <!-- SCREEN 1: the idea -->
+      <section class="screen animate-in">
+        <h2 class="screen-heading">The club with one doorman</h2>
+        <p>Imagine a club with five doors, and a bouncer posted at only the front one. The side doors are the problem, not the front.</p>
+        <p>Collabz puts the <strong>bouncer inside the room</strong>. A message can come from a form, a route, a test or a script. All of them pass the same <span class="term" data-definition="A function is a named, reusable recipe of steps. Everything that wants to send a message calls this one.">function</span>.</p>
+
+        <div class="flow-steps">
+          <div class="flow-step"><div class="flow-step-num">1</div><p>Form or route</p></div>
+          <div class="flow-arrow">→</div>
+          <div class="flow-step"><div class="flow-step-num">2</div><p><code>sendMessage()</code> checks every rule</p></div>
+          <div class="flow-arrow">→</div>
+          <div class="flow-step"><div class="flow-step-num">3</div><p>Only then, the database</p></div>
+        </div>
+      </section>
+
+      <!-- SCREEN 2: flow animation -->
+      <section class="screen animate-in">
+        <h2 class="screen-heading">Follow a message being sent</h2>
+        <div class="flow-animation" data-steps='[
+          {"highlight":"flow-actor-5","label":"You type a message and press Send. The form posts JSON to /api/messages/[conversationId]."},
+          {"highlight":"flow-actor-6","label":"The route asks getCurrentUser who you are. Nobody signed in gets a 401 right here.","packet":true,"from":"actor-5","to":"actor-6"},
+          {"highlight":"flow-actor-7","label":"The route hands over to sendMessage. It checks: yours? open? still connected? not empty? not too long?","packet":true,"from":"actor-6","to":"actor-7"},
+          {"highlight":"flow-actor-8","label":"All five passed, so exactly one row is written to the Message table.","packet":true,"from":"actor-7","to":"actor-8"},
+          {"highlight":"flow-actor-5","label":"The route answers ok, the form refreshes, and your message appears.","packet":true,"from":"actor-6","to":"actor-5"}
+        ]'>
+          <div class="flow-actors">
+            <div class="flow-actor" id="flow-actor-5"><div class="flow-actor-icon">F</div><span>Send form</span></div>
+            <div class="flow-actor" id="flow-actor-6"><div class="flow-actor-icon">R</div><span>API route</span></div>
+            <div class="flow-actor" id="flow-actor-7"><div class="flow-actor-icon">S</div><span>sendMessage</span></div>
+            <div class="flow-actor" id="flow-actor-8"><div class="flow-actor-icon">DB</div><span>Database</span></div>
+          </div>
+          <div class="flow-packet" id="flow-packet-4"></div>
+          <div class="flow-step-label">Click "Next Step" to begin</div>
+          <div class="flow-controls">
+            <button class="btn btn-primary flow-next-btn">Next Step</button>
+            <button class="btn flow-reset-btn">Restart</button>
+            <span class="flow-progress"></span>
+          </div>
+        </div>
+      </section>
+
+      <!-- SCREEN 3: code -->
+      <section class="screen animate-in">
+        <h2 class="screen-heading">Two checks, in this order on purpose</h2>
+        <p>These are the first two checks, copied from <code>src/lib/messages/sendMessage.ts</code>.</p>
+
+        <div class="translation-block animate-in">
+          <div class="translation-code">
+            <span class="translation-label">CODE</span>
+            <pre><code><span class="code-line">  <span class="code-keyword">if</span> (</span>
+<span class="code-line">    !conversation ||</span>
+<span class="code-line">    (conversation.userAId !== senderId &amp;&amp; conversation.userBId !== senderId)</span>
+<span class="code-line">  ) {</span>
+<span class="code-line">    <span class="code-keyword">return</span> <span class="code-function">refuse</span>(<span class="code-string">"not-found"</span>);</span>
+<span class="code-line">  }</span>
+<span class="code-line"></span>
+<span class="code-line">  <span class="code-comment">// Check 2.</span></span>
+<span class="code-line">  <span class="code-keyword">if</span> (conversation.closedAt !== <span class="code-keyword">null</span>) {</span>
+<span class="code-line">    <span class="code-keyword">return</span> <span class="code-function">refuse</span>(<span class="code-string">"closed"</span>);</span>
+<span class="code-line">  }</span></code></pre>
+          </div>
+          <div class="translation-english">
+            <span class="translation-label">PLAIN ENGLISH</span>
+            <div class="translation-lines">
+              <p class="tl">If there is no such conversation, or you are neither of its two people...</p>
+              <p class="tl">...say "not found". A made-up id and somebody else's id get exactly the same answer.</p>
+              <p class="tl">Only after you are proven to be one of the two people do we tell you it is closed.</p>
+              <p class="tl">That order means a stranger learns nothing, not even whether the conversation is closed.</p>
+            </div>
+          </div>
+        </div>
+
+        <div class="callout callout-warning">
+          <div class="callout-icon">⚠️</div>
+          <div class="callout-content">
+            <strong class="callout-title">Order of checks is a design decision</strong>
+            <p>If "closed" were checked first, a stranger could tell a real conversation from a fake one by the different answer. When AI rewrites validation, ask it to keep the order and say why.</p>
+          </div>
+        </div>
+      </section>
+
+      <!-- SCREEN 4: group chat -->
+      <section class="screen animate-in">
+        <h2 class="screen-heading">A stranger knocks</h2>
+        <p>Someone has guessed another person's conversation id and posts to the <span class="term" data-definition="A route is an address on the server that does something when called, such as POST /api/messages/123. It returns data rather than a page.">route</span>.</p>
+
+        <div class="chat-window" id="chat-module4">
+          <div class="chat-messages">
+            <div class="chat-message" data-msg="0" data-sender="stranger" style="display:none">
+              <div class="chat-avatar" style="background: var(--color-actor-3)">S</div>
+              <div class="chat-bubble"><span class="chat-sender" style="color: var(--color-actor-3)">Stranger</span><p>POST to conversation cl9x... "hello?"</p></div>
+            </div>
+            <div class="chat-message" data-msg="1" data-sender="route" style="display:none">
+              <div class="chat-avatar" style="background: var(--color-actor-2)">R</div>
+              <div class="chat-bubble"><span class="chat-sender" style="color: var(--color-actor-2)">Route</span><p>You are signed in, fine. sendMessage, over to you.</p></div>
+            </div>
+            <div class="chat-message" data-msg="2" data-sender="send" style="display:none">
+              <div class="chat-avatar" style="background: var(--color-actor-1)">M</div>
+              <div class="chat-bubble"><span class="chat-sender" style="color: var(--color-actor-1)">sendMessage</span><p>This conversation belongs to two other people. Refusing with "not-found".</p></div>
+            </div>
+            <div class="chat-message" data-msg="3" data-sender="route" style="display:none">
+              <div class="chat-avatar" style="background: var(--color-actor-2)">R</div>
+              <div class="chat-bubble"><span class="chat-sender" style="color: var(--color-actor-2)">Route</span><p>Looking up my table... "not-found" maps to 404. Sending 404, not 403.</p></div>
+            </div>
+            <div class="chat-message" data-msg="4" data-sender="stranger" style="display:none">
+              <div class="chat-avatar" style="background: var(--color-actor-3)">S</div>
+              <div class="chat-bubble"><span class="chat-sender" style="color: var(--color-actor-3)">Stranger</span><p>404? So maybe that id is not real. I learned nothing.</p></div>
+            </div>
+          </div>
+          <div class="chat-typing" id="chat-typing-4" style="display:none">
+            <div class="chat-avatar" id="chat-module4-typing-avatar">?</div>
+            <div class="chat-typing-dots"><span class="typing-dot"></span><span class="typing-dot"></span><span class="typing-dot"></span></div>
+          </div>
+          <div class="chat-controls">
+            <button class="btn btn-primary chat-next-btn">Next Message</button>
+            <button class="btn chat-all-btn">Play All</button>
+            <button class="btn chat-reset-btn">Replay</button>
+            <span class="chat-progress"></span>
+          </div>
+        </div>
+
+        <p>A <span class="term" data-definition="A number the server sends back with every answer. 200 means fine, 401 means not signed in, 403 means forbidden, 404 means not found, 409 means conflict, 422 means the input was not acceptable.">status code</span> of 403 ("forbidden") would confirm the id is real. 404 says nothing.</p>
+      </section>
+
+      <!-- SCREEN 5: quiz -->
+      <section class="screen animate-in">
+        <h2 class="screen-heading">Steer it</h2>
+        <div class="quiz-container" id="quiz-module4">
+          <div class="quiz-question-block" data-correct="b"
+               data-explanation-right="Yes. Put the rule in the shared helper so every way in is covered, and let the form only show the result."
+               data-explanation-wrong="A disabled button only stops people who use the button. Anyone who posts by hand skips it, so the rule has to live in the helper that every sender passes through.">
+            <h3 class="quiz-question">You want to stop messages to people you have muted. Your AI proposes disabling the Send button in the form. What is the better ask?</h3>
+            <div class="quiz-options">
+              <button class="quiz-option" data-value="a" onclick="selectOption(this)"><div class="quiz-option-radio"></div><span>That is fine, users only use the form</span></button>
+              <button class="quiz-option" data-value="b" onclick="selectOption(this)"><div class="quiz-option-radio"></div><span>Add the check to sendMessage, and let the form show the refusal</span></button>
+              <button class="quiz-option" data-value="c" onclick="selectOption(this)"><div class="quiz-option-radio"></div><span>Add the check to the nav bar</span></button>
+            </div>
+            <div class="quiz-feedback"></div>
+          </div>
+
+          <div class="quiz-question-block" data-correct="a"
+               data-explanation-right="Correct. A message over the limit returns a refusal reason, the route maps it to 422, and the form shows the helper's own plain-English message."
+               data-explanation-wrong="Think about who owns the wording and the limit: the helper does (MESSAGE_MAX_LENGTH and the refusal messages). The route only picks the status and passes the message on.">
+            <h3 class="quiz-question">A user sees "That message is too long" in the form. Where does that exact sentence most likely come from?</h3>
+            <div class="quiz-options">
+              <button class="quiz-option" data-value="a" onclick="selectOption(this)"><div class="quiz-option-radio"></div><span>The refusal messages next to sendMessage, passed through the route</span></button>
+              <button class="quiz-option" data-value="b" onclick="selectOption(this)"><div class="quiz-option-radio"></div><span>The database</span></button>
+              <button class="quiz-option" data-value="c" onclick="selectOption(this)"><div class="quiz-option-radio"></div><span>Vercel</span></button>
+            </div>
+            <div class="quiz-feedback"></div>
+          </div>
+
+          <button class="quiz-check-btn" onclick="checkQuiz('quiz-module4')">Check Answers</button>
+          <button class="quiz-reset-btn" onclick="resetQuiz('quiz-module4')">Try Again</button>
+        </div>
+      </section>
+
+    </div>
+  </div>
+</section>

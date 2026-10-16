@@ -1,0 +1,137 @@
+<section class="module" id="module-6" style="background: var(--color-bg-warm)">
+  <div class="module-content">
+    <header class="module-header animate-in">
+      <span class="module-number">06</span>
+      <h1 class="module-title">Steering the Build</h1>
+      <p class="module-subtitle">How five people and their AI agents change one codebase without stepping on each other, and where to look when it breaks.</p>
+    </header>
+
+    <div class="module-body">
+
+      <!-- SCREEN 1: the workflow -->
+      <section class="screen animate-in">
+        <h2 class="screen-heading">Spec first, code second</h2>
+        <p>Think of building a house from <strong>blueprints</strong>: nobody pours concrete before the plan is agreed. Every change in Collabz is a small folder under <code>openspec/changes/</code> before it is code.</p>
+
+        <div class="flow-steps">
+          <div class="flow-step"><div class="flow-step-num">1</div><p><strong>Propose</strong><br>Why, design, tasks</p></div>
+          <div class="flow-arrow">→</div>
+          <div class="flow-step"><div class="flow-step-num">2</div><p><strong>Apply</strong><br>One task group at a time</p></div>
+          <div class="flow-arrow">→</div>
+          <div class="flow-step"><div class="flow-step-num">3</div><p><strong>Review</strong><br>A human signs off</p></div>
+          <div class="flow-arrow">→</div>
+          <div class="flow-step"><div class="flow-step-num">4</div><p><strong>Archive</strong><br>Specs updated, ARCHITECTURE.md refreshed</p></div>
+        </div>
+
+        <div class="callout callout-accent">
+          <div class="callout-icon">💡</div>
+          <div class="callout-content">
+            <strong class="callout-title">Small, reviewable steps beat big leaps</strong>
+            <p>AI is most reliable on a task small enough to check. "Do one task group, then stop" is not slowness; it is how you catch a wrong turn while it is cheap.</p>
+          </div>
+        </div>
+      </section>
+
+      <!-- SCREEN 2: tracks -->
+      <section class="screen animate-in">
+        <h2 class="screen-heading">Lanes, shared helpers, and the rule to not cross</h2>
+        <div class="pattern-cards stagger-children">
+          <div class="pattern-card" style="border-top: 3px solid var(--color-actor-1)">
+            <div class="pattern-icon" style="background: var(--color-actor-1)">🛣️</div>
+            <h4 class="pattern-title">Your own slice</h4>
+            <p class="pattern-desc">Each person owns specific <span class="term" data-definition="Routes are the addresses of the app, such as /graph or /messages. Each address has its own folder under src/app.">routes</span>. Change only those.</p>
+          </div>
+          <div class="pattern-card" style="border-top: 3px solid var(--color-actor-2)">
+            <div class="pattern-icon" style="background: var(--color-actor-2)">🤝</div>
+            <h4 class="pattern-title">Shared helpers</h4>
+            <p class="pattern-desc">Reach another track only through <code>getCurrentUser</code>, <code>scoreUser</code>, <code>openConversation</code> and friends. Never their internals.</p>
+          </div>
+          <div class="pattern-card" style="border-top: 3px solid var(--color-actor-4)">
+            <div class="pattern-icon" style="background: var(--color-actor-4)">🚧</div>
+            <h4 class="pattern-title">Flag schema changes</h4>
+            <p class="pattern-desc">Every track builds on the same tables, so a change to <code>schema.prisma</code> is raised with the group first.</p>
+          </div>
+          <div class="pattern-card" style="border-top: 3px solid var(--color-actor-5)">
+            <div class="pattern-icon" style="background: var(--color-actor-5)">🎭</div>
+            <h4 class="pattern-title">Pretend cohort</h4>
+            <p class="pattern-desc">32 pretend students on the dev database, so nobody waits for another track.</p>
+          </div>
+        </div>
+        <p>This is also how two AI agents working at once avoid conflicts: each stays in its lane, and the shared helper keeps its name and return value even when its inside changes.</p>
+      </section>
+
+      <!-- SCREEN 3: code -->
+      <section class="screen animate-in">
+        <h2 class="screen-heading">Reading a symptom</h2>
+        <p>The <span class="term" data-definition="An API route is a server address that returns data, not a page. The form on the page calls it behind the scenes.">API route</span> answers with a number. The number tells you which layer to inspect. This is the real table from <code>src/app/api/messages/[conversationId]/route.ts</code>.</p>
+
+        <div class="translation-block animate-in">
+          <div class="translation-code">
+            <span class="translation-label">CODE</span>
+            <pre><code><span class="code-line"><span class="code-keyword">const</span> STATUS_FOR_REFUSAL: Record&lt;SendRefusalReason, <span class="code-keyword">number</span>&gt; = {</span>
+<span class="code-line">  <span class="code-string">"not-found"</span>: <span class="code-number">404</span>,</span>
+<span class="code-line">  closed: <span class="code-number">409</span>,</span>
+<span class="code-line">  <span class="code-string">"not-connected"</span>: <span class="code-number">409</span>,</span>
+<span class="code-line">  empty: <span class="code-number">422</span>,</span>
+<span class="code-line">  <span class="code-string">"too-long"</span>: <span class="code-number">422</span>,</span>
+<span class="code-line">};</span></code></pre>
+          </div>
+          <div class="translation-english">
+            <span class="translation-label">PLAIN ENGLISH</span>
+            <div class="translation-lines">
+              <p class="tl">A lookup table: for each reason the helper can give, which number to send back.</p>
+              <p class="tl">Not yours or does not exist: 404.</p>
+              <p class="tl">Closed, or the two are no longer connected: 409, a conflict with the current state.</p>
+              <p class="tl">Empty or too long: 422, the words themselves are not acceptable.</p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- SCREEN 4: debugging map -->
+      <section class="screen animate-in">
+        <h2 class="screen-heading">"It's not showing up": where to look</h2>
+        <div class="step-cards">
+          <div class="step-card"><div class="step-num">1</div><div class="step-body"><strong>Is it a page or an action? Check the status number</strong><p>401 means not signed in, 404 not yours or missing, 409 state conflict, 422 bad input.</p></div></div>
+          <div class="step-card"><div class="step-num">2</div><div class="step-body"><strong>Is the person even visible?</strong><p>Unfinished profiles and suspended people vanish from the graph, search and scores by design.</p></div></div>
+          <div class="step-card"><div class="step-num">3</div><div class="step-body"><strong>Did a pairing or tag change without a rescore?</strong><p>Pairing edits change no score until "Rescore everyone" is pressed.</p></div></div>
+          <div class="step-card"><div class="step-num">4</div><div class="step-body"><strong>Which database are you on?</strong><p>Laptops, previews and tests use the <code>dev</code> branch. Only the live site uses <code>production</code>.</p></div></div>
+        </div>
+      </section>
+
+      <!-- SCREEN 5: quiz -->
+      <section class="screen animate-in">
+        <h2 class="screen-heading">Your turn to steer</h2>
+        <div class="quiz-container" id="quiz-module6">
+          <div class="quiz-question-block" data-correct="a"
+               data-explanation-right="Yes. A glitch match is only valid while it is not in your top 5, so the rescoring repairs it. Score changes and glitch repair happen in the same transaction."
+               data-explanation-wrong="Remember how the pieces connect: scores feed the top 5, and the glitch match must never be in the top 5. When a rescore happens, the glitch match is re-checked in the same transaction.">
+            <h3 class="quiz-question">After you edit your answers, your surprise match changes. A teammate thinks it is a bug. What is the likely reason?</h3>
+            <div class="quiz-options">
+              <button class="quiz-option" data-value="a" onclick="selectOption(this)"><div class="quiz-option-radio"></div><span>Your new answers moved the old surprise into your top 5, so it was replaced</span></button>
+              <button class="quiz-option" data-value="b" onclick="selectOption(this)"><div class="quiz-option-radio"></div><span>The server picks a new random match whenever you open /matches</span></button>
+              <button class="quiz-option" data-value="c" onclick="selectOption(this)"><div class="quiz-option-radio"></div><span>Prisma cached a stale row</span></button>
+            </div>
+            <div class="quiz-feedback"></div>
+          </div>
+
+          <div class="quiz-question-block" data-correct="c"
+               data-explanation-right="Exactly. It is not in your slice, other tracks depend on it, and the proposal cannot quietly grow. Raise it, then agree the change."
+               data-explanation-wrong="A schema change touches every track's tables. The right move is to stop, flag it to the group, and agree it before the agent writes the migration.">
+            <h3 class="quiz-question">Your AI says "I need a new column on User to finish this task". What do you do?</h3>
+            <div class="quiz-options">
+              <button class="quiz-option" data-value="a" onclick="selectOption(this)"><div class="quiz-option-radio"></div><span>Let it add the column, it is only one line</span></button>
+              <button class="quiz-option" data-value="b" onclick="selectOption(this)"><div class="quiz-option-radio"></div><span>Store the value in a cookie instead and move on</span></button>
+              <button class="quiz-option" data-value="c" onclick="selectOption(this)"><div class="quiz-option-radio"></div><span>Pause, flag it to the team first, and agree it before changing schema.prisma</span></button>
+            </div>
+            <div class="quiz-feedback"></div>
+          </div>
+
+          <button class="quiz-check-btn" onclick="checkQuiz('quiz-module6')">Check Answers</button>
+          <button class="quiz-reset-btn" onclick="resetQuiz('quiz-module6')">Try Again</button>
+        </div>
+      </section>
+
+    </div>
+  </div>
+</section>

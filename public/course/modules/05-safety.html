@@ -1,0 +1,147 @@
+<section class="module" id="module-5" style="background: var(--color-bg)">
+  <div class="module-content">
+    <header class="module-header animate-in">
+      <span class="module-number">05</span>
+      <h1 class="module-title">Safe by Default</h1>
+      <p class="module-subtitle">How Collabz is built so that forgetting something leaves it locked, not open.</p>
+    </header>
+
+    <div class="module-body">
+
+      <!-- SCREEN 1: fail safe -->
+      <section class="screen animate-in">
+        <h2 class="screen-heading">Doors that lock themselves</h2>
+        <p>A <strong>fire door</strong> is designed to shut unless something holds it open. Collabz's riskiest tool, the "sign in as any pretend student" switcher, works the same way: off unless deliberately held on.</p>
+
+        <div class="translation-block animate-in">
+          <div class="translation-code">
+            <span class="translation-label">CODE</span>
+            <pre><code><span class="code-line"><span class="code-keyword">export function</span> <span class="code-function">isPretendCohortEnabled</span>(): boolean {</span>
+<span class="code-line">  <span class="code-keyword">const</span> switchedOn = process.env.PRETEND_COHORT === <span class="code-string">"on"</span>;</span>
+<span class="code-line">  <span class="code-keyword">const</span> isProductionDeployment = process.env.VERCEL_ENV === <span class="code-string">"production"</span>;</span>
+<span class="code-line"></span>
+<span class="code-line">  <span class="code-keyword">return</span> switchedOn &amp;&amp; !isProductionDeployment;</span>
+<span class="code-line">}</span></code></pre>
+          </div>
+          <div class="translation-english">
+            <span class="translation-label">PLAIN ENGLISH</span>
+            <div class="translation-lines">
+              <p class="tl">One yes/no question: is the pretend cohort allowed here?</p>
+              <p class="tl">First lock: someone must have set a setting to exactly "on". Forget to set it and the answer is no.</p>
+              <p class="tl">Second lock: are we on the real, live site? Vercel tells us.</p>
+              <p class="tl">Both must be true: switched on and not production. Even a mistaken setting on production stays refused.</p>
+            </div>
+          </div>
+        </div>
+
+        <div class="callout callout-accent">
+          <div class="callout-icon">💡</div>
+          <div class="callout-content">
+            <strong class="callout-title">Fail closed</strong>
+            <p>Engineers call "off unless switched on" <em>fail closed</em> or <em>opt-in</em>. Whenever AI adds a flag that unlocks something risky, ask: "what happens if this variable is missing?" The answer should be "locked".</p>
+          </div>
+        </div>
+      </section>
+
+      <!-- SCREEN 2: who am I -->
+      <section class="screen animate-in">
+        <h2 class="screen-heading">Who is using the app right now?</h2>
+        <p>Every page asks <code>getCurrentUser()</code>. It gathers facts, then one small function decides.</p>
+
+        <div class="translation-block animate-in">
+          <div class="translation-code">
+            <span class="translation-label">CODE</span>
+            <pre><code><span class="code-line">  <span class="code-keyword">const</span> { sessionUser, pretendUser } = people;</span>
+<span class="code-line"></span>
+<span class="code-line">  <span class="code-keyword">if</span> (sessionUser) {</span>
+<span class="code-line">    <span class="code-keyword">const</span> isSuspended = sessionUser.suspendedAt !== <span class="code-keyword">null</span>;</span>
+<span class="code-line">    <span class="code-keyword">if</span> (<span class="code-function">isAccountFinished</span>(sessionUser) &amp;&amp; !isSuspended) {</span>
+<span class="code-line">      <span class="code-keyword">return</span> sessionUser;</span>
+<span class="code-line">    }</span>
+<span class="code-line">    <span class="code-keyword">return null</span>;</span>
+<span class="code-line">  }</span>
+<span class="code-line"></span>
+<span class="code-line">  <span class="code-keyword">return</span> pretendUser;</span></code></pre>
+          </div>
+          <div class="translation-english">
+            <span class="translation-label">PLAIN ENGLISH</span>
+            <div class="translation-lines">
+              <p class="tl">Two candidates arrive: the person from a real sign-in, and the dev switcher's pretend person.</p>
+              <p class="tl">If there is a real sign-in, it wins. Always.</p>
+              <p class="tl">A real person is accepted only if they finished sign-up and are not suspended.</p>
+              <p class="tl">Otherwise nobody. The switcher is NOT used as a fallback, so a real person is never silently swapped for a pretend one.</p>
+              <p class="tl">With no real sign-in, the pretend user (if the switcher is on here) is returned.</p>
+            </div>
+          </div>
+        </div>
+
+        <p>This function takes <span class="term" data-definition="A plain object is just a bundle of named values, like { name: 'Sam', suspendedAt: null }. Because it needs no database or browser, a test can make one by hand.">plain objects</span>, so each case has a one-line test. Every page in the app depends on it, which is why the team kept it small and tested.</p>
+      </section>
+
+      <!-- SCREEN 3: arch diagram -->
+      <section class="screen animate-in">
+        <h2 class="screen-heading">Who knows what</h2>
+        <p>Click a part to see what it is trusted with.</p>
+
+        <div class="arch-diagram">
+          <div class="arch-zone arch-zone-browser">
+            <h4 class="arch-zone-label">Your phone (not trusted)</h4>
+            <div class="arch-component" data-desc="Draws what it is told. It holds no rules, so editing the page in dev tools changes nothing the server will accept.">
+              <div class="arch-icon">📱</div><span>Pages and the graph canvas</span>
+            </div>
+          </div>
+          <div class="arch-zone arch-zone-external">
+            <h4 class="arch-zone-label">The server (decides)</h4>
+            <div class="arch-component" data-desc="requireAdmin() is the first line of every admin Server Action. A Server Action is a public address anyone can post to, so the page having checked is not enough.">
+              <div class="arch-icon">🛂</div><span>requireAdmin and helpers</span>
+            </div>
+            <div class="arch-component" data-desc="Visibility, top 5, line thickness and who may connect are all worked out in tested server code in src/lib/cohort. The browser is only told what to draw.">
+              <div class="arch-icon">🧮</div><span>Cohort rules</span>
+            </div>
+          </div>
+          <div class="arch-zone arch-zone-external">
+            <h4 class="arch-zone-label">The database (remembers)</h4>
+            <div class="arch-component" data-desc="Some rules are stored as constraints: one conversation per pair, one profile alias each. Even if two people finish at the same instant, the database refuses a duplicate.">
+              <div class="arch-icon">🔒</div><span>Unique rules</span>
+            </div>
+          </div>
+          <div class="arch-description">Click any component to learn what it is trusted with</div>
+        </div>
+      </section>
+
+      <!-- SCREEN 4: quiz -->
+      <section class="screen animate-in">
+        <h2 class="screen-heading">Spot the weak link</h2>
+        <div class="quiz-container" id="quiz-module5">
+          <div class="quiz-question-block" data-correct="c"
+               data-explanation-right="Yes. The page check protects the page, but anyone can post to the action directly. Each action must check for itself, which is why the team has a test that calls every action as a member and as nobody."
+               data-explanation-wrong="Hiding the page does not hide the action: Server Actions are public addresses. Every action has to call requireAdmin itself.">
+            <h3 class="quiz-question">An AI adds a new admin action "delete a course" and relies on the admin page being admin-only. What is wrong?</h3>
+            <div class="quiz-options">
+              <button class="quiz-option" data-value="a" onclick="selectOption(this)"><div class="quiz-option-radio"></div><span>Nothing, the page is protected</span></button>
+              <button class="quiz-option" data-value="b" onclick="selectOption(this)"><div class="quiz-option-radio"></div><span>It should use a different font</span></button>
+              <button class="quiz-option" data-value="c" onclick="selectOption(this)"><div class="quiz-option-radio"></div><span>The action itself never checked for an admin, and it can be posted to directly</span></button>
+            </div>
+            <div class="quiz-feedback"></div>
+          </div>
+
+          <div class="quiz-question-block" data-correct="b"
+               data-explanation-right="Right. Production has real students, and the switcher would let anyone become anyone, including an admin. Without the second lock, one wrong setting would expose the live site."
+               data-explanation-wrong="Think about the consequence: on the live site the switcher would let a visitor become any student or admin. That is why production refuses even when the variable is set.">
+            <h3 class="quiz-question">A teammate asks "can we just set PRETEND_COHORT=on in Vercel Production so the demo is easier?" What happens, and why is that the right behaviour?</h3>
+            <div class="quiz-options">
+              <button class="quiz-option" data-value="a" onclick="selectOption(this)"><div class="quiz-option-radio"></div><span>The switcher appears on the live site, which is fine for a demo</span></button>
+              <button class="quiz-option" data-value="b" onclick="selectOption(this)"><div class="quiz-option-radio"></div><span>Nothing changes: a second lock refuses production, so a mistaken setting cannot expose real students</span></button>
+              <button class="quiz-option" data-value="c" onclick="selectOption(this)"><div class="quiz-option-radio"></div><span>The build fails with an error</span></button>
+            </div>
+            <div class="quiz-feedback"></div>
+          </div>
+
+          <button class="quiz-check-btn" onclick="checkQuiz('quiz-module5')">Check Answers</button>
+          <button class="quiz-reset-btn" onclick="resetQuiz('quiz-module5')">Try Again</button>
+        </div>
+      </section>
+
+    </div>
+  </div>
+</section>

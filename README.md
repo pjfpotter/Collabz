@@ -1,14 +1,104 @@
 # Collabz
 
-**Tinder for Business.**
+**LinkedIn for feral genius goblins.**
 
-Team coursework project (Wave 7 bootcamp) demonstrating a professional, human-directed agentic software development lifecycle — from feature idea through to a reviewed, deployed change.
+Find people to work with by chemistry, not CVs. Collabz matches software students and business students by the way they work, not by what is on their CV. You build a profile by picking from playful lists (no typing), the app scores every pair, and the whole cohort appears as one living graph. Two people who both say yes get a private conversation.
 
-This README covers what the project is and how to get it running locally. For the full team process — OpenSpec, GitHub Issues, branching, commit format, approvals — see [`WORKFLOW.md`](./WORKFLOW.md).
+It is also the result of a bootcamp assignment: **a team of beginners learning how to build software with AI the way professionals do**, in a group, with every decision written down. This README tells both stories, the product and the learning.
 
-## What this is
+[![Watch the Collabz promo video: click to open it](docs/media/brag.jpg)](docs/media/brag.mp4)
 
-A small web app built collaboratively, with every feature tracked through the same chain: ticket → spec → approval → build → review → merge → deploy. The point of the exercise is as much about the evidenced process as the product itself.
+*Click the picture to watch the promo video (about 3 MB).*
+
+## Try it
+
+**Live site: <https://collabz-ten.vercel.app>**
+
+<img src="public/qr-live-site.png" alt="QR code for collabz-ten.vercel.app" width="180">
+
+Scan with your phone. Collabz is built phone first.
+
+You don't need an account to look around:
+
+- **[The home page](https://collabz-ten.vercel.app)** explains the idea with a short animation.
+- **[The graph demo](https://collabz-ten.vercel.app/demo/graph)** is a playable cohort graph with 40 invented people. Pick a few tags to see where *you* would sit, who your top 5 would be, and your surprise "glitch match". Nothing is saved.
+- **[The tag catalogue](https://collabz-ten.vercel.app/catalogue)** shows every list a profile is built from.
+- **[The interactive course](https://collabz-ten.vercel.app/course)** teaches how Collabz works, in plain English, one short lesson at a time.
+- **[The architecture diagram](https://collabz-ten.vercel.app/architecture.html)** is the interactive version of the picture below.
+- **[The presentation slides](https://collabz-ten.vercel.app/slides/collabz.html)** are the deck from our presentation, made to read on a phone.
+
+> **This is a student project.** Please read this before you sign up or send anything.
+>
+> - Collabz was built as coursework. It is not a company or a service, and **we do not have active admins**: nobody is watching the admin screens day to day, so reports and sign-ups may not be looked at quickly, or at all.
+> - **Bugs, questions and ideas:** [open a GitHub issue](https://github.com/pjfpotter/Collabz/issues). We will do our best to read them, but we can't promise a quick answer.
+> - **If something dodgy is going on** (someone misusing the site, a problem with your data, anything that worries you), [open a GitHub issue](https://github.com/pjfpotter/Collabz/issues) and say so. We have not published an email address on purpose, because this is a public repository.
+> - Please don't put anything sensitive on the live site. Profiles are made of picked tags and a made-up alias, and messages are the only free text, but this is a learning project, not a hardened product.
+
+## How it fits together
+
+<picture>
+  <source media="(prefers-color-scheme: dark)" srcset="docs/media/architecture-dark.png">
+  <img src="docs/media/architecture-light.png" alt="Architecture diagram. A student's phone opens the Next.js screens and API on Vercel. These call shared helpers, which ask Prisma, which queries the Neon Postgres database. Auth.js handles magic-link sign-in and sends the link through Gmail. Vercel Blob keeps private photos, GitHub deploys the app, and seed scripts fill the database.">
+</picture>
+
+*A snapshot of the system as of 16 October 2026, shown in your GitHub theme (there is a light and a dark version). [Open the interactive diagram](https://collabz-ten.vercel.app/architecture.html) to switch theme and click through it. [`ARCHITECTURE.md`](./ARCHITECTURE.md) is the plain-English description and the one that is kept up to date.*
+
+## More to explore
+
+| | |
+|---|---|
+| **The interactive course** | [collabz-ten.vercel.app/course](https://collabz-ten.vercel.app/course): how Collabz works, for beginners. (The source is in [`public/course/`](./public/course).) |
+| **The presentation slides** | [collabz-ten.vercel.app/slides/collabz.html](https://collabz-ten.vercel.app/slides/collabz.html): Tom's slides from our presentation, 16 slides. Tap or swipe, or use the arrow keys. (The source is in [`public/slides/`](./public/slides).) |
+| **How we worked** | [`WORKFLOW.md`](./WORKFLOW.md): the ticket-to-deploy chain, branching, commit format and approvals. |
+| **The paper trail** | [`openspec/changes/archive/`](./openspec/changes/archive): every change we finished, each with its proposal, design, tasks and the specs it changed. The current specs are in [`openspec/specs/`](./openspec/specs). |
+| **The design brief** | [`docs/design-brief.md`](./docs/design-brief.md): what we asked for when we gave Collabz its look. |
+
+## Our learning journey
+
+**The brief (24 September 2026).** We are the Wave 7 group on the TechNative software development bootcamp. Our coursework was the **"Bootcamp Connect" brief**: a platform that connects software developers with business students. The goal of the course was not only to ship something. It was to learn how to work with AI **professionally, as a group**: every feature a ticket, then a spec, an approval, a build, a review and a deploy, with a human owning each decision. The course's own line is "own the result, don't vibecode".
+
+**The idea.** We didn't want a stock networking site. We wanted to get two kinds of people working together as equals: makers (technical or creative, good at building, bad at selling) and hustlers (business-minded, good at shipping and selling). So we ruled out a CV-and-portfolio site and went for worldview, energy and the spark between different kinds of people: a chemistry-and-serendipity matching app. We worked it out in interviews with Claude, one question at a time, and we made two firm calls early: **not a CV site**, and **vision before scope** (the full idea first, then cut it down).
+
+**The MVP (25 September).** In a second session we turned that into something buildable in four weeks:
+
+- onboarding with pick-from-list exercises and **no free text**, so nobody faces an empty box
+- matching from three parts, **complement, overlap and tension**, plus a random **glitch match** for serendipity
+- an Obsidian-style **graph** where everyone sees the whole cohort, with connection requests only to your own top 5
+- project nodes joining the graph, parked for later
+
+**How we organised ourselves.** Before writing code we set up the way of working: [`README.md`](./README.md), [`WORKFLOW.md`](./WORKFLOW.md), [`CLAUDE.md`](./CLAUDE.md) (instructions for the AI) and [`ARCHITECTURE.md`](./ARCHITECTURE.md), a chain of **OpenSpec → GitHub Issues → Claude Code**, and a **GitHub Projects kanban board** to manage the work. Every feature got one name that follows it from issue to branch to spec to pull request. We planned for five people building in parallel tracks, and made that safe with a **foundation** step first: every database table up front, a cohort of pretend students to build against, and a few **shared helpers** that tracks call instead of reaching into each other's code.
+
+**What changed on the way.**
+
+- **Messaging.** The first MVP plan was "request, approve, then reveal contact details", with no chat. We switched to **in-app messaging**, mainly because the course brief required messaging, and it has a bonus: nobody has to hand out an email address.
+- **The look.** We wrote a design brief, then gave every screen a proper visual identity, built from named design tokens so that the whole app has a **light and a dark mode** from one set of colours.
+- **The group.** Walied and Koulla were part of the group in the early weeks and then left. Thank you to both for the time you gave. The slices below were built by the three of us who carried on.
+
+**What we learned.**
+
+- **OpenSpec worked brilliantly, almost too well.** Writing the spec first, getting it approved, then building to it kept a big plan understandable, and meant the AI built what we had agreed rather than what it guessed. By the end, though, we were running an enormous suite of tests on every commit, and it slowed us down. "Test less?" is the third lesson on Tom's slide. We learned to be more deliberate about *when* to run the full suites and to run only what a change needs while building.
+- **A simpler approval flow.** One of the three lessons on Tom's "Lessons learnt" slide. Our chain has a team sign-off on every proposal before any code is written (see [`WORKFLOW.md`](./WORKFLOW.md)), and the lesson we took is that the approval step could be simpler.
+- **Start with free solutions.** Another of Tom's three. We sent sign-in emails through a free Gmail account because a proper email service needs a domain of our own, and the free tiers of Vercel and Neon carried the rest. Starting free meant nothing blocked us waiting for money or a domain.
+- **Pretend data unblocks everyone.** A fixed cohort of invented students meant every track could build and test without waiting for sign-up or matching to exist.
+- **Put the rules in one place.** Rules such as "who may be sent a request" and "who may see a photo" live in small tested helpers, not in buttons or pages, so they still hold when something calls them directly.
+- **Tests against a real database find real problems**, and a database that three people share needs good manners (see "Running the tests" below).
+- **Write it down for the next person.** Every decision has a one-line reason, in a comment or a commit, so nobody has to ask "why did we do it this way?"
+
+**By the numbers (as of 16 October 2026).** 214 commits, 13 finished changes in the paper trail, 15 specs, and a live site on Vercel with its data in Neon.
+
+### Who built what
+
+| Who | GitHub | What they built |
+|---|---|---|
+| **Patrick Potter** | [@pjfpotter](https://github.com/pjfpotter) | The foundation (tables, pretend cohort, dev sign-in, shared helpers), chemistry matching, the cohort graph and people search, connection requests, messaging, the admin screens, safety (report and block), the home page and the graph demo, and the visual design |
+| **Tom** | [@t-j-harrington](https://github.com/t-j-harrington) | Sign-up and sign-in by magic link, and the account page with photos |
+| **Marvin** | [@Entr0zy](https://github.com/Entr0zy) | Onboarding: the pick-from-list profile, the alias and the silhouette |
+
+## For developers
+
+Everything below is the working manual for the people building Collabz: how to run it, test it, deploy it, and how each part works.
+
+For the full team process (OpenSpec, GitHub Issues, branching, commit format, approvals) see [`WORKFLOW.md`](./WORKFLOW.md).
 
 ## Prerequisites
 
