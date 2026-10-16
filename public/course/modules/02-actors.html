@@ -1,0 +1,192 @@
+<section class="module" id="module-2" style="background: var(--color-bg-warm)">
+  <div class="module-content">
+    <header class="module-header animate-in">
+      <span class="module-number">02</span>
+      <h1 class="module-title">Meet the Actors</h1>
+      <p class="module-subtitle">Know who does what, so you can tell your AI "put this logic there, not there".</p>
+    </header>
+
+    <div class="module-body">
+
+      <!-- SCREEN 1: the cast -->
+      <section class="screen animate-in">
+        <h2 class="screen-heading">Five characters run the show</h2>
+        <p>Think of a theatre company. Each member has one job, and the show only works because nobody does someone else's.</p>
+
+        <div class="icon-rows stagger-children">
+          <div class="icon-row">
+            <div class="icon-circle" style="background: var(--color-actor-1)">🖥️</div>
+            <div><strong><span class="term" data-definition="A framework is a toolkit that decides the shape of your project. Next.js gives you pages, routes and server code in one place, so you do not wire them up yourself.">Next.js</span> app</strong><p>The screens and the server code, in one codebase with one <span class="term" data-definition="To deploy is to publish a new version of the app so people can use it. Here, pushing code to GitHub makes Vercel do this automatically.">deploy</span>.</p></div>
+          </div>
+          <div class="icon-row">
+            <div class="icon-circle" style="background: var(--color-actor-2)">🔌</div>
+            <div><strong><span class="term" data-definition="Prisma is a translator between your TypeScript code and the database. You describe tables once in schema.prisma, and it gives you safe functions to read and write them.">Prisma</span></strong><p>The translator. Code says "find this user", Prisma speaks database.</p></div>
+          </div>
+          <div class="icon-row">
+            <div class="icon-circle" style="background: var(--color-actor-3)">🗄️</div>
+            <div><strong><span class="term" data-definition="Postgres is a very popular database. Neon hosts it for you in the cloud, so there is no database server for the team to look after.">Neon Postgres</span></strong><p>The filing cabinet. Every person, tag, score and message lives here.</p></div>
+          </div>
+          <div class="icon-row">
+            <div class="icon-circle" style="background: var(--color-actor-4)">🔑</div>
+            <div><strong>Auth.js</strong><p>The doorman. Checks magic links and keeps you signed in.</p></div>
+          </div>
+          <div class="icon-row">
+            <div class="icon-circle" style="background: var(--color-actor-5)">🚀</div>
+            <div><strong>Vercel</strong><p>The venue. Runs the app and gives every pull request its own preview address.</p></div>
+          </div>
+        </div>
+      </section>
+
+      <!-- SCREEN 2: file tree -->
+      <section class="screen animate-in">
+        <h2 class="screen-heading">The folders tell the same story</h2>
+        <p>You can read the architecture from the folder names alone. This is why the team keeps functions small and well named.</p>
+
+        <div class="file-tree">
+          <div class="ft-folder open">
+            <span class="ft-name">src/app/</span><span class="ft-desc">Pages. One folder per address: /matches, /graph, /messages.</span>
+            <div class="ft-children">
+              <div class="ft-folder"><span class="ft-name">api/</span><span class="ft-desc">Addresses that return data, not pages. For example sending a message.</span></div>
+              <div class="ft-folder"><span class="ft-name">admin/</span><span class="ft-desc">Pages only admins can open.</span></div>
+            </div>
+          </div>
+          <div class="ft-folder"><span class="ft-name">src/components/</span><span class="ft-desc">Reusable pieces: NavBar, TagChip, PersonCard.</span></div>
+          <div class="ft-folder open">
+            <span class="ft-name">src/lib/</span><span class="ft-desc">The rules. Plain functions with no screen in them.</span>
+            <div class="ft-children">
+              <div class="ft-folder"><span class="ft-name">matching/</span><span class="ft-desc">Scores, top 5, glitch match.</span></div>
+              <div class="ft-folder"><span class="ft-name">requests/</span><span class="ft-desc">Sending and answering connection requests.</span></div>
+              <div class="ft-folder"><span class="ft-name">messages/</span><span class="ft-desc">Sending and reading messages.</span></div>
+              <div class="ft-folder"><span class="ft-name">admin/, safety/, account/</span><span class="ft-desc">One folder per capability.</span></div>
+            </div>
+          </div>
+          <div class="ft-folder"><span class="ft-name">prisma/</span><span class="ft-desc">The schema, the seed data and the pretend cohort.</span></div>
+          <div class="ft-folder"><span class="ft-name">openspec/</span><span class="ft-desc">The written specs and every change proposal. The source of truth.</span></div>
+        </div>
+
+        <div class="callout callout-accent">
+          <div class="callout-icon">💡</div>
+          <div class="callout-content">
+            <strong class="callout-title">Separation of concerns</strong>
+            <p>Pages draw, <code>lib</code> decides, the database remembers. Engineers call this <em>separation of concerns</em>. When you ask AI for a new rule, say "in lib", not "in the page".</p>
+          </div>
+        </div>
+      </section>
+
+      <!-- SCREEN 3: group chat -->
+      <section class="screen animate-in">
+        <h2 class="screen-heading">The group chat: signing in</h2>
+        <p>Here is the sign-in conversation, as if the actors were texting each other. Press <strong>Next Message</strong>.</p>
+
+        <div class="chat-window" id="chat-module2">
+          <div class="chat-messages">
+            <div class="chat-message" data-msg="0" data-sender="browser" style="display:none">
+              <div class="chat-avatar" style="background: var(--color-actor-1)">Y</div>
+              <div class="chat-bubble"><span class="chat-sender" style="color: var(--color-actor-1)">You</span><p>Hi, I'm sam@example.com. Can I come in?</p></div>
+            </div>
+            <div class="chat-message" data-msg="1" data-sender="auth" style="display:none">
+              <div class="chat-avatar" style="background: var(--color-actor-4)">A</div>
+              <div class="chat-bubble"><span class="chat-sender" style="color: var(--color-actor-4)">Auth.js</span><p>No password needed. I'm generating a one-time link and a <span class="term" data-definition="A token is a long random string used as a one-time key. The magic link carries one, and it stops working once used or expired.">token</span> that expires.</p></div>
+            </div>
+            <div class="chat-message" data-msg="2" data-sender="gmail" style="display:none">
+              <div class="chat-avatar" style="background: var(--color-actor-5)">G</div>
+              <div class="chat-bubble"><span class="chat-sender" style="color: var(--color-actor-5)">Gmail</span><p>Delivered to the inbox. Subject line, short wording, one retry if I'd said "try again later".</p></div>
+            </div>
+            <div class="chat-message" data-msg="3" data-sender="browser" style="display:none">
+              <div class="chat-avatar" style="background: var(--color-actor-1)">Y</div>
+              <div class="chat-bubble"><span class="chat-sender" style="color: var(--color-actor-1)">You</span><p>Tapped it!</p></div>
+            </div>
+            <div class="chat-message" data-msg="4" data-sender="auth" style="display:none">
+              <div class="chat-avatar" style="background: var(--color-actor-4)">A</div>
+              <div class="chat-bubble"><span class="chat-sender" style="color: var(--color-actor-4)">Auth.js</span><p>Token checked and used up. Neon, please store a Session row for this person.</p></div>
+            </div>
+            <div class="chat-message" data-msg="5" data-sender="db" style="display:none">
+              <div class="chat-avatar" style="background: var(--color-actor-3)">N</div>
+              <div class="chat-bubble"><span class="chat-sender" style="color: var(--color-actor-3)">Neon</span><p>Saved. <span class="term" data-definition="A session is the app remembering that you are signed in. In Collabz it is a row in a database table, so removing the row signs you out immediately.">Sessions</span> are rows, so a suspension takes effect on the very next page.</p></div>
+            </div>
+          </div>
+
+          <div class="chat-typing" id="chat-typing" style="display:none">
+            <div class="chat-avatar" id="chat-module2-typing-avatar">?</div>
+            <div class="chat-typing-dots"><span class="typing-dot"></span><span class="typing-dot"></span><span class="typing-dot"></span></div>
+          </div>
+
+          <div class="chat-controls">
+            <button class="btn btn-primary chat-next-btn">Next Message</button>
+            <button class="btn chat-all-btn">Play All</button>
+            <button class="btn chat-reset-btn">Replay</button>
+            <span class="chat-progress"></span>
+          </div>
+        </div>
+      </section>
+
+      <!-- SCREEN 4: schema code -->
+      <section class="screen animate-in">
+        <h2 class="screen-heading">The filing cabinet, one drawer</h2>
+        <p>This is the real <code>GlitchMatch</code> table from <code>prisma/schema.prisma</code>. Each person gets exactly one random surprise match.</p>
+
+        <div class="translation-block animate-in">
+          <div class="translation-code">
+            <span class="translation-label">CODE</span>
+            <pre><code><span class="code-line"><span class="code-keyword">model</span> GlitchMatch {</span>
+<span class="code-line">  userId        String @id</span>
+<span class="code-line">  user          User   @relation(<span class="code-string">"GlitchMatchOwner"</span>, fields: [userId], references: [id])</span>
+<span class="code-line">  matchedUserId String</span>
+<span class="code-line">  matchedUser   User   @relation(<span class="code-string">"GlitchMatchTarget"</span>, fields: [matchedUserId], references: [id])</span>
+<span class="code-line"></span>
+<span class="code-line">  @@index([matchedUserId])</span>
+<span class="code-line">}</span></code></pre>
+          </div>
+          <div class="translation-english">
+            <span class="translation-label">PLAIN ENGLISH</span>
+            <div class="translation-lines">
+              <p class="tl">A table called GlitchMatch. Each <span class="term" data-definition="A row is one record in a database table, like one line in a spreadsheet. A table is the whole sheet.">row</span> is one person's surprise.</p>
+              <p class="tl">The owner's id is the row's id. So one person can only have one row: "one glitch match each" is enforced by the database itself.</p>
+              <p class="tl">A <span class="term" data-definition="In Prisma this is called a relation. It connects a row in one table to a row in another, so the database knows which person an id belongs to.">link</span> from that id to the real person in the User table.</p>
+              <p class="tl">The id of the person they were matched with, and a link to that person too.</p>
+              <p class="tl">Make it quick to look up "who is somebody else's surprise".</p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- SCREEN 5: DnD + quiz -->
+      <section class="screen animate-in">
+        <h2 class="screen-heading">Match the actor to the job</h2>
+        <div class="dnd-container" id="dnd-module2">
+          <div class="dnd-chips">
+            <div class="dnd-chip" draggable="true" data-answer="prisma">Prisma</div>
+            <div class="dnd-chip" draggable="true" data-answer="neon">Neon</div>
+            <div class="dnd-chip" draggable="true" data-answer="vercel">Vercel</div>
+            <div class="dnd-chip" draggable="true" data-answer="authjs">Auth.js</div>
+          </div>
+          <div class="dnd-zones">
+            <div class="dnd-zone" data-correct="neon"><p class="dnd-zone-label">Stores the scores, requests and messages permanently</p><div class="dnd-zone-target">Drop here</div></div>
+            <div class="dnd-zone" data-correct="prisma"><p class="dnd-zone-label">Turns "find this user" in code into a database question</p><div class="dnd-zone-target">Drop here</div></div>
+            <div class="dnd-zone" data-correct="authjs"><p class="dnd-zone-label">Checks the magic link and creates the session</p><div class="dnd-zone-target">Drop here</div></div>
+            <div class="dnd-zone" data-correct="vercel"><p class="dnd-zone-label">Runs the app and builds a preview for every pull request</p><div class="dnd-zone-target">Drop here</div></div>
+          </div>
+          <button class="btn btn-primary" onclick="checkDnD('dnd-module2')">Check Matches</button>
+          <button class="btn" onclick="resetDnD('dnd-module2')">Reset</button>
+        </div>
+
+        <div class="quiz-container" id="quiz-module2">
+          <div class="quiz-question-block" data-correct="c"
+               data-explanation-right="Yes. A rule about who may connect belongs in lib, next to the other rules, so every page and route that needs it asks the same function."
+               data-explanation-wrong="Close, but pages should only draw. If the rule lived in a page, a different page or an API route could skip it. Rules go in lib.">
+            <h3 class="quiz-question">You want a new rule: "nobody can send more than 10 connection requests a day". Where should it live?</h3>
+            <div class="quiz-options">
+              <button class="quiz-option" data-value="a" onclick="selectOption(this)"><div class="quiz-option-radio"></div><span>Inside the Connect button component</span></button>
+              <button class="quiz-option" data-value="b" onclick="selectOption(this)"><div class="quiz-option-radio"></div><span>In the /requests page, which lists requests</span></button>
+              <button class="quiz-option" data-value="c" onclick="selectOption(this)"><div class="quiz-option-radio"></div><span>In a function under src/lib/requests, which the route calls</span></button>
+            </div>
+            <div class="quiz-feedback"></div>
+          </div>
+          <button class="quiz-check-btn" onclick="checkQuiz('quiz-module2')">Check Answers</button>
+          <button class="quiz-reset-btn" onclick="resetQuiz('quiz-module2')">Try Again</button>
+        </div>
+      </section>
+
+    </div>
+  </div>
+</section>

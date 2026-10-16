@@ -1,0 +1,257 @@
+{
+  "schema_version": 1,
+  "diagram_type": "architecture",
+  "meta": {
+    "title": "How Collabz Fits Together",
+    "output": ".archify/architecture-collabz-beginner-20261016-111744/collabz-beginner.html",
+    "quality_profile": "showcase"
+  },
+  "components": [
+    {
+      "id": "student",
+      "type": "external",
+      "label": "A student",
+      "sublabel": "phone, via QR code",
+      "icon": "person",
+      "pos": [
+        40,
+        170
+      ],
+      "size": [
+        130,
+        64
+      ]
+    },
+    {
+      "id": "app",
+      "type": "frontend",
+      "label": "Screens + API",
+      "sublabel": "Next.js on Vercel",
+      "pos": [
+        270,
+        170
+      ],
+      "size": [
+        130,
+        64
+      ],
+      "tag": "src/app"
+    },
+    {
+      "id": "helpers",
+      "type": "backend",
+      "label": "Shared helpers",
+      "sublabel": "rules live here",
+      "pos": [
+        500,
+        170
+      ],
+      "size": [
+        130,
+        64
+      ],
+      "tag": "src/lib"
+    },
+    {
+      "id": "prisma",
+      "type": "backend",
+      "label": "Prisma",
+      "sublabel": "talks to the DB",
+      "pos": [
+        730,
+        170
+      ],
+      "size": [
+        130,
+        64
+      ]
+    },
+    {
+      "id": "neon",
+      "type": "database",
+      "label": "Neon Postgres",
+      "sublabel": "all 17 tables",
+      "pos": [
+        960,
+        170
+      ],
+      "size": [
+        130,
+        64
+      ]
+    },
+    {
+      "id": "gmail",
+      "type": "external",
+      "label": "Gmail",
+      "sublabel": "sends sign-in links",
+      "pos": [
+        270,
+        20
+      ],
+      "size": [
+        130,
+        64
+      ]
+    },
+    {
+      "id": "auth",
+      "type": "security",
+      "label": "Auth.js",
+      "sublabel": "magic-link sign-in",
+      "pos": [
+        500,
+        20
+      ],
+      "size": [
+        130,
+        64
+      ],
+      "tag": "no passwords"
+    },
+    {
+      "id": "github",
+      "type": "external",
+      "label": "GitHub",
+      "sublabel": "our code lives here",
+      "pos": [
+        270,
+        320
+      ],
+      "size": [
+        130,
+        64
+      ]
+    },
+    {
+      "id": "blob",
+      "type": "cloud",
+      "label": "Vercel Blob",
+      "sublabel": "private photos",
+      "pos": [
+        500,
+        320
+      ],
+      "size": [
+        130,
+        64
+      ]
+    },
+    {
+      "id": "seed",
+      "type": "backend",
+      "label": "Seed scripts",
+      "sublabel": "tags + pretend cohort",
+      "pos": [
+        730,
+        320
+      ],
+      "size": [
+        130,
+        64
+      ]
+    }
+  ],
+  "connections": [
+    {
+      "id": "student-to-app",
+      "from": "student",
+      "to": "app",
+      "label": "opens",
+      "variant": "emphasis"
+    },
+    {
+      "id": "app-to-helpers",
+      "from": "app",
+      "to": "helpers",
+      "label": "calls",
+      "variant": "emphasis"
+    },
+    {
+      "id": "helpers-to-prisma",
+      "from": "helpers",
+      "to": "prisma",
+      "label": "queries",
+      "variant": "emphasis"
+    },
+    {
+      "id": "prisma-to-neon",
+      "from": "prisma",
+      "to": "neon",
+      "label": "SQL",
+      "variant": "emphasis"
+    },
+    {
+      "id": "helpers-to-auth",
+      "from": "helpers",
+      "to": "auth",
+      "label": "who is signed in?",
+      "variant": "security",
+      "fromSide": "top",
+      "toSide": "bottom"
+    },
+    {
+      "id": "auth-to-gmail",
+      "from": "auth",
+      "to": "gmail",
+      "label": "magic link",
+      "variant": "security"
+    },
+    {
+      "id": "helpers-to-blob",
+      "from": "helpers",
+      "to": "blob",
+      "label": "photos",
+      "variant": "dashed",
+      "fromSide": "bottom",
+      "toSide": "top"
+    },
+    {
+      "id": "github-to-app",
+      "from": "github",
+      "to": "app",
+      "label": "deploys",
+      "variant": "dashed",
+      "fromSide": "top",
+      "toSide": "bottom"
+    },
+    {
+      "id": "seed-to-prisma",
+      "from": "seed",
+      "to": "prisma",
+      "label": "fills",
+      "variant": "dashed",
+      "fromSide": "top",
+      "toSide": "bottom"
+    }
+  ],
+  "cards": [
+    {
+      "dot": "cyan",
+      "title": "The main road",
+      "items": [
+        "A student opens a page on their phone",
+        "The page calls a shared helper",
+        "The helper asks Prisma, Prisma asks Neon"
+      ]
+    },
+    {
+      "dot": "emerald",
+      "title": "Why shared helpers?",
+      "items": [
+        "Rules like who may connect live in one place",
+        "Each team track calls helpers, never another track's insides",
+        "So the rules hold even if something calls them directly"
+      ]
+    },
+    {
+      "dot": "rose",
+      "title": "Safety",
+      "items": [
+        "No passwords: sign in by emailed magic link",
+        "Photos sit in private storage behind a permission check",
+        "Pretend cohort never runs in production"
+      ]
+    }
+  ]
+}

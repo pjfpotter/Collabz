@@ -1,0 +1,998 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>How Collabz Works</title>
+
+  <!-- Google Fonts: Bricolage Grotesque · DM Sans · JetBrains Mono -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,400;12..96,600;12..96,700;12..96,800&family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700;1,9..40,400;1,9..40,500&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+
+  <link rel="stylesheet" href="styles.css">
+
+  <!--
+    CUSTOMIZE PER COURSE — change only the three accent variables below.
+    Options:
+      vermillion  #D94F30 / #C4432A / #FDEEE9 / #E8836C  (default)
+      coral       #E06B56 / #C85A47 / #FDECEA / #E89585
+      teal        #2A7B9B / #1F6280 / #E4F2F7 / #5A9DB8
+      amber       #D4A843 / #BF9530 / #FDF5E0 / #E0C070
+      forest      #2D8B55 / #226B41 / #E8F5EE / #5AAD7A
+  -->
+  <style>
+    :root {
+      --color-accent:       #2A7B9B;
+      --color-accent-hover: #1F6280;
+      --color-accent-light: #E4F2F7;
+      --color-accent-muted: #5A9DB8;
+    }
+  </style>
+
+  <script src="main.js" defer></script>
+</head>
+<body>
+
+  <nav class="nav" id="nav">
+    <div class="progress-bar" id="progress-bar" role="progressbar" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100"></div>
+    <div class="nav-inner">
+      <span class="nav-title">How Collabz Works</span>
+      <div class="nav-dots" id="nav-dots" role="tablist">
+        <!--
+          One <button> per module. Replace MODULE_N_NAME with the actual module title.
+
+          <button class="nav-dot" data-target="module-1" data-tooltip="MODULE_1_NAME" role="tab" aria-label="Module 1: MODULE_1_NAME"></button>
+          <button class="nav-dot" data-target="module-2" data-tooltip="MODULE_2_NAME" role="tab" aria-label="Module 2: MODULE_2_NAME"></button>
+          ...
+        -->
+                <button class="nav-dot" data-target="module-1" data-tooltip="What Collabz does" role="tab" aria-label="Module 1: What Collabz does"></button>
+        <button class="nav-dot" data-target="module-2" data-tooltip="Meet the actors" role="tab" aria-label="Module 2: Meet the actors"></button>
+        <button class="nav-dot" data-target="module-3" data-tooltip="The chemistry formula" role="tab" aria-label="Module 3: The chemistry formula"></button>
+        <button class="nav-dot" data-target="module-4" data-tooltip="One place for every rule" role="tab" aria-label="Module 4: One place for every rule"></button>
+        <button class="nav-dot" data-target="module-5" data-tooltip="Safe by default" role="tab" aria-label="Module 5: Safe by default"></button>
+        <button class="nav-dot" data-target="module-6" data-tooltip="Steering the build" role="tab" aria-label="Module 6: Steering the build"></button>
+      </div>
+    </div>
+  </nav>
+
+  <main id="main">
+    <!-- modules/*.html content is assembled here by build.sh -->
+<section class="module" id="module-1" style="background: var(--color-bg)">
+  <div class="module-content">
+    <header class="module-header animate-in">
+      <span class="module-number">01</span>
+      <h1 class="module-title">What Collabz Does</h1>
+      <p class="module-subtitle">You tap "Matches". Here is everything that happens before the page appears.</p>
+    </header>
+
+    <div class="module-body">
+
+      <!-- SCREEN 1: the product -->
+      <section class="screen animate-in">
+        <h2 class="screen-heading">A matchmaker for bootcamp students</h2>
+        <p>Collabz pairs software students with business students by <span class="term" data-definition="In Collabz, chemistry means a calculated score for how well two people complement each other. It is based on the tags they picked, not on CVs."><strong>chemistry</strong></span>, not by CVs. Everybody picks tags from fixed lists, the app scores every pair, and the best fits get to talk.</p>
+
+        <div class="step-cards stagger-children">
+          <div class="step-card">
+            <div class="step-num">1</div>
+            <div class="step-body"><strong>Scan a QR code and sign up</strong><p>No password. A <span class="term" data-definition="A link emailed to you that signs you in when you open it. It replaces a password: whoever can open your inbox can sign in.">magic link</span> arrives in your inbox.</p></div>
+          </div>
+          <div class="step-card">
+            <div class="step-num">2</div>
+            <div class="step-body"><strong>Pick tags, never type</strong><p>Hero story, energy, qualities, what you are seeking. The app builds your alias, like "The Calm Captain".</p></div>
+          </div>
+          <div class="step-card">
+            <div class="step-num">3</div>
+            <div class="step-body"><strong>See your top 5 and one surprise</strong><p>A chemistry score ranks everyone. A random "glitch match" is added on purpose.</p></div>
+          </div>
+          <div class="step-card">
+            <div class="step-num">4</div>
+            <div class="step-body"><strong>Both say yes, then talk</strong><p>A connection request must be approved before a private conversation opens.</p></div>
+          </div>
+        </div>
+      </section>
+
+      <!-- SCREEN 2: the trace -->
+      <section class="screen animate-in">
+        <h2 class="screen-heading">Trace one tap: opening <code>/matches</code></h2>
+        <p>Think of the web like a <strong>mail-order catalogue</strong>. Your browser fills in an order form, a warehouse picks the items, and a parcel comes back already packed. Step through the order:</p>
+
+        <div class="flow-animation" data-steps='[
+          {"highlight":"flow-actor-1","label":"You tap Matches in the nav bar. The browser asks for the address /matches."},
+          {"highlight":"flow-actor-2","label":"The request travels to the server that Vercel runs. Next.js finds the page file for /matches.","packet":true,"from":"actor-1","to":"actor-2"},
+          {"highlight":"flow-actor-2","label":"The page asks getCurrentUser: who is this? No finished profile means a redirect to onboarding."},
+          {"highlight":"flow-actor-3","label":"The page calls getMatchesPage, which ranks your scores and picks your glitch match.","packet":true,"from":"actor-2","to":"actor-3"},
+          {"highlight":"flow-actor-4","label":"Prisma asks the Neon database for your stored scores and the people behind them.","packet":true,"from":"actor-3","to":"actor-4"},
+          {"highlight":"flow-actor-1","label":"The finished HTML comes back to your browser. Aliases and silhouettes only, never an email.","packet":true,"from":"actor-2","to":"actor-1"}
+        ]'>
+          <div class="flow-actors">
+            <div class="flow-actor" id="flow-actor-1"><div class="flow-actor-icon">B</div><span>Your browser</span></div>
+            <div class="flow-actor" id="flow-actor-2"><div class="flow-actor-icon">N</div><span>Next.js page</span></div>
+            <div class="flow-actor" id="flow-actor-3"><div class="flow-actor-icon">H</div><span>Matching helper</span></div>
+            <div class="flow-actor" id="flow-actor-4"><div class="flow-actor-icon">DB</div><span>Neon database</span></div>
+          </div>
+          <div class="flow-packet" id="flow-packet"></div>
+          <div class="flow-step-label" id="flow-label">Click "Next Step" to begin</div>
+          <div class="flow-controls">
+            <button class="btn btn-primary flow-next-btn">Next Step</button>
+            <button class="btn flow-reset-btn">Restart</button>
+            <span class="flow-progress"></span>
+          </div>
+        </div>
+
+        <div class="callout callout-accent">
+          <div class="callout-icon">💡</div>
+          <div class="callout-content">
+            <strong class="callout-title">The server builds the page</strong>
+            <p>This is a <span class="term" data-definition="A page that is built on the server before it is sent. The browser receives finished HTML, so it never sees the database or the rules used to build it.">Server Component</span>. Nothing secret is sent to your phone, only the result. That is why Collabz can promise the browser never receives anyone's email.</p>
+          </div>
+        </div>
+      </section>
+
+      <!-- SCREEN 3: code -->
+      <section class="screen animate-in">
+        <h2 class="screen-heading">The real page, in plain English</h2>
+        <p>This is the actual start of <code>src/app/matches/page.tsx</code>. Four lines do the whole job.</p>
+
+        <div class="translation-block animate-in">
+          <div class="translation-code">
+            <span class="translation-label">CODE</span>
+            <pre><code><span class="code-line">  <span class="code-keyword">const</span> viewer = <span class="code-keyword">await</span> <span class="code-function">requireFinishedProfile</span>();</span>
+<span class="code-line"></span>
+<span class="code-line">  <span class="code-keyword">const</span> { topFive, glitch } = <span class="code-keyword">await</span> <span class="code-function">getMatchesPage</span>(viewer.id);</span></code></pre>
+          </div>
+          <div class="translation-english">
+            <span class="translation-label">PLAIN ENGLISH</span>
+            <div class="translation-lines">
+              <p class="tl">Find out who is looking. If nobody is signed in, or their profile is unfinished, this line sends them elsewhere and the page stops here.</p>
+              <p class="tl">Ask the matching helper for this person's five best fits and their one surprise. The page does not calculate anything itself.</p>
+            </div>
+          </div>
+        </div>
+
+        <p>Notice what is <em>missing</em>: no <span class="term" data-definition="A database query is a question your code asks the database, such as: find all scores for this person. Code that talks to the database is normally kept out of pages and put in helper functions.">database query</span> and no scoring maths. The page only asks and draws. We will see why in module 4.</p>
+      </section>
+
+      <!-- SCREEN 4: quiz -->
+      <section class="screen animate-in">
+        <h2 class="screen-heading">Check your intuition</h2>
+        <div class="quiz-container" id="quiz-module1">
+          <div class="quiz-question-block" data-correct="b"
+               data-explanation-right="Exactly. The page asks getMatchesPage, which reads scores through Prisma. The fix belongs where the ranking lives, not in the page."
+               data-explanation-wrong="Not quite. The page file only asks for matches and draws them. The ranking is decided in the matching helper, so that is where an ordering bug would live.">
+            <h3 class="quiz-question">The top 5 on /matches shows someone with a lower score above someone with a higher one. Where do you point your AI assistant first?</h3>
+            <div class="quiz-options">
+              <button class="quiz-option" data-value="a" onclick="selectOption(this)"><div class="quiz-option-radio"></div><span>The MatchCard component that draws each card</span></button>
+              <button class="quiz-option" data-value="b" onclick="selectOption(this)"><div class="quiz-option-radio"></div><span>The matching helpers the page calls, where the ranking is decided</span></button>
+              <button class="quiz-option" data-value="c" onclick="selectOption(this)"><div class="quiz-option-radio"></div><span>The nav bar, because it links to /matches</span></button>
+            </div>
+            <div class="quiz-feedback"></div>
+          </div>
+
+          <div class="quiz-question-block" data-correct="a"
+               data-explanation-right="Right. A browser asks for a page and receives HTML. Whatever is in that HTML can be seen by anyone, so secrets must never be put into it."
+               data-explanation-wrong="Think about what a browser receives: finished HTML. Anything placed in it, even hidden, can be read by the person holding the phone.">
+            <h3 class="quiz-question">You want /matches to also show each person's email "just for admins". Why is hiding it with CSS not good enough?</h3>
+            <div class="quiz-options">
+              <button class="quiz-option" data-value="a" onclick="selectOption(this)"><div class="quiz-option-radio"></div><span>Hidden content is still sent to the browser, so anyone can read it</span></button>
+              <button class="quiz-option" data-value="b" onclick="selectOption(this)"><div class="quiz-option-radio"></div><span>CSS cannot hide text</span></button>
+              <button class="quiz-option" data-value="c" onclick="selectOption(this)"><div class="quiz-option-radio"></div><span>Next.js forbids hiding things</span></button>
+            </div>
+            <div class="quiz-feedback"></div>
+          </div>
+
+          <button class="quiz-check-btn" onclick="checkQuiz('quiz-module1')">Check Answers</button>
+          <button class="quiz-reset-btn" onclick="resetQuiz('quiz-module1')">Try Again</button>
+        </div>
+      </section>
+
+    </div>
+  </div>
+</section>
+<section class="module" id="module-2" style="background: var(--color-bg-warm)">
+  <div class="module-content">
+    <header class="module-header animate-in">
+      <span class="module-number">02</span>
+      <h1 class="module-title">Meet the Actors</h1>
+      <p class="module-subtitle">Know who does what, so you can tell your AI "put this logic there, not there".</p>
+    </header>
+
+    <div class="module-body">
+
+      <!-- SCREEN 1: the cast -->
+      <section class="screen animate-in">
+        <h2 class="screen-heading">Five characters run the show</h2>
+        <p>Think of a theatre company. Each member has one job, and the show only works because nobody does someone else's.</p>
+
+        <div class="icon-rows stagger-children">
+          <div class="icon-row">
+            <div class="icon-circle" style="background: var(--color-actor-1)">🖥️</div>
+            <div><strong><span class="term" data-definition="A framework is a toolkit that decides the shape of your project. Next.js gives you pages, routes and server code in one place, so you do not wire them up yourself.">Next.js</span> app</strong><p>The screens and the server code, in one codebase with one <span class="term" data-definition="To deploy is to publish a new version of the app so people can use it. Here, pushing code to GitHub makes Vercel do this automatically.">deploy</span>.</p></div>
+          </div>
+          <div class="icon-row">
+            <div class="icon-circle" style="background: var(--color-actor-2)">🔌</div>
+            <div><strong><span class="term" data-definition="Prisma is a translator between your TypeScript code and the database. You describe tables once in schema.prisma, and it gives you safe functions to read and write them.">Prisma</span></strong><p>The translator. Code says "find this user", Prisma speaks database.</p></div>
+          </div>
+          <div class="icon-row">
+            <div class="icon-circle" style="background: var(--color-actor-3)">🗄️</div>
+            <div><strong><span class="term" data-definition="Postgres is a very popular database. Neon hosts it for you in the cloud, so there is no database server for the team to look after.">Neon Postgres</span></strong><p>The filing cabinet. Every person, tag, score and message lives here.</p></div>
+          </div>
+          <div class="icon-row">
+            <div class="icon-circle" style="background: var(--color-actor-4)">🔑</div>
+            <div><strong>Auth.js</strong><p>The doorman. Checks magic links and keeps you signed in.</p></div>
+          </div>
+          <div class="icon-row">
+            <div class="icon-circle" style="background: var(--color-actor-5)">🚀</div>
+            <div><strong>Vercel</strong><p>The venue. Runs the app and gives every pull request its own preview address.</p></div>
+          </div>
+        </div>
+      </section>
+
+      <!-- SCREEN 2: file tree -->
+      <section class="screen animate-in">
+        <h2 class="screen-heading">The folders tell the same story</h2>
+        <p>You can read the architecture from the folder names alone. This is why the team keeps functions small and well named.</p>
+
+        <div class="file-tree">
+          <div class="ft-folder open">
+            <span class="ft-name">src/app/</span><span class="ft-desc">Pages. One folder per address: /matches, /graph, /messages.</span>
+            <div class="ft-children">
+              <div class="ft-folder"><span class="ft-name">api/</span><span class="ft-desc">Addresses that return data, not pages. For example sending a message.</span></div>
+              <div class="ft-folder"><span class="ft-name">admin/</span><span class="ft-desc">Pages only admins can open.</span></div>
+            </div>
+          </div>
+          <div class="ft-folder"><span class="ft-name">src/components/</span><span class="ft-desc">Reusable pieces: NavBar, TagChip, PersonCard.</span></div>
+          <div class="ft-folder open">
+            <span class="ft-name">src/lib/</span><span class="ft-desc">The rules. Plain functions with no screen in them.</span>
+            <div class="ft-children">
+              <div class="ft-folder"><span class="ft-name">matching/</span><span class="ft-desc">Scores, top 5, glitch match.</span></div>
+              <div class="ft-folder"><span class="ft-name">requests/</span><span class="ft-desc">Sending and answering connection requests.</span></div>
+              <div class="ft-folder"><span class="ft-name">messages/</span><span class="ft-desc">Sending and reading messages.</span></div>
+              <div class="ft-folder"><span class="ft-name">admin/, safety/, account/</span><span class="ft-desc">One folder per capability.</span></div>
+            </div>
+          </div>
+          <div class="ft-folder"><span class="ft-name">prisma/</span><span class="ft-desc">The schema, the seed data and the pretend cohort.</span></div>
+          <div class="ft-folder"><span class="ft-name">openspec/</span><span class="ft-desc">The written specs and every change proposal. The source of truth.</span></div>
+        </div>
+
+        <div class="callout callout-accent">
+          <div class="callout-icon">💡</div>
+          <div class="callout-content">
+            <strong class="callout-title">Separation of concerns</strong>
+            <p>Pages draw, <code>lib</code> decides, the database remembers. Engineers call this <em>separation of concerns</em>. When you ask AI for a new rule, say "in lib", not "in the page".</p>
+          </div>
+        </div>
+      </section>
+
+      <!-- SCREEN 3: group chat -->
+      <section class="screen animate-in">
+        <h2 class="screen-heading">The group chat: signing in</h2>
+        <p>Here is the sign-in conversation, as if the actors were texting each other. Press <strong>Next Message</strong>.</p>
+
+        <div class="chat-window" id="chat-module2">
+          <div class="chat-messages">
+            <div class="chat-message" data-msg="0" data-sender="browser" style="display:none">
+              <div class="chat-avatar" style="background: var(--color-actor-1)">Y</div>
+              <div class="chat-bubble"><span class="chat-sender" style="color: var(--color-actor-1)">You</span><p>Hi, I'm sam@example.com. Can I come in?</p></div>
+            </div>
+            <div class="chat-message" data-msg="1" data-sender="auth" style="display:none">
+              <div class="chat-avatar" style="background: var(--color-actor-4)">A</div>
+              <div class="chat-bubble"><span class="chat-sender" style="color: var(--color-actor-4)">Auth.js</span><p>No password needed. I'm generating a one-time link and a <span class="term" data-definition="A token is a long random string used as a one-time key. The magic link carries one, and it stops working once used or expired.">token</span> that expires.</p></div>
+            </div>
+            <div class="chat-message" data-msg="2" data-sender="gmail" style="display:none">
+              <div class="chat-avatar" style="background: var(--color-actor-5)">G</div>
+              <div class="chat-bubble"><span class="chat-sender" style="color: var(--color-actor-5)">Gmail</span><p>Delivered to the inbox. Subject line, short wording, one retry if I'd said "try again later".</p></div>
+            </div>
+            <div class="chat-message" data-msg="3" data-sender="browser" style="display:none">
+              <div class="chat-avatar" style="background: var(--color-actor-1)">Y</div>
+              <div class="chat-bubble"><span class="chat-sender" style="color: var(--color-actor-1)">You</span><p>Tapped it!</p></div>
+            </div>
+            <div class="chat-message" data-msg="4" data-sender="auth" style="display:none">
+              <div class="chat-avatar" style="background: var(--color-actor-4)">A</div>
+              <div class="chat-bubble"><span class="chat-sender" style="color: var(--color-actor-4)">Auth.js</span><p>Token checked and used up. Neon, please store a Session row for this person.</p></div>
+            </div>
+            <div class="chat-message" data-msg="5" data-sender="db" style="display:none">
+              <div class="chat-avatar" style="background: var(--color-actor-3)">N</div>
+              <div class="chat-bubble"><span class="chat-sender" style="color: var(--color-actor-3)">Neon</span><p>Saved. <span class="term" data-definition="A session is the app remembering that you are signed in. In Collabz it is a row in a database table, so removing the row signs you out immediately.">Sessions</span> are rows, so a suspension takes effect on the very next page.</p></div>
+            </div>
+          </div>
+
+          <div class="chat-typing" id="chat-typing" style="display:none">
+            <div class="chat-avatar" id="chat-module2-typing-avatar">?</div>
+            <div class="chat-typing-dots"><span class="typing-dot"></span><span class="typing-dot"></span><span class="typing-dot"></span></div>
+          </div>
+
+          <div class="chat-controls">
+            <button class="btn btn-primary chat-next-btn">Next Message</button>
+            <button class="btn chat-all-btn">Play All</button>
+            <button class="btn chat-reset-btn">Replay</button>
+            <span class="chat-progress"></span>
+          </div>
+        </div>
+      </section>
+
+      <!-- SCREEN 4: schema code -->
+      <section class="screen animate-in">
+        <h2 class="screen-heading">The filing cabinet, one drawer</h2>
+        <p>This is the real <code>GlitchMatch</code> table from <code>prisma/schema.prisma</code>. Each person gets exactly one random surprise match.</p>
+
+        <div class="translation-block animate-in">
+          <div class="translation-code">
+            <span class="translation-label">CODE</span>
+            <pre><code><span class="code-line"><span class="code-keyword">model</span> GlitchMatch {</span>
+<span class="code-line">  userId        String @id</span>
+<span class="code-line">  user          User   @relation(<span class="code-string">"GlitchMatchOwner"</span>, fields: [userId], references: [id])</span>
+<span class="code-line">  matchedUserId String</span>
+<span class="code-line">  matchedUser   User   @relation(<span class="code-string">"GlitchMatchTarget"</span>, fields: [matchedUserId], references: [id])</span>
+<span class="code-line"></span>
+<span class="code-line">  @@index([matchedUserId])</span>
+<span class="code-line">}</span></code></pre>
+          </div>
+          <div class="translation-english">
+            <span class="translation-label">PLAIN ENGLISH</span>
+            <div class="translation-lines">
+              <p class="tl">A table called GlitchMatch. Each <span class="term" data-definition="A row is one record in a database table, like one line in a spreadsheet. A table is the whole sheet.">row</span> is one person's surprise.</p>
+              <p class="tl">The owner's id is the row's id. So one person can only have one row: "one glitch match each" is enforced by the database itself.</p>
+              <p class="tl">A <span class="term" data-definition="In Prisma this is called a relation. It connects a row in one table to a row in another, so the database knows which person an id belongs to.">link</span> from that id to the real person in the User table.</p>
+              <p class="tl">The id of the person they were matched with, and a link to that person too.</p>
+              <p class="tl">Make it quick to look up "who is somebody else's surprise".</p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- SCREEN 5: DnD + quiz -->
+      <section class="screen animate-in">
+        <h2 class="screen-heading">Match the actor to the job</h2>
+        <div class="dnd-container" id="dnd-module2">
+          <div class="dnd-chips">
+            <div class="dnd-chip" draggable="true" data-answer="prisma">Prisma</div>
+            <div class="dnd-chip" draggable="true" data-answer="neon">Neon</div>
+            <div class="dnd-chip" draggable="true" data-answer="vercel">Vercel</div>
+            <div class="dnd-chip" draggable="true" data-answer="authjs">Auth.js</div>
+          </div>
+          <div class="dnd-zones">
+            <div class="dnd-zone" data-correct="neon"><p class="dnd-zone-label">Stores the scores, requests and messages permanently</p><div class="dnd-zone-target">Drop here</div></div>
+            <div class="dnd-zone" data-correct="prisma"><p class="dnd-zone-label">Turns "find this user" in code into a database question</p><div class="dnd-zone-target">Drop here</div></div>
+            <div class="dnd-zone" data-correct="authjs"><p class="dnd-zone-label">Checks the magic link and creates the session</p><div class="dnd-zone-target">Drop here</div></div>
+            <div class="dnd-zone" data-correct="vercel"><p class="dnd-zone-label">Runs the app and builds a preview for every pull request</p><div class="dnd-zone-target">Drop here</div></div>
+          </div>
+          <button class="btn btn-primary" onclick="checkDnD('dnd-module2')">Check Matches</button>
+          <button class="btn" onclick="resetDnD('dnd-module2')">Reset</button>
+        </div>
+
+        <div class="quiz-container" id="quiz-module2">
+          <div class="quiz-question-block" data-correct="c"
+               data-explanation-right="Yes. A rule about who may connect belongs in lib, next to the other rules, so every page and route that needs it asks the same function."
+               data-explanation-wrong="Close, but pages should only draw. If the rule lived in a page, a different page or an API route could skip it. Rules go in lib.">
+            <h3 class="quiz-question">You want a new rule: "nobody can send more than 10 connection requests a day". Where should it live?</h3>
+            <div class="quiz-options">
+              <button class="quiz-option" data-value="a" onclick="selectOption(this)"><div class="quiz-option-radio"></div><span>Inside the Connect button component</span></button>
+              <button class="quiz-option" data-value="b" onclick="selectOption(this)"><div class="quiz-option-radio"></div><span>In the /requests page, which lists requests</span></button>
+              <button class="quiz-option" data-value="c" onclick="selectOption(this)"><div class="quiz-option-radio"></div><span>In a function under src/lib/requests, which the route calls</span></button>
+            </div>
+            <div class="quiz-feedback"></div>
+          </div>
+          <button class="quiz-check-btn" onclick="checkQuiz('quiz-module2')">Check Answers</button>
+          <button class="quiz-reset-btn" onclick="resetQuiz('quiz-module2')">Try Again</button>
+        </div>
+      </section>
+
+    </div>
+  </div>
+</section>
+<section class="module" id="module-3" style="background: var(--color-bg)">
+  <div class="module-content">
+    <header class="module-header animate-in">
+      <span class="module-number">03</span>
+      <h1 class="module-title">The Chemistry Formula</h1>
+      <p class="module-subtitle">One small function turns "two people" into a number. Learn to read it, then you can question it.</p>
+    </header>
+
+    <div class="module-body">
+
+      <!-- SCREEN 1: the idea -->
+      <section class="screen animate-in">
+        <h2 class="screen-heading">A recipe with three ingredients</h2>
+        <p>Think of a <strong>cocktail recipe</strong>: one ingredient is the base, two are only a splash. The score is one big ingredient plus two small ones.</p>
+
+        <div class="pattern-cards stagger-children">
+          <div class="pattern-card" style="border-top: 3px solid var(--color-actor-1)">
+            <div class="pattern-icon" style="background: var(--color-actor-1)">🧩</div>
+            <h4 class="pattern-title">Complement × 3</h4>
+            <p class="pattern-desc">One point for each thing you are <em>seeking</em> that the other person can <em>offer</em>, counted both ways. The main signal, hence ×3.</p>
+          </div>
+          <div class="pattern-card" style="border-top: 3px solid var(--color-actor-2)">
+            <div class="pattern-icon" style="background: var(--color-actor-2)">🎶</div>
+            <h4 class="pattern-title">Overlap</h4>
+            <p class="pattern-desc">+1 for the same Energy, +1 for the same Vibe Diagnosis. A rapport bonus.</p>
+          </div>
+          <div class="pattern-card" style="border-top: 3px solid var(--color-actor-4)">
+            <div class="pattern-icon" style="background: var(--color-actor-4)">⚡</div>
+            <h4 class="pattern-title">Tension</h4>
+            <p class="pattern-desc">+1 when your Hero Stories differ. A spark bonus.</p>
+          </div>
+        </div>
+
+        <div class="callout callout-info">
+          <div class="callout-icon">ℹ️</div>
+          <div class="callout-content">
+            <strong class="callout-title">What is NOT in the formula</strong>
+            <p>Skills, interests and course never change a score. A <span class="term" data-definition="A test is a small program that checks another piece of code still gives the right answer. If an AI edit breaks a rule, the test fails and tells you.">test</span> pins this, so no AI edit can quietly change it.</p>
+          </div>
+        </div>
+      </section>
+
+      <!-- SCREEN 2: worked example -->
+      <section class="screen animate-in">
+        <h2 class="screen-heading">Worked example: Sam and Priya</h2>
+        <div class="step-cards">
+          <div class="step-card"><div class="step-num">1</div><div class="step-body"><strong>Sam seeks a Builder, and Priya is one</strong><p>Complement: 1</p></div></div>
+          <div class="step-card"><div class="step-num">2</div><div class="step-body"><strong>Priya seeks a Storyteller, and Sam is one</strong><p>Complement: 2, so 2 × 3 = 6</p></div></div>
+          <div class="step-card"><div class="step-num">3</div><div class="step-body"><strong>Both picked the "Sea Captain" energy</strong><p>Overlap: +1</p></div></div>
+          <div class="step-card"><div class="step-num">4</div><div class="step-body"><strong>Their Hero Stories are different</strong><p>Tension: +1</p></div></div>
+        </div>
+        <p><strong>Total: 6 + 1 + 1 = 8.</strong> Swap Sam and Priya and you still get 8, because the formula looks in both directions.</p>
+      </section>
+
+      <!-- SCREEN 3: real code -->
+      <section class="screen animate-in">
+        <h2 class="screen-heading">The real function</h2>
+        <p>This is the whole of <code>calculateScore</code> from <code>src/lib/matching/score.ts</code>. Notice there is no database in it.</p>
+
+        <div class="translation-block animate-in">
+          <div class="translation-code">
+            <span class="translation-label">CODE</span>
+            <pre><code><span class="code-line"><span class="code-keyword">export function</span> <span class="code-function">calculateScore</span>(a: PersonTags, b: PersonTags, pairings: Pairing[]): ScoreResult {</span>
+<span class="code-line">  <span class="code-keyword">const</span> complement =</span>
+<span class="code-line">    <span class="code-function">findSatisfiedSeekingTags</span>(a, b, pairings).length +</span>
+<span class="code-line">    <span class="code-function">findSatisfiedSeekingTags</span>(b, a, pairings).length;</span>
+<span class="code-line"></span>
+<span class="code-line">  <span class="code-keyword">const</span> sharedEnergy = <span class="code-function">findSharedTagIds</span>(a.energy, b.energy).length &gt; <span class="code-number">0</span> ? <span class="code-number">1</span> : <span class="code-number">0</span>;</span>
+<span class="code-line">  <span class="code-keyword">const</span> sharedVibe = <span class="code-function">findSharedTagIds</span>(a.vibeDiagnosis, b.vibeDiagnosis).length &gt; <span class="code-number">0</span> ? <span class="code-number">1</span> : <span class="code-number">0</span>;</span>
+<span class="code-line">  <span class="code-keyword">const</span> overlap = sharedEnergy + sharedVibe;</span>
+<span class="code-line"></span>
+<span class="code-line">  <span class="code-keyword">const</span> tension = <span class="code-function">heroStoriesDiffer</span>(a, b) ? <span class="code-number">1</span> : <span class="code-number">0</span>;</span>
+<span class="code-line"></span>
+<span class="code-line">  <span class="code-keyword">return</span> {</span>
+<span class="code-line">    score: complement * COMPLEMENT_WEIGHT + overlap + tension,</span>
+<span class="code-line">    complement,</span>
+<span class="code-line">    overlap,</span>
+<span class="code-line">    tension,</span>
+<span class="code-line">  };</span>
+<span class="code-line">}</span></code></pre>
+          </div>
+          <div class="translation-english">
+            <span class="translation-label">PLAIN ENGLISH</span>
+            <div class="translation-lines">
+              <p class="tl">Take two people's tags and the pairing list, and hand back a score.</p>
+              <p class="tl">Count A's wishes that B can answer, then B's wishes that A can answer, and add them. That is the complement.</p>
+              <p class="tl">Did they share an Energy? That is 1 or 0. Same question for Vibe Diagnosis.</p>
+              <p class="tl">Add the two answers together. That is the overlap.</p>
+              <p class="tl">Do their Hero Stories differ? 1 or 0. That is the tension.</p>
+              <p class="tl">Give back the total (the complement is worth 3 each), and also the three parts, so "why you match" can explain itself without recalculating.</p>
+            </div>
+          </div>
+        </div>
+
+        <div class="callout callout-accent">
+          <div class="callout-icon">💡</div>
+          <div class="callout-content">
+            <strong class="callout-title">Pure functions are easy to trust</strong>
+            <p>A <span class="term" data-definition="A function that only uses what you give it and returns an answer. It reads no database and changes nothing, so the same input always gives the same output, and a test can check it in milliseconds.">pure function</span> can be tested with a few lines and a hand-worked example. When you ask AI for logic, ask for it "as a pure function with no database".</p>
+          </div>
+        </div>
+      </section>
+
+      <!-- SCREEN 4: spot the bug -->
+      <section class="screen animate-in">
+        <h2 class="screen-heading">Spot the bug</h2>
+        <p>Imagine an AI "improves" the counting code. Here is a <strong>pretend</strong> version, not the real file. Click the line that quietly breaks fairness.</p>
+
+        <div class="bug-challenge">
+          <h3>Which line gives some tags double value?</h3>
+          <div class="bug-code">
+            <div class="bug-line" onclick="checkBugLine(this, false)" data-hint="That just loops over what the seeker asked for. Look for the line that adds to the total."><span class="line-num">1</span><code>for (const seekingTagId of seeker.seeking) {</code></div>
+            <div class="bug-line" onclick="checkBugLine(this, false)" data-hint="That is the loop over pairings. The problem is what happens inside it."><span class="line-num">2</span><code>  for (const pairing of pairings) {</code></div>
+            <div class="bug-line" onclick="checkBugLine(this, false)" data-hint="That is the right test. Look at what happens after it passes."><span class="line-num">3</span><code>    if (pairing.seekingTagId === seekingTagId &amp;&amp; providerQualities.has(pairing.qualityTagId)) {</code></div>
+            <div class="bug-line" onclick="checkBugLine(this, true)" data-explanation="The count goes up for every matching pairing. A Seeking tag with two pairings is worth double. The real code adds each satisfied tag once, into a Set, so the brief's &quot;count how many of A's Seeking tags match&quot; stays true."><span class="line-num">4</span><code>      count = count + 1;</code></div>
+          </div>
+          <div class="bug-feedback"></div>
+        </div>
+      </section>
+
+      <!-- SCREEN 5: quiz -->
+      <section class="screen animate-in">
+        <h2 class="screen-heading">Apply it</h2>
+        <div class="quiz-container" id="quiz-module3">
+          <div class="quiz-question-block" data-correct="b"
+               data-explanation-right="Exactly. Pairings are rows in the TagPairing table, so an admin edits data and then rescores. No code change, no deploy."
+               data-explanation-wrong="Not quite. Which Quality satisfies which Seeking tag is stored as data (TagPairing), so changing the matchmaking rules is a data edit followed by Rescore everyone.">
+            <h3 class="quiz-question">The cohort leads decide that "Planner" should also satisfy "Seeking a Builder". What is the least risky way to do it?</h3>
+            <div class="quiz-options">
+              <button class="quiz-option" data-value="a" onclick="selectOption(this)"><div class="quiz-option-radio"></div><span>Edit calculateScore to add a special case</span></button>
+              <button class="quiz-option" data-value="b" onclick="selectOption(this)"><div class="quiz-option-radio"></div><span>Add the pairing in the admin screen, then <span class="term" data-definition="Rescoring means recalculating and re-saving every stored score using the current rules. Scores are stored, so they only change when this runs.">rescore</span> everyone</span></button>
+              <button class="quiz-option" data-value="c" onclick="selectOption(this)"><div class="quiz-option-radio"></div><span>Change the score shown on the card</span></button>
+            </div>
+            <div class="quiz-feedback"></div>
+          </div>
+
+          <div class="quiz-question-block" data-correct="c"
+               data-explanation-right="Right. Equal scores are broken by who finished first and then by user id, so the order is identical on every page load."
+               data-explanation-wrong="A ranking with ties needs a tie-breaker. Collabz uses earliest finisher, then lower user id, so nothing depends on the order the database returns rows in.">
+            <h3 class="quiz-question">Two people both score 8 with you and you refresh /matches five times. What should you see?</h3>
+            <div class="quiz-options">
+              <button class="quiz-option" data-value="a" onclick="selectOption(this)"><div class="quiz-option-radio"></div><span>A random one first each time, to be fair</span></button>
+              <button class="quiz-option" data-value="b" onclick="selectOption(this)"><div class="quiz-option-radio"></div><span>Whichever the database returns first, which may vary</span></button>
+              <button class="quiz-option" data-value="c" onclick="selectOption(this)"><div class="quiz-option-radio"></div><span>The same order every time, decided by finishing time then id</span></button>
+            </div>
+            <div class="quiz-feedback"></div>
+          </div>
+
+          <button class="quiz-check-btn" onclick="checkQuiz('quiz-module3')">Check Answers</button>
+          <button class="quiz-reset-btn" onclick="resetQuiz('quiz-module3')">Try Again</button>
+        </div>
+      </section>
+
+    </div>
+  </div>
+</section>
+<section class="module" id="module-4" style="background: var(--color-bg-warm)">
+  <div class="module-content">
+    <header class="module-header animate-in">
+      <span class="module-number">04</span>
+      <h1 class="module-title">One Place for Every Rule</h1>
+      <p class="module-subtitle">Why hiding a button is not security, and what to do instead.</p>
+    </header>
+
+    <div class="module-body">
+
+      <!-- SCREEN 1: the idea -->
+      <section class="screen animate-in">
+        <h2 class="screen-heading">The club with one doorman</h2>
+        <p>Imagine a club with five doors, and a bouncer posted at only the front one. The side doors are the problem, not the front.</p>
+        <p>Collabz puts the <strong>bouncer inside the room</strong>. A message can come from a form, a route, a test or a script. All of them pass the same <span class="term" data-definition="A function is a named, reusable recipe of steps. Everything that wants to send a message calls this one.">function</span>.</p>
+
+        <div class="flow-steps">
+          <div class="flow-step"><div class="flow-step-num">1</div><p>Form or route</p></div>
+          <div class="flow-arrow">→</div>
+          <div class="flow-step"><div class="flow-step-num">2</div><p><code>sendMessage()</code> checks every rule</p></div>
+          <div class="flow-arrow">→</div>
+          <div class="flow-step"><div class="flow-step-num">3</div><p>Only then, the database</p></div>
+        </div>
+      </section>
+
+      <!-- SCREEN 2: flow animation -->
+      <section class="screen animate-in">
+        <h2 class="screen-heading">Follow a message being sent</h2>
+        <div class="flow-animation" data-steps='[
+          {"highlight":"flow-actor-5","label":"You type a message and press Send. The form posts JSON to /api/messages/[conversationId]."},
+          {"highlight":"flow-actor-6","label":"The route asks getCurrentUser who you are. Nobody signed in gets a 401 right here.","packet":true,"from":"actor-5","to":"actor-6"},
+          {"highlight":"flow-actor-7","label":"The route hands over to sendMessage. It checks: yours? open? still connected? not empty? not too long?","packet":true,"from":"actor-6","to":"actor-7"},
+          {"highlight":"flow-actor-8","label":"All five passed, so exactly one row is written to the Message table.","packet":true,"from":"actor-7","to":"actor-8"},
+          {"highlight":"flow-actor-5","label":"The route answers ok, the form refreshes, and your message appears.","packet":true,"from":"actor-6","to":"actor-5"}
+        ]'>
+          <div class="flow-actors">
+            <div class="flow-actor" id="flow-actor-5"><div class="flow-actor-icon">F</div><span>Send form</span></div>
+            <div class="flow-actor" id="flow-actor-6"><div class="flow-actor-icon">R</div><span>API route</span></div>
+            <div class="flow-actor" id="flow-actor-7"><div class="flow-actor-icon">S</div><span>sendMessage</span></div>
+            <div class="flow-actor" id="flow-actor-8"><div class="flow-actor-icon">DB</div><span>Database</span></div>
+          </div>
+          <div class="flow-packet" id="flow-packet-4"></div>
+          <div class="flow-step-label">Click "Next Step" to begin</div>
+          <div class="flow-controls">
+            <button class="btn btn-primary flow-next-btn">Next Step</button>
+            <button class="btn flow-reset-btn">Restart</button>
+            <span class="flow-progress"></span>
+          </div>
+        </div>
+      </section>
+
+      <!-- SCREEN 3: code -->
+      <section class="screen animate-in">
+        <h2 class="screen-heading">Two checks, in this order on purpose</h2>
+        <p>These are the first two checks, copied from <code>src/lib/messages/sendMessage.ts</code>.</p>
+
+        <div class="translation-block animate-in">
+          <div class="translation-code">
+            <span class="translation-label">CODE</span>
+            <pre><code><span class="code-line">  <span class="code-keyword">if</span> (</span>
+<span class="code-line">    !conversation ||</span>
+<span class="code-line">    (conversation.userAId !== senderId &amp;&amp; conversation.userBId !== senderId)</span>
+<span class="code-line">  ) {</span>
+<span class="code-line">    <span class="code-keyword">return</span> <span class="code-function">refuse</span>(<span class="code-string">"not-found"</span>);</span>
+<span class="code-line">  }</span>
+<span class="code-line"></span>
+<span class="code-line">  <span class="code-comment">// Check 2.</span></span>
+<span class="code-line">  <span class="code-keyword">if</span> (conversation.closedAt !== <span class="code-keyword">null</span>) {</span>
+<span class="code-line">    <span class="code-keyword">return</span> <span class="code-function">refuse</span>(<span class="code-string">"closed"</span>);</span>
+<span class="code-line">  }</span></code></pre>
+          </div>
+          <div class="translation-english">
+            <span class="translation-label">PLAIN ENGLISH</span>
+            <div class="translation-lines">
+              <p class="tl">If there is no such conversation, or you are neither of its two people...</p>
+              <p class="tl">...say "not found". A made-up id and somebody else's id get exactly the same answer.</p>
+              <p class="tl">Only after you are proven to be one of the two people do we tell you it is closed.</p>
+              <p class="tl">That order means a stranger learns nothing, not even whether the conversation is closed.</p>
+            </div>
+          </div>
+        </div>
+
+        <div class="callout callout-warning">
+          <div class="callout-icon">⚠️</div>
+          <div class="callout-content">
+            <strong class="callout-title">Order of checks is a design decision</strong>
+            <p>If "closed" were checked first, a stranger could tell a real conversation from a fake one by the different answer. When AI rewrites validation, ask it to keep the order and say why.</p>
+          </div>
+        </div>
+      </section>
+
+      <!-- SCREEN 4: group chat -->
+      <section class="screen animate-in">
+        <h2 class="screen-heading">A stranger knocks</h2>
+        <p>Someone has guessed another person's conversation id and posts to the <span class="term" data-definition="A route is an address on the server that does something when called, such as POST /api/messages/123. It returns data rather than a page.">route</span>.</p>
+
+        <div class="chat-window" id="chat-module4">
+          <div class="chat-messages">
+            <div class="chat-message" data-msg="0" data-sender="stranger" style="display:none">
+              <div class="chat-avatar" style="background: var(--color-actor-3)">S</div>
+              <div class="chat-bubble"><span class="chat-sender" style="color: var(--color-actor-3)">Stranger</span><p>POST to conversation cl9x... "hello?"</p></div>
+            </div>
+            <div class="chat-message" data-msg="1" data-sender="route" style="display:none">
+              <div class="chat-avatar" style="background: var(--color-actor-2)">R</div>
+              <div class="chat-bubble"><span class="chat-sender" style="color: var(--color-actor-2)">Route</span><p>You are signed in, fine. sendMessage, over to you.</p></div>
+            </div>
+            <div class="chat-message" data-msg="2" data-sender="send" style="display:none">
+              <div class="chat-avatar" style="background: var(--color-actor-1)">M</div>
+              <div class="chat-bubble"><span class="chat-sender" style="color: var(--color-actor-1)">sendMessage</span><p>This conversation belongs to two other people. Refusing with "not-found".</p></div>
+            </div>
+            <div class="chat-message" data-msg="3" data-sender="route" style="display:none">
+              <div class="chat-avatar" style="background: var(--color-actor-2)">R</div>
+              <div class="chat-bubble"><span class="chat-sender" style="color: var(--color-actor-2)">Route</span><p>Looking up my table... "not-found" maps to 404. Sending 404, not 403.</p></div>
+            </div>
+            <div class="chat-message" data-msg="4" data-sender="stranger" style="display:none">
+              <div class="chat-avatar" style="background: var(--color-actor-3)">S</div>
+              <div class="chat-bubble"><span class="chat-sender" style="color: var(--color-actor-3)">Stranger</span><p>404? So maybe that id is not real. I learned nothing.</p></div>
+            </div>
+          </div>
+          <div class="chat-typing" id="chat-typing-4" style="display:none">
+            <div class="chat-avatar" id="chat-module4-typing-avatar">?</div>
+            <div class="chat-typing-dots"><span class="typing-dot"></span><span class="typing-dot"></span><span class="typing-dot"></span></div>
+          </div>
+          <div class="chat-controls">
+            <button class="btn btn-primary chat-next-btn">Next Message</button>
+            <button class="btn chat-all-btn">Play All</button>
+            <button class="btn chat-reset-btn">Replay</button>
+            <span class="chat-progress"></span>
+          </div>
+        </div>
+
+        <p>A <span class="term" data-definition="A number the server sends back with every answer. 200 means fine, 401 means not signed in, 403 means forbidden, 404 means not found, 409 means conflict, 422 means the input was not acceptable.">status code</span> of 403 ("forbidden") would confirm the id is real. 404 says nothing.</p>
+      </section>
+
+      <!-- SCREEN 5: quiz -->
+      <section class="screen animate-in">
+        <h2 class="screen-heading">Steer it</h2>
+        <div class="quiz-container" id="quiz-module4">
+          <div class="quiz-question-block" data-correct="b"
+               data-explanation-right="Yes. Put the rule in the shared helper so every way in is covered, and let the form only show the result."
+               data-explanation-wrong="A disabled button only stops people who use the button. Anyone who posts by hand skips it, so the rule has to live in the helper that every sender passes through.">
+            <h3 class="quiz-question">You want to stop messages to people you have muted. Your AI proposes disabling the Send button in the form. What is the better ask?</h3>
+            <div class="quiz-options">
+              <button class="quiz-option" data-value="a" onclick="selectOption(this)"><div class="quiz-option-radio"></div><span>That is fine, users only use the form</span></button>
+              <button class="quiz-option" data-value="b" onclick="selectOption(this)"><div class="quiz-option-radio"></div><span>Add the check to sendMessage, and let the form show the refusal</span></button>
+              <button class="quiz-option" data-value="c" onclick="selectOption(this)"><div class="quiz-option-radio"></div><span>Add the check to the nav bar</span></button>
+            </div>
+            <div class="quiz-feedback"></div>
+          </div>
+
+          <div class="quiz-question-block" data-correct="a"
+               data-explanation-right="Correct. A message over the limit returns a refusal reason, the route maps it to 422, and the form shows the helper's own plain-English message."
+               data-explanation-wrong="Think about who owns the wording and the limit: the helper does (MESSAGE_MAX_LENGTH and the refusal messages). The route only picks the status and passes the message on.">
+            <h3 class="quiz-question">A user sees "That message is too long" in the form. Where does that exact sentence most likely come from?</h3>
+            <div class="quiz-options">
+              <button class="quiz-option" data-value="a" onclick="selectOption(this)"><div class="quiz-option-radio"></div><span>The refusal messages next to sendMessage, passed through the route</span></button>
+              <button class="quiz-option" data-value="b" onclick="selectOption(this)"><div class="quiz-option-radio"></div><span>The database</span></button>
+              <button class="quiz-option" data-value="c" onclick="selectOption(this)"><div class="quiz-option-radio"></div><span>Vercel</span></button>
+            </div>
+            <div class="quiz-feedback"></div>
+          </div>
+
+          <button class="quiz-check-btn" onclick="checkQuiz('quiz-module4')">Check Answers</button>
+          <button class="quiz-reset-btn" onclick="resetQuiz('quiz-module4')">Try Again</button>
+        </div>
+      </section>
+
+    </div>
+  </div>
+</section>
+<section class="module" id="module-5" style="background: var(--color-bg)">
+  <div class="module-content">
+    <header class="module-header animate-in">
+      <span class="module-number">05</span>
+      <h1 class="module-title">Safe by Default</h1>
+      <p class="module-subtitle">How Collabz is built so that forgetting something leaves it locked, not open.</p>
+    </header>
+
+    <div class="module-body">
+
+      <!-- SCREEN 1: fail safe -->
+      <section class="screen animate-in">
+        <h2 class="screen-heading">Doors that lock themselves</h2>
+        <p>A <strong>fire door</strong> is designed to shut unless something holds it open. Collabz's riskiest tool, the "sign in as any pretend student" switcher, works the same way: off unless deliberately held on.</p>
+
+        <div class="translation-block animate-in">
+          <div class="translation-code">
+            <span class="translation-label">CODE</span>
+            <pre><code><span class="code-line"><span class="code-keyword">export function</span> <span class="code-function">isPretendCohortEnabled</span>(): boolean {</span>
+<span class="code-line">  <span class="code-keyword">const</span> switchedOn = process.env.PRETEND_COHORT === <span class="code-string">"on"</span>;</span>
+<span class="code-line">  <span class="code-keyword">const</span> isProductionDeployment = process.env.VERCEL_ENV === <span class="code-string">"production"</span>;</span>
+<span class="code-line"></span>
+<span class="code-line">  <span class="code-keyword">return</span> switchedOn &amp;&amp; !isProductionDeployment;</span>
+<span class="code-line">}</span></code></pre>
+          </div>
+          <div class="translation-english">
+            <span class="translation-label">PLAIN ENGLISH</span>
+            <div class="translation-lines">
+              <p class="tl">One yes/no question: is the pretend cohort allowed here?</p>
+              <p class="tl">First lock: someone must have set a setting to exactly "on". Forget to set it and the answer is no.</p>
+              <p class="tl">Second lock: are we on the real, live site? Vercel tells us.</p>
+              <p class="tl">Both must be true: switched on and not production. Even a mistaken setting on production stays refused.</p>
+            </div>
+          </div>
+        </div>
+
+        <div class="callout callout-accent">
+          <div class="callout-icon">💡</div>
+          <div class="callout-content">
+            <strong class="callout-title">Fail closed</strong>
+            <p>Engineers call "off unless switched on" <em>fail closed</em> or <em>opt-in</em>. Whenever AI adds a flag that unlocks something risky, ask: "what happens if this variable is missing?" The answer should be "locked".</p>
+          </div>
+        </div>
+      </section>
+
+      <!-- SCREEN 2: who am I -->
+      <section class="screen animate-in">
+        <h2 class="screen-heading">Who is using the app right now?</h2>
+        <p>Every page asks <code>getCurrentUser()</code>. It gathers facts, then one small function decides.</p>
+
+        <div class="translation-block animate-in">
+          <div class="translation-code">
+            <span class="translation-label">CODE</span>
+            <pre><code><span class="code-line">  <span class="code-keyword">const</span> { sessionUser, pretendUser } = people;</span>
+<span class="code-line"></span>
+<span class="code-line">  <span class="code-keyword">if</span> (sessionUser) {</span>
+<span class="code-line">    <span class="code-keyword">const</span> isSuspended = sessionUser.suspendedAt !== <span class="code-keyword">null</span>;</span>
+<span class="code-line">    <span class="code-keyword">if</span> (<span class="code-function">isAccountFinished</span>(sessionUser) &amp;&amp; !isSuspended) {</span>
+<span class="code-line">      <span class="code-keyword">return</span> sessionUser;</span>
+<span class="code-line">    }</span>
+<span class="code-line">    <span class="code-keyword">return null</span>;</span>
+<span class="code-line">  }</span>
+<span class="code-line"></span>
+<span class="code-line">  <span class="code-keyword">return</span> pretendUser;</span></code></pre>
+          </div>
+          <div class="translation-english">
+            <span class="translation-label">PLAIN ENGLISH</span>
+            <div class="translation-lines">
+              <p class="tl">Two candidates arrive: the person from a real sign-in, and the dev switcher's pretend person.</p>
+              <p class="tl">If there is a real sign-in, it wins. Always.</p>
+              <p class="tl">A real person is accepted only if they finished sign-up and are not suspended.</p>
+              <p class="tl">Otherwise nobody. The switcher is NOT used as a fallback, so a real person is never silently swapped for a pretend one.</p>
+              <p class="tl">With no real sign-in, the pretend user (if the switcher is on here) is returned.</p>
+            </div>
+          </div>
+        </div>
+
+        <p>This function takes <span class="term" data-definition="A plain object is just a bundle of named values, like { name: 'Sam', suspendedAt: null }. Because it needs no database or browser, a test can make one by hand.">plain objects</span>, so each case has a one-line test. Every page in the app depends on it, which is why the team kept it small and tested.</p>
+      </section>
+
+      <!-- SCREEN 3: arch diagram -->
+      <section class="screen animate-in">
+        <h2 class="screen-heading">Who knows what</h2>
+        <p>Click a part to see what it is trusted with.</p>
+
+        <div class="arch-diagram">
+          <div class="arch-zone arch-zone-browser">
+            <h4 class="arch-zone-label">Your phone (not trusted)</h4>
+            <div class="arch-component" data-desc="Draws what it is told. It holds no rules, so editing the page in dev tools changes nothing the server will accept.">
+              <div class="arch-icon">📱</div><span>Pages and the graph canvas</span>
+            </div>
+          </div>
+          <div class="arch-zone arch-zone-external">
+            <h4 class="arch-zone-label">The server (decides)</h4>
+            <div class="arch-component" data-desc="requireAdmin() is the first line of every admin Server Action. A Server Action is a public address anyone can post to, so the page having checked is not enough.">
+              <div class="arch-icon">🛂</div><span>requireAdmin and helpers</span>
+            </div>
+            <div class="arch-component" data-desc="Visibility, top 5, line thickness and who may connect are all worked out in tested server code in src/lib/cohort. The browser is only told what to draw.">
+              <div class="arch-icon">🧮</div><span>Cohort rules</span>
+            </div>
+          </div>
+          <div class="arch-zone arch-zone-external">
+            <h4 class="arch-zone-label">The database (remembers)</h4>
+            <div class="arch-component" data-desc="Some rules are stored as constraints: one conversation per pair, one profile alias each. Even if two people finish at the same instant, the database refuses a duplicate.">
+              <div class="arch-icon">🔒</div><span>Unique rules</span>
+            </div>
+          </div>
+          <div class="arch-description">Click any component to learn what it is trusted with</div>
+        </div>
+      </section>
+
+      <!-- SCREEN 4: quiz -->
+      <section class="screen animate-in">
+        <h2 class="screen-heading">Spot the weak link</h2>
+        <div class="quiz-container" id="quiz-module5">
+          <div class="quiz-question-block" data-correct="c"
+               data-explanation-right="Yes. The page check protects the page, but anyone can post to the action directly. Each action must check for itself, which is why the team has a test that calls every action as a member and as nobody."
+               data-explanation-wrong="Hiding the page does not hide the action: Server Actions are public addresses. Every action has to call requireAdmin itself.">
+            <h3 class="quiz-question">An AI adds a new admin action "delete a course" and relies on the admin page being admin-only. What is wrong?</h3>
+            <div class="quiz-options">
+              <button class="quiz-option" data-value="a" onclick="selectOption(this)"><div class="quiz-option-radio"></div><span>Nothing, the page is protected</span></button>
+              <button class="quiz-option" data-value="b" onclick="selectOption(this)"><div class="quiz-option-radio"></div><span>It should use a different font</span></button>
+              <button class="quiz-option" data-value="c" onclick="selectOption(this)"><div class="quiz-option-radio"></div><span>The action itself never checked for an admin, and it can be posted to directly</span></button>
+            </div>
+            <div class="quiz-feedback"></div>
+          </div>
+
+          <div class="quiz-question-block" data-correct="b"
+               data-explanation-right="Right. Production has real students, and the switcher would let anyone become anyone, including an admin. Without the second lock, one wrong setting would expose the live site."
+               data-explanation-wrong="Think about the consequence: on the live site the switcher would let a visitor become any student or admin. That is why production refuses even when the variable is set.">
+            <h3 class="quiz-question">A teammate asks "can we just set PRETEND_COHORT=on in Vercel Production so the demo is easier?" What happens, and why is that the right behaviour?</h3>
+            <div class="quiz-options">
+              <button class="quiz-option" data-value="a" onclick="selectOption(this)"><div class="quiz-option-radio"></div><span>The switcher appears on the live site, which is fine for a demo</span></button>
+              <button class="quiz-option" data-value="b" onclick="selectOption(this)"><div class="quiz-option-radio"></div><span>Nothing changes: a second lock refuses production, so a mistaken setting cannot expose real students</span></button>
+              <button class="quiz-option" data-value="c" onclick="selectOption(this)"><div class="quiz-option-radio"></div><span>The build fails with an error</span></button>
+            </div>
+            <div class="quiz-feedback"></div>
+          </div>
+
+          <button class="quiz-check-btn" onclick="checkQuiz('quiz-module5')">Check Answers</button>
+          <button class="quiz-reset-btn" onclick="resetQuiz('quiz-module5')">Try Again</button>
+        </div>
+      </section>
+
+    </div>
+  </div>
+</section>
+<section class="module" id="module-6" style="background: var(--color-bg-warm)">
+  <div class="module-content">
+    <header class="module-header animate-in">
+      <span class="module-number">06</span>
+      <h1 class="module-title">Steering the Build</h1>
+      <p class="module-subtitle">How five people and their AI agents change one codebase without stepping on each other, and where to look when it breaks.</p>
+    </header>
+
+    <div class="module-body">
+
+      <!-- SCREEN 1: the workflow -->
+      <section class="screen animate-in">
+        <h2 class="screen-heading">Spec first, code second</h2>
+        <p>Think of building a house from <strong>blueprints</strong>: nobody pours concrete before the plan is agreed. Every change in Collabz is a small folder under <code>openspec/changes/</code> before it is code.</p>
+
+        <div class="flow-steps">
+          <div class="flow-step"><div class="flow-step-num">1</div><p><strong>Propose</strong><br>Why, design, tasks</p></div>
+          <div class="flow-arrow">→</div>
+          <div class="flow-step"><div class="flow-step-num">2</div><p><strong>Apply</strong><br>One task group at a time</p></div>
+          <div class="flow-arrow">→</div>
+          <div class="flow-step"><div class="flow-step-num">3</div><p><strong>Review</strong><br>A human signs off</p></div>
+          <div class="flow-arrow">→</div>
+          <div class="flow-step"><div class="flow-step-num">4</div><p><strong>Archive</strong><br>Specs updated, ARCHITECTURE.md refreshed</p></div>
+        </div>
+
+        <div class="callout callout-accent">
+          <div class="callout-icon">💡</div>
+          <div class="callout-content">
+            <strong class="callout-title">Small, reviewable steps beat big leaps</strong>
+            <p>AI is most reliable on a task small enough to check. "Do one task group, then stop" is not slowness; it is how you catch a wrong turn while it is cheap.</p>
+          </div>
+        </div>
+      </section>
+
+      <!-- SCREEN 2: tracks -->
+      <section class="screen animate-in">
+        <h2 class="screen-heading">Lanes, shared helpers, and the rule to not cross</h2>
+        <div class="pattern-cards stagger-children">
+          <div class="pattern-card" style="border-top: 3px solid var(--color-actor-1)">
+            <div class="pattern-icon" style="background: var(--color-actor-1)">🛣️</div>
+            <h4 class="pattern-title">Your own slice</h4>
+            <p class="pattern-desc">Each person owns specific <span class="term" data-definition="Routes are the addresses of the app, such as /graph or /messages. Each address has its own folder under src/app.">routes</span>. Change only those.</p>
+          </div>
+          <div class="pattern-card" style="border-top: 3px solid var(--color-actor-2)">
+            <div class="pattern-icon" style="background: var(--color-actor-2)">🤝</div>
+            <h4 class="pattern-title">Shared helpers</h4>
+            <p class="pattern-desc">Reach another track only through <code>getCurrentUser</code>, <code>scoreUser</code>, <code>openConversation</code> and friends. Never their internals.</p>
+          </div>
+          <div class="pattern-card" style="border-top: 3px solid var(--color-actor-4)">
+            <div class="pattern-icon" style="background: var(--color-actor-4)">🚧</div>
+            <h4 class="pattern-title">Flag schema changes</h4>
+            <p class="pattern-desc">Every track builds on the same tables, so a change to <code>schema.prisma</code> is raised with the group first.</p>
+          </div>
+          <div class="pattern-card" style="border-top: 3px solid var(--color-actor-5)">
+            <div class="pattern-icon" style="background: var(--color-actor-5)">🎭</div>
+            <h4 class="pattern-title">Pretend cohort</h4>
+            <p class="pattern-desc">32 pretend students on the dev database, so nobody waits for another track.</p>
+          </div>
+        </div>
+        <p>This is also how two AI agents working at once avoid conflicts: each stays in its lane, and the shared helper keeps its name and return value even when its inside changes.</p>
+      </section>
+
+      <!-- SCREEN 3: code -->
+      <section class="screen animate-in">
+        <h2 class="screen-heading">Reading a symptom</h2>
+        <p>The <span class="term" data-definition="An API route is a server address that returns data, not a page. The form on the page calls it behind the scenes.">API route</span> answers with a number. The number tells you which layer to inspect. This is the real table from <code>src/app/api/messages/[conversationId]/route.ts</code>.</p>
+
+        <div class="translation-block animate-in">
+          <div class="translation-code">
+            <span class="translation-label">CODE</span>
+            <pre><code><span class="code-line"><span class="code-keyword">const</span> STATUS_FOR_REFUSAL: Record&lt;SendRefusalReason, <span class="code-keyword">number</span>&gt; = {</span>
+<span class="code-line">  <span class="code-string">"not-found"</span>: <span class="code-number">404</span>,</span>
+<span class="code-line">  closed: <span class="code-number">409</span>,</span>
+<span class="code-line">  <span class="code-string">"not-connected"</span>: <span class="code-number">409</span>,</span>
+<span class="code-line">  empty: <span class="code-number">422</span>,</span>
+<span class="code-line">  <span class="code-string">"too-long"</span>: <span class="code-number">422</span>,</span>
+<span class="code-line">};</span></code></pre>
+          </div>
+          <div class="translation-english">
+            <span class="translation-label">PLAIN ENGLISH</span>
+            <div class="translation-lines">
+              <p class="tl">A lookup table: for each reason the helper can give, which number to send back.</p>
+              <p class="tl">Not yours or does not exist: 404.</p>
+              <p class="tl">Closed, or the two are no longer connected: 409, a conflict with the current state.</p>
+              <p class="tl">Empty or too long: 422, the words themselves are not acceptable.</p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- SCREEN 4: debugging map -->
+      <section class="screen animate-in">
+        <h2 class="screen-heading">"It's not showing up": where to look</h2>
+        <div class="step-cards">
+          <div class="step-card"><div class="step-num">1</div><div class="step-body"><strong>Is it a page or an action? Check the status number</strong><p>401 means not signed in, 404 not yours or missing, 409 state conflict, 422 bad input.</p></div></div>
+          <div class="step-card"><div class="step-num">2</div><div class="step-body"><strong>Is the person even visible?</strong><p>Unfinished profiles and suspended people vanish from the graph, search and scores by design.</p></div></div>
+          <div class="step-card"><div class="step-num">3</div><div class="step-body"><strong>Did a pairing or tag change without a rescore?</strong><p>Pairing edits change no score until "Rescore everyone" is pressed.</p></div></div>
+          <div class="step-card"><div class="step-num">4</div><div class="step-body"><strong>Which database are you on?</strong><p>Laptops, previews and tests use the <code>dev</code> branch. Only the live site uses <code>production</code>.</p></div></div>
+        </div>
+      </section>
+
+      <!-- SCREEN 5: quiz -->
+      <section class="screen animate-in">
+        <h2 class="screen-heading">Your turn to steer</h2>
+        <div class="quiz-container" id="quiz-module6">
+          <div class="quiz-question-block" data-correct="a"
+               data-explanation-right="Yes. A glitch match is only valid while it is not in your top 5, so the rescoring repairs it. Score changes and glitch repair happen in the same transaction."
+               data-explanation-wrong="Remember how the pieces connect: scores feed the top 5, and the glitch match must never be in the top 5. When a rescore happens, the glitch match is re-checked in the same transaction.">
+            <h3 class="quiz-question">After you edit your answers, your surprise match changes. A teammate thinks it is a bug. What is the likely reason?</h3>
+            <div class="quiz-options">
+              <button class="quiz-option" data-value="a" onclick="selectOption(this)"><div class="quiz-option-radio"></div><span>Your new answers moved the old surprise into your top 5, so it was replaced</span></button>
+              <button class="quiz-option" data-value="b" onclick="selectOption(this)"><div class="quiz-option-radio"></div><span>The server picks a new random match whenever you open /matches</span></button>
+              <button class="quiz-option" data-value="c" onclick="selectOption(this)"><div class="quiz-option-radio"></div><span>Prisma cached a stale row</span></button>
+            </div>
+            <div class="quiz-feedback"></div>
+          </div>
+
+          <div class="quiz-question-block" data-correct="c"
+               data-explanation-right="Exactly. It is not in your slice, other tracks depend on it, and the proposal cannot quietly grow. Raise it, then agree the change."
+               data-explanation-wrong="A schema change touches every track's tables. The right move is to stop, flag it to the group, and agree it before the agent writes the migration.">
+            <h3 class="quiz-question">Your AI says "I need a new column on User to finish this task". What do you do?</h3>
+            <div class="quiz-options">
+              <button class="quiz-option" data-value="a" onclick="selectOption(this)"><div class="quiz-option-radio"></div><span>Let it add the column, it is only one line</span></button>
+              <button class="quiz-option" data-value="b" onclick="selectOption(this)"><div class="quiz-option-radio"></div><span>Store the value in a cookie instead and move on</span></button>
+              <button class="quiz-option" data-value="c" onclick="selectOption(this)"><div class="quiz-option-radio"></div><span>Pause, flag it to the team first, and agree it before changing schema.prisma</span></button>
+            </div>
+            <div class="quiz-feedback"></div>
+          </div>
+
+          <button class="quiz-check-btn" onclick="checkQuiz('quiz-module6')">Check Answers</button>
+          <button class="quiz-reset-btn" onclick="resetQuiz('quiz-module6')">Try Again</button>
+        </div>
+      </section>
+
+    </div>
+  </div>
+</section>
+  </main>
+
+</body>
+</html>

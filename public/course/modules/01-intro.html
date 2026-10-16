@@ -1,0 +1,132 @@
+<section class="module" id="module-1" style="background: var(--color-bg)">
+  <div class="module-content">
+    <header class="module-header animate-in">
+      <span class="module-number">01</span>
+      <h1 class="module-title">What Collabz Does</h1>
+      <p class="module-subtitle">You tap "Matches". Here is everything that happens before the page appears.</p>
+    </header>
+
+    <div class="module-body">
+
+      <!-- SCREEN 1: the product -->
+      <section class="screen animate-in">
+        <h2 class="screen-heading">A matchmaker for bootcamp students</h2>
+        <p>Collabz pairs software students with business students by <span class="term" data-definition="In Collabz, chemistry means a calculated score for how well two people complement each other. It is based on the tags they picked, not on CVs."><strong>chemistry</strong></span>, not by CVs. Everybody picks tags from fixed lists, the app scores every pair, and the best fits get to talk.</p>
+
+        <div class="step-cards stagger-children">
+          <div class="step-card">
+            <div class="step-num">1</div>
+            <div class="step-body"><strong>Scan a QR code and sign up</strong><p>No password. A <span class="term" data-definition="A link emailed to you that signs you in when you open it. It replaces a password: whoever can open your inbox can sign in.">magic link</span> arrives in your inbox.</p></div>
+          </div>
+          <div class="step-card">
+            <div class="step-num">2</div>
+            <div class="step-body"><strong>Pick tags, never type</strong><p>Hero story, energy, qualities, what you are seeking. The app builds your alias, like "The Calm Captain".</p></div>
+          </div>
+          <div class="step-card">
+            <div class="step-num">3</div>
+            <div class="step-body"><strong>See your top 5 and one surprise</strong><p>A chemistry score ranks everyone. A random "glitch match" is added on purpose.</p></div>
+          </div>
+          <div class="step-card">
+            <div class="step-num">4</div>
+            <div class="step-body"><strong>Both say yes, then talk</strong><p>A connection request must be approved before a private conversation opens.</p></div>
+          </div>
+        </div>
+      </section>
+
+      <!-- SCREEN 2: the trace -->
+      <section class="screen animate-in">
+        <h2 class="screen-heading">Trace one tap: opening <code>/matches</code></h2>
+        <p>Think of the web like a <strong>mail-order catalogue</strong>. Your browser fills in an order form, a warehouse picks the items, and a parcel comes back already packed. Step through the order:</p>
+
+        <div class="flow-animation" data-steps='[
+          {"highlight":"flow-actor-1","label":"You tap Matches in the nav bar. The browser asks for the address /matches."},
+          {"highlight":"flow-actor-2","label":"The request travels to the server that Vercel runs. Next.js finds the page file for /matches.","packet":true,"from":"actor-1","to":"actor-2"},
+          {"highlight":"flow-actor-2","label":"The page asks getCurrentUser: who is this? No finished profile means a redirect to onboarding."},
+          {"highlight":"flow-actor-3","label":"The page calls getMatchesPage, which ranks your scores and picks your glitch match.","packet":true,"from":"actor-2","to":"actor-3"},
+          {"highlight":"flow-actor-4","label":"Prisma asks the Neon database for your stored scores and the people behind them.","packet":true,"from":"actor-3","to":"actor-4"},
+          {"highlight":"flow-actor-1","label":"The finished HTML comes back to your browser. Aliases and silhouettes only, never an email.","packet":true,"from":"actor-2","to":"actor-1"}
+        ]'>
+          <div class="flow-actors">
+            <div class="flow-actor" id="flow-actor-1"><div class="flow-actor-icon">B</div><span>Your browser</span></div>
+            <div class="flow-actor" id="flow-actor-2"><div class="flow-actor-icon">N</div><span>Next.js page</span></div>
+            <div class="flow-actor" id="flow-actor-3"><div class="flow-actor-icon">H</div><span>Matching helper</span></div>
+            <div class="flow-actor" id="flow-actor-4"><div class="flow-actor-icon">DB</div><span>Neon database</span></div>
+          </div>
+          <div class="flow-packet" id="flow-packet"></div>
+          <div class="flow-step-label" id="flow-label">Click "Next Step" to begin</div>
+          <div class="flow-controls">
+            <button class="btn btn-primary flow-next-btn">Next Step</button>
+            <button class="btn flow-reset-btn">Restart</button>
+            <span class="flow-progress"></span>
+          </div>
+        </div>
+
+        <div class="callout callout-accent">
+          <div class="callout-icon">💡</div>
+          <div class="callout-content">
+            <strong class="callout-title">The server builds the page</strong>
+            <p>This is a <span class="term" data-definition="A page that is built on the server before it is sent. The browser receives finished HTML, so it never sees the database or the rules used to build it.">Server Component</span>. Nothing secret is sent to your phone, only the result. That is why Collabz can promise the browser never receives anyone's email.</p>
+          </div>
+        </div>
+      </section>
+
+      <!-- SCREEN 3: code -->
+      <section class="screen animate-in">
+        <h2 class="screen-heading">The real page, in plain English</h2>
+        <p>This is the actual start of <code>src/app/matches/page.tsx</code>. Four lines do the whole job.</p>
+
+        <div class="translation-block animate-in">
+          <div class="translation-code">
+            <span class="translation-label">CODE</span>
+            <pre><code><span class="code-line">  <span class="code-keyword">const</span> viewer = <span class="code-keyword">await</span> <span class="code-function">requireFinishedProfile</span>();</span>
+<span class="code-line"></span>
+<span class="code-line">  <span class="code-keyword">const</span> { topFive, glitch } = <span class="code-keyword">await</span> <span class="code-function">getMatchesPage</span>(viewer.id);</span></code></pre>
+          </div>
+          <div class="translation-english">
+            <span class="translation-label">PLAIN ENGLISH</span>
+            <div class="translation-lines">
+              <p class="tl">Find out who is looking. If nobody is signed in, or their profile is unfinished, this line sends them elsewhere and the page stops here.</p>
+              <p class="tl">Ask the matching helper for this person's five best fits and their one surprise. The page does not calculate anything itself.</p>
+            </div>
+          </div>
+        </div>
+
+        <p>Notice what is <em>missing</em>: no <span class="term" data-definition="A database query is a question your code asks the database, such as: find all scores for this person. Code that talks to the database is normally kept out of pages and put in helper functions.">database query</span> and no scoring maths. The page only asks and draws. We will see why in module 4.</p>
+      </section>
+
+      <!-- SCREEN 4: quiz -->
+      <section class="screen animate-in">
+        <h2 class="screen-heading">Check your intuition</h2>
+        <div class="quiz-container" id="quiz-module1">
+          <div class="quiz-question-block" data-correct="b"
+               data-explanation-right="Exactly. The page asks getMatchesPage, which reads scores through Prisma. The fix belongs where the ranking lives, not in the page."
+               data-explanation-wrong="Not quite. The page file only asks for matches and draws them. The ranking is decided in the matching helper, so that is where an ordering bug would live.">
+            <h3 class="quiz-question">The top 5 on /matches shows someone with a lower score above someone with a higher one. Where do you point your AI assistant first?</h3>
+            <div class="quiz-options">
+              <button class="quiz-option" data-value="a" onclick="selectOption(this)"><div class="quiz-option-radio"></div><span>The MatchCard component that draws each card</span></button>
+              <button class="quiz-option" data-value="b" onclick="selectOption(this)"><div class="quiz-option-radio"></div><span>The matching helpers the page calls, where the ranking is decided</span></button>
+              <button class="quiz-option" data-value="c" onclick="selectOption(this)"><div class="quiz-option-radio"></div><span>The nav bar, because it links to /matches</span></button>
+            </div>
+            <div class="quiz-feedback"></div>
+          </div>
+
+          <div class="quiz-question-block" data-correct="a"
+               data-explanation-right="Right. A browser asks for a page and receives HTML. Whatever is in that HTML can be seen by anyone, so secrets must never be put into it."
+               data-explanation-wrong="Think about what a browser receives: finished HTML. Anything placed in it, even hidden, can be read by the person holding the phone.">
+            <h3 class="quiz-question">You want /matches to also show each person's email "just for admins". Why is hiding it with CSS not good enough?</h3>
+            <div class="quiz-options">
+              <button class="quiz-option" data-value="a" onclick="selectOption(this)"><div class="quiz-option-radio"></div><span>Hidden content is still sent to the browser, so anyone can read it</span></button>
+              <button class="quiz-option" data-value="b" onclick="selectOption(this)"><div class="quiz-option-radio"></div><span>CSS cannot hide text</span></button>
+              <button class="quiz-option" data-value="c" onclick="selectOption(this)"><div class="quiz-option-radio"></div><span>Next.js forbids hiding things</span></button>
+            </div>
+            <div class="quiz-feedback"></div>
+          </div>
+
+          <button class="quiz-check-btn" onclick="checkQuiz('quiz-module1')">Check Answers</button>
+          <button class="quiz-reset-btn" onclick="resetQuiz('quiz-module1')">Try Again</button>
+        </div>
+      </section>
+
+    </div>
+  </div>
+</section>

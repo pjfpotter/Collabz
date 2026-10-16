@@ -1,0 +1,156 @@
+<section class="module" id="module-3" style="background: var(--color-bg)">
+  <div class="module-content">
+    <header class="module-header animate-in">
+      <span class="module-number">03</span>
+      <h1 class="module-title">The Chemistry Formula</h1>
+      <p class="module-subtitle">One small function turns "two people" into a number. Learn to read it, then you can question it.</p>
+    </header>
+
+    <div class="module-body">
+
+      <!-- SCREEN 1: the idea -->
+      <section class="screen animate-in">
+        <h2 class="screen-heading">A recipe with three ingredients</h2>
+        <p>Think of a <strong>cocktail recipe</strong>: one ingredient is the base, two are only a splash. The score is one big ingredient plus two small ones.</p>
+
+        <div class="pattern-cards stagger-children">
+          <div class="pattern-card" style="border-top: 3px solid var(--color-actor-1)">
+            <div class="pattern-icon" style="background: var(--color-actor-1)">🧩</div>
+            <h4 class="pattern-title">Complement × 3</h4>
+            <p class="pattern-desc">One point for each thing you are <em>seeking</em> that the other person can <em>offer</em>, counted both ways. The main signal, hence ×3.</p>
+          </div>
+          <div class="pattern-card" style="border-top: 3px solid var(--color-actor-2)">
+            <div class="pattern-icon" style="background: var(--color-actor-2)">🎶</div>
+            <h4 class="pattern-title">Overlap</h4>
+            <p class="pattern-desc">+1 for the same Energy, +1 for the same Vibe Diagnosis. A rapport bonus.</p>
+          </div>
+          <div class="pattern-card" style="border-top: 3px solid var(--color-actor-4)">
+            <div class="pattern-icon" style="background: var(--color-actor-4)">⚡</div>
+            <h4 class="pattern-title">Tension</h4>
+            <p class="pattern-desc">+1 when your Hero Stories differ. A spark bonus.</p>
+          </div>
+        </div>
+
+        <div class="callout callout-info">
+          <div class="callout-icon">ℹ️</div>
+          <div class="callout-content">
+            <strong class="callout-title">What is NOT in the formula</strong>
+            <p>Skills, interests and course never change a score. A <span class="term" data-definition="A test is a small program that checks another piece of code still gives the right answer. If an AI edit breaks a rule, the test fails and tells you.">test</span> pins this, so no AI edit can quietly change it.</p>
+          </div>
+        </div>
+      </section>
+
+      <!-- SCREEN 2: worked example -->
+      <section class="screen animate-in">
+        <h2 class="screen-heading">Worked example: Sam and Priya</h2>
+        <div class="step-cards">
+          <div class="step-card"><div class="step-num">1</div><div class="step-body"><strong>Sam seeks a Builder, and Priya is one</strong><p>Complement: 1</p></div></div>
+          <div class="step-card"><div class="step-num">2</div><div class="step-body"><strong>Priya seeks a Storyteller, and Sam is one</strong><p>Complement: 2, so 2 × 3 = 6</p></div></div>
+          <div class="step-card"><div class="step-num">3</div><div class="step-body"><strong>Both picked the "Sea Captain" energy</strong><p>Overlap: +1</p></div></div>
+          <div class="step-card"><div class="step-num">4</div><div class="step-body"><strong>Their Hero Stories are different</strong><p>Tension: +1</p></div></div>
+        </div>
+        <p><strong>Total: 6 + 1 + 1 = 8.</strong> Swap Sam and Priya and you still get 8, because the formula looks in both directions.</p>
+      </section>
+
+      <!-- SCREEN 3: real code -->
+      <section class="screen animate-in">
+        <h2 class="screen-heading">The real function</h2>
+        <p>This is the whole of <code>calculateScore</code> from <code>src/lib/matching/score.ts</code>. Notice there is no database in it.</p>
+
+        <div class="translation-block animate-in">
+          <div class="translation-code">
+            <span class="translation-label">CODE</span>
+            <pre><code><span class="code-line"><span class="code-keyword">export function</span> <span class="code-function">calculateScore</span>(a: PersonTags, b: PersonTags, pairings: Pairing[]): ScoreResult {</span>
+<span class="code-line">  <span class="code-keyword">const</span> complement =</span>
+<span class="code-line">    <span class="code-function">findSatisfiedSeekingTags</span>(a, b, pairings).length +</span>
+<span class="code-line">    <span class="code-function">findSatisfiedSeekingTags</span>(b, a, pairings).length;</span>
+<span class="code-line"></span>
+<span class="code-line">  <span class="code-keyword">const</span> sharedEnergy = <span class="code-function">findSharedTagIds</span>(a.energy, b.energy).length &gt; <span class="code-number">0</span> ? <span class="code-number">1</span> : <span class="code-number">0</span>;</span>
+<span class="code-line">  <span class="code-keyword">const</span> sharedVibe = <span class="code-function">findSharedTagIds</span>(a.vibeDiagnosis, b.vibeDiagnosis).length &gt; <span class="code-number">0</span> ? <span class="code-number">1</span> : <span class="code-number">0</span>;</span>
+<span class="code-line">  <span class="code-keyword">const</span> overlap = sharedEnergy + sharedVibe;</span>
+<span class="code-line"></span>
+<span class="code-line">  <span class="code-keyword">const</span> tension = <span class="code-function">heroStoriesDiffer</span>(a, b) ? <span class="code-number">1</span> : <span class="code-number">0</span>;</span>
+<span class="code-line"></span>
+<span class="code-line">  <span class="code-keyword">return</span> {</span>
+<span class="code-line">    score: complement * COMPLEMENT_WEIGHT + overlap + tension,</span>
+<span class="code-line">    complement,</span>
+<span class="code-line">    overlap,</span>
+<span class="code-line">    tension,</span>
+<span class="code-line">  };</span>
+<span class="code-line">}</span></code></pre>
+          </div>
+          <div class="translation-english">
+            <span class="translation-label">PLAIN ENGLISH</span>
+            <div class="translation-lines">
+              <p class="tl">Take two people's tags and the pairing list, and hand back a score.</p>
+              <p class="tl">Count A's wishes that B can answer, then B's wishes that A can answer, and add them. That is the complement.</p>
+              <p class="tl">Did they share an Energy? That is 1 or 0. Same question for Vibe Diagnosis.</p>
+              <p class="tl">Add the two answers together. That is the overlap.</p>
+              <p class="tl">Do their Hero Stories differ? 1 or 0. That is the tension.</p>
+              <p class="tl">Give back the total (the complement is worth 3 each), and also the three parts, so "why you match" can explain itself without recalculating.</p>
+            </div>
+          </div>
+        </div>
+
+        <div class="callout callout-accent">
+          <div class="callout-icon">💡</div>
+          <div class="callout-content">
+            <strong class="callout-title">Pure functions are easy to trust</strong>
+            <p>A <span class="term" data-definition="A function that only uses what you give it and returns an answer. It reads no database and changes nothing, so the same input always gives the same output, and a test can check it in milliseconds.">pure function</span> can be tested with a few lines and a hand-worked example. When you ask AI for logic, ask for it "as a pure function with no database".</p>
+          </div>
+        </div>
+      </section>
+
+      <!-- SCREEN 4: spot the bug -->
+      <section class="screen animate-in">
+        <h2 class="screen-heading">Spot the bug</h2>
+        <p>Imagine an AI "improves" the counting code. Here is a <strong>pretend</strong> version, not the real file. Click the line that quietly breaks fairness.</p>
+
+        <div class="bug-challenge">
+          <h3>Which line gives some tags double value?</h3>
+          <div class="bug-code">
+            <div class="bug-line" onclick="checkBugLine(this, false)" data-hint="That just loops over what the seeker asked for. Look for the line that adds to the total."><span class="line-num">1</span><code>for (const seekingTagId of seeker.seeking) {</code></div>
+            <div class="bug-line" onclick="checkBugLine(this, false)" data-hint="That is the loop over pairings. The problem is what happens inside it."><span class="line-num">2</span><code>  for (const pairing of pairings) {</code></div>
+            <div class="bug-line" onclick="checkBugLine(this, false)" data-hint="That is the right test. Look at what happens after it passes."><span class="line-num">3</span><code>    if (pairing.seekingTagId === seekingTagId &amp;&amp; providerQualities.has(pairing.qualityTagId)) {</code></div>
+            <div class="bug-line" onclick="checkBugLine(this, true)" data-explanation="The count goes up for every matching pairing. A Seeking tag with two pairings is worth double. The real code adds each satisfied tag once, into a Set, so the brief's &quot;count how many of A's Seeking tags match&quot; stays true."><span class="line-num">4</span><code>      count = count + 1;</code></div>
+          </div>
+          <div class="bug-feedback"></div>
+        </div>
+      </section>
+
+      <!-- SCREEN 5: quiz -->
+      <section class="screen animate-in">
+        <h2 class="screen-heading">Apply it</h2>
+        <div class="quiz-container" id="quiz-module3">
+          <div class="quiz-question-block" data-correct="b"
+               data-explanation-right="Exactly. Pairings are rows in the TagPairing table, so an admin edits data and then rescores. No code change, no deploy."
+               data-explanation-wrong="Not quite. Which Quality satisfies which Seeking tag is stored as data (TagPairing), so changing the matchmaking rules is a data edit followed by Rescore everyone.">
+            <h3 class="quiz-question">The cohort leads decide that "Planner" should also satisfy "Seeking a Builder". What is the least risky way to do it?</h3>
+            <div class="quiz-options">
+              <button class="quiz-option" data-value="a" onclick="selectOption(this)"><div class="quiz-option-radio"></div><span>Edit calculateScore to add a special case</span></button>
+              <button class="quiz-option" data-value="b" onclick="selectOption(this)"><div class="quiz-option-radio"></div><span>Add the pairing in the admin screen, then <span class="term" data-definition="Rescoring means recalculating and re-saving every stored score using the current rules. Scores are stored, so they only change when this runs.">rescore</span> everyone</span></button>
+              <button class="quiz-option" data-value="c" onclick="selectOption(this)"><div class="quiz-option-radio"></div><span>Change the score shown on the card</span></button>
+            </div>
+            <div class="quiz-feedback"></div>
+          </div>
+
+          <div class="quiz-question-block" data-correct="c"
+               data-explanation-right="Right. Equal scores are broken by who finished first and then by user id, so the order is identical on every page load."
+               data-explanation-wrong="A ranking with ties needs a tie-breaker. Collabz uses earliest finisher, then lower user id, so nothing depends on the order the database returns rows in.">
+            <h3 class="quiz-question">Two people both score 8 with you and you refresh /matches five times. What should you see?</h3>
+            <div class="quiz-options">
+              <button class="quiz-option" data-value="a" onclick="selectOption(this)"><div class="quiz-option-radio"></div><span>A random one first each time, to be fair</span></button>
+              <button class="quiz-option" data-value="b" onclick="selectOption(this)"><div class="quiz-option-radio"></div><span>Whichever the database returns first, which may vary</span></button>
+              <button class="quiz-option" data-value="c" onclick="selectOption(this)"><div class="quiz-option-radio"></div><span>The same order every time, decided by finishing time then id</span></button>
+            </div>
+            <div class="quiz-feedback"></div>
+          </div>
+
+          <button class="quiz-check-btn" onclick="checkQuiz('quiz-module3')">Check Answers</button>
+          <button class="quiz-reset-btn" onclick="resetQuiz('quiz-module3')">Try Again</button>
+        </div>
+      </section>
+
+    </div>
+  </div>
+</section>
