@@ -6,9 +6,9 @@ Find people to work with by chemistry, not CVs. Collabz matches software student
 
 It is also the result of a bootcamp assignment: **a team of beginners learning how to build software with AI the way professionals do**, in a group, with every decision written down. This README tells both stories, the product and the learning.
 
-[![Watch the Collabz promo video: click to open it](docs/media/brag.jpg)](docs/media/brag.mp4)
+[![Watch the Collabz promo video: click to open it](docs/media/brag.jpg)](https://collabz-ten.vercel.app/promo-video.mp4)
 
-*Click the picture to watch the promo video (about 3 MB).*
+*Click the picture to watch the promo video (about 3 MB). It plays straight in your browser, on a phone too.*
 
 ## Try it
 
